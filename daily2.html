@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Practices — Mind · Recovery · Energy</title>
+<style>
+:root{--bg:#0a0e17;--card:#131a27;--card-hover:#182030;--border:#1e2a3a;--gold:#e8a317;--gold-dim:rgba(232,163,23,.12);--green:#00c853;--green-dim:rgba(0,200,83,.1);--red:#ff5252;--purple:#b388ff;--purple-dim:rgba(179,136,255,.1);--blue:#448aff;--blue-dim:rgba(68,138,255,.1);--cyan:#00e5ff;--cyan-dim:rgba(0,229,255,.1);--text:#f0f2f5;--dim:#6b7a90;--radius:14px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+.header{text-align:center;padding:32px 20px 20px;background:linear-gradient(180deg,#111927,var(--bg));border-bottom:1px solid var(--border)}
+.header h1{font-size:32px;font-weight:800;letter-spacing:4px;background:linear-gradient(135deg,var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header .sub{color:var(--dim);font-size:13px;margin-top:4px}
+.date-d{font-size:14px;color:var(--text);font-weight:600;margin-top:10px}
+.quote-bar{margin-top:10px;padding:8px 18px;background:rgba(232,163,23,.05);border-radius:10px;max-width:480px;margin-left:auto;margin-right:auto;border:1px solid rgba(232,163,23,.08)}
+.quote-t{font-size:12px;color:var(--gold);font-style:italic}
+.lv-bar{max-width:500px;margin:14px auto 0;display:flex;align-items:center;gap:12px}
+.lv-icon{font-size:28px}.lv-info{flex:1}
+.lv-row{display:flex;justify-content:space-between;align-items:baseline}
+.lv-title{font-size:14px;font-weight:800;color:var(--purple)}
+.lv-xp{font-size:11px;color:var(--dim);font-family:'SF Mono',monospace}
+.xp-bar{height:7px;background:var(--border);border-radius:8px;overflow:hidden;margin-top:3px}
+.xp-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--purple),var(--cyan));transition:width .8s}
+.commit-bar{text-align:center;margin:14px 0}
+.commit-btn{padding:11px 28px;border-radius:12px;border:2px solid var(--gold);background:transparent;color:var(--gold);font-size:14px;font-weight:800;cursor:pointer;transition:all .3s}
+.commit-btn:hover{background:var(--gold-dim)}
+.commit-done{text-align:center;margin:14px 0;font-size:13px;color:var(--green);font-weight:700}
+.commit-why{display:block;font-size:11px;color:var(--dim);font-style:italic;margin-top:3px;max-width:400px;margin-left:auto;margin-right:auto}
+.t-status{display:flex;justify-content:center;gap:12px;margin:12px 0}
+.s-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid var(--border);transition:all .3s}
+.s-dot.done{border-color:var(--green);background:var(--green-dim)}
+.s-dot.pending{opacity:.4}
+.rec-bar{display:flex;justify-content:center;gap:14px;margin:12px 0;flex-wrap:wrap}
+.rec-item{padding:7px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px;text-align:center;min-width:80px}
+.rec-val{font-size:16px;font-weight:800;font-family:'SF Mono',monospace;color:var(--gold)}
+.rec-lbl{font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase}
+.streak-warn{display:none;text-align:center;margin:10px auto;padding:10px 16px;background:rgba(255,82,82,.1);border:1px solid var(--red);border-radius:10px;max-width:400px;font-size:13px;color:var(--red);font-weight:700;animation:popIn .4s}
+.streak-warn.show{display:block}
+.main{max-width:1140px;margin:0 auto;padding:0 24px}
+.dash{display:grid;grid-template-columns:1fr 380px;gap:24px;margin-top:24px;align-items:start}
+.sec-t{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:12px;font-weight:700;letter-spacing:2px;color:var(--dim);text-transform:uppercase}
+.sec-t::after{content:'';flex:1;height:1px;background:var(--border)}
+.p-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px;transition:all .3s}
+.p-card:hover{background:var(--card-hover);transform:translateY(-1px)}
+.p-card.logged{border-color:var(--green);background:var(--green-dim)}
+.p-card.running{border-color:var(--gold);background:var(--gold-dim)}
+.p-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.p-left{display:flex;align-items:center;gap:10px}
+.p-icon{font-size:26px}.p-name{font-size:17px;font-weight:700}
+.p-tl{font-size:10px;color:var(--dim);letter-spacing:1px}
+.p-card.logged .p-name{color:var(--green)}
+.p-card.running .p-name{color:var(--gold)}
+.done-b{display:none;font-size:11px;font-weight:700;color:var(--green);background:var(--green-dim);padding:3px 10px;border-radius:8px}
+.p-card.logged .done-b{display:block}
+.p-desc{font-size:12px;color:var(--dim);margin-bottom:12px;line-height:1.5}
+.p-tw{display:flex;align-items:center;gap:14px;justify-content:center;padding:14px 0}
+.p-td{font-size:44px;font-weight:800;font-family:'SF Mono',monospace;color:var(--dim);font-variant-numeric:tabular-nums;transition:color .3s;min-width:140px;text-align:center}
+.p-card.running .p-td{color:var(--gold)}
+.p-card.logged .p-td{color:var(--green)}
+.p-tb{width:72px;height:72px;border-radius:50%;border:3px solid var(--border);background:transparent;color:var(--dim);font-size:13px;font-weight:800;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.p-tb:hover{transform:scale(1.05)}
+.p-tb.go{border-color:var(--green);color:var(--green)}.p-tb.go:hover{background:var(--green-dim)}
+.p-tb.stp{border-color:var(--red);color:var(--red);animation:pulse 1.5s infinite}.p-tb.stp:hover{background:rgba(255,82,82,.1)}
+.p-tb.dn{border-color:var(--green);color:var(--green);background:var(--green-dim);cursor:default}
+.card-med .p-tb.go{border-color:var(--purple);color:var(--purple)}.card-med .p-tb.go:hover{background:var(--purple-dim)}
+.card-nsdr .p-tb.go{border-color:var(--blue);color:var(--blue)}.card-nsdr .p-tb.go:hover{background:var(--blue-dim)}
+.card-mdo .p-tb.go{border-color:var(--cyan);color:var(--cyan)}.card-mdo .p-tb.go:hover{background:var(--cyan-dim)}
+.p-card.logged .p-tw{opacity:.5;pointer-events:none}
+.p-result{display:none;text-align:center;font-size:13px;color:var(--green);font-weight:700;margin-top:4px}
+.p-card.logged .p-result{display:block}
+.p-hist{margin-top:8px;max-height:80px;overflow-y:auto}
+.he{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px}
+.he .hd{color:var(--dim)}.he .hv{font-weight:700;font-family:'SF Mono',monospace}
+.hc{font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px}
+.hc.up{color:var(--green);background:var(--green-dim)}.hc.dn{color:var(--dim)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+@keyframes popIn{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}
+
+/* Emergency */
+.em-wrap{text-align:center;margin:16px 0;padding:14px;background:var(--card);border:1px dashed var(--border);border-radius:var(--radius)}
+.em-btn{padding:10px 24px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--dim);font-size:13px;font-weight:700;cursor:pointer;transition:all .3s}
+.em-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.em-hint{font-size:10px;color:var(--dim);margin-top:6px;line-height:1.5}
+
+/* Sidebar */
+.sidebar{position:sticky;top:24px}
+.mdo-m{background:var(--card);border:1px solid var(--cyan);border-radius:var(--radius);padding:22px;margin-bottom:14px;position:relative;overflow:hidden}
+.mdo-m::before{content:'absolute';top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--purple))}
+.mdo-m h3{font-size:15px;font-weight:800;color:var(--cyan);margin-bottom:3px;letter-spacing:1px}
+.mdo-sub{font-size:11px;color:var(--dim);margin-bottom:14px}
+.mdo-prog{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.ring-w{position:relative;width:90px;height:90px;flex-shrink:0}
+.ring-w svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:7}.ring-fl{fill:none;stroke:var(--cyan);stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .8s}
+.ring-t{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.ring-d{font-size:24px;font-weight:800;color:var(--cyan);font-family:'SF Mono',monospace;line-height:1}
+.ring-l{font-size:8px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+.mdo-sts{flex:1}.mdo-sr{display:flex;justify-content:space-between;padding:3px 0;font-size:11px}
+.mdo-sl{color:var(--dim)}.mdo-sv{font-weight:700;font-family:'SF Mono',monospace}
+.ph-c{padding:12px;border-radius:10px;margin-bottom:10px;border:1px solid var(--border)}
+.ph-c.active{border-color:var(--cyan);background:var(--cyan-dim)}
+.ph-c.completed{border-color:var(--green);background:var(--green-dim)}
+.ph-c.locked{opacity:.4}
+.ph-h{display:flex;justify-content:space-between;align-items:center}
+.ph-n{font-size:12px;font-weight:800}
+.ph-c.active .ph-n{color:var(--cyan)}.ph-c.completed .ph-n{color:var(--green)}
+.ph-d{font-size:10px;color:var(--dim)}
+.ph-b{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px}
+.ph-b.ab{color:var(--cyan);background:var(--cyan-dim)}.ph-b.db{color:var(--green);background:var(--green-dim)}.ph-b.lb{color:var(--dim)}
+.ph-desc{font-size:10px;color:var(--dim);margin-top:4px;line-height:1.4}
+.ph-f{font-size:11px;color:var(--cyan);font-weight:700;margin-top:6px;padding:6px 10px;background:rgba(0,229,255,.06);border-radius:7px;border-left:3px solid var(--cyan)}
+.stk-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px}
+.sk-c{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center}
+.sk-c .sk-v{font-size:18px;font-weight:800;font-family:'SF Mono',monospace}
+.sk-c .sk-l{font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+.sk-c.med .sk-v{color:var(--purple)}.sk-c.nsdr .sk-v{color:var(--blue)}.sk-c.mdo .sk-v{color:var(--cyan)}
+
+/* Shields */
+.shields-c{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-top:14px}
+.shields-row{display:flex;align-items:center;gap:12px}
+.sh-i{font-size:28px;transition:all .3s}.sh-i.used{opacity:.2;filter:grayscale(1)}
+.shields-info{flex:1}.shields-ct{font-size:13px;font-weight:700}.shields-ds{font-size:10px;color:var(--dim);margin-top:2px}
+.shields-log{margin-top:6px;font-size:10px;color:var(--dim)}
+
+/* Sleep */
+.slp-c{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-top:14px}
+.slp-c h4{font-size:12px;color:var(--purple);margin-bottom:8px}
+.slp-r{display:flex;gap:6px;align-items:center}
+.slp-i{width:55px;padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center;outline:none}
+.slp-s{padding:7px 14px;border-radius:8px;background:var(--purple);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer}
+.slp-log{margin-top:8px;max-height:70px;overflow-y:auto}
+.sle{display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid var(--border)}
+.sq{font-size:10px;padding:1px 5px;border-radius:3px;font-weight:700}
+.sq.good{color:var(--green);background:var(--green-dim)}.sq.ok{color:var(--gold);background:var(--gold-dim)}.sq.bad{color:var(--red);background:rgba(255,82,82,.1)}
+
+/* Full width */
+.fw{margin-top:44px;padding-bottom:60px}
+.cal-c{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-top:14px}
+.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px}
+.cal-l{font-size:9px;color:var(--dim);text-align:center;font-weight:700;padding:2px 0;letter-spacing:1px}
+.cal-d{aspect-ratio:1;border-radius:8px;background:var(--bg);border:1px solid var(--border);display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;font-size:9px;color:var(--dim);font-weight:700;overflow:hidden;position:relative;transition:transform .2s,box-shadow .2s;cursor:default;padding-bottom:0}
+.cal-d:hover:not(.pad){transform:scale(1.08);z-index:2}
+.cal-d.pad{opacity:.08;border:none;background:transparent}
+.cal-d.today{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 8px rgba(232,163,23,.3)}
+.cal-d.perfect{box-shadow:0 0 12px rgba(255,255,255,.15),0 0 4px rgba(255,255,255,.1)}
+.cal-dn{width:100%;text-align:center;font-size:9px;font-weight:800;z-index:2;line-height:1;padding-top:3px;position:relative}
+.cal-d.today .cal-dn{color:var(--gold)}
+.cal-bars{display:flex;flex-direction:row;width:100%;gap:1px;padding:0 2px 2px;height:6px;align-items:flex-end;margin-top:auto}
+.cal-bar{flex:1;height:5px;border-radius:2px;opacity:0;transition:opacity .3s}
+.cal-bar.med{background:linear-gradient(90deg,#b388ff,#9c6fff);opacity:0}
+.cal-bar.nsdr{background:linear-gradient(90deg,#448aff,#2979ff);opacity:0}
+.cal-bar.mdo{background:linear-gradient(90deg,#00e5ff,#00b8d4);opacity:0}
+.cal-bar.active{opacity:1}
+.cal-fill{position:absolute;inset:0;opacity:0;transition:opacity .3s}
+.cal-fill.med{background:linear-gradient(135deg,rgba(179,136,255,.18),transparent)}
+.cal-fill.nsdr{background:linear-gradient(135deg,rgba(68,138,255,.18),transparent)}
+.cal-fill.mdo{background:linear-gradient(135deg,rgba(0,229,255,.18),transparent)}
+.cal-fill.perfect{background:linear-gradient(135deg,rgba(179,136,255,.12),rgba(68,138,255,.12),rgba(0,229,255,.12));opacity:1}
+.cal-icons{display:flex;justify-content:center;gap:1px;font-size:7px;line-height:1;padding:1px 0}
+.cal-bar.med.active{box-shadow:0 0 4px rgba(179,136,255,.6)}
+.cal-bar.nsdr.active{box-shadow:0 0 4px rgba(68,138,255,.6)}
+.cal-bar.mdo.active{box-shadow:0 0 4px rgba(0,229,255,.6)}
+.cal-legend{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-size:10px;color:var(--dim);margin-top:6px}
+.cal-leg-item{display:flex;align-items:center;gap:5px}
+.cal-leg-dot{width:10px;height:4px;border-radius:2px}
+.cal-month-label{text-align:center;font-size:11px;font-weight:700;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+
+/* Why */
+.why-c{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-top:14px}
+.why-p{font-size:12px;color:var(--dim);margin-bottom:10px;line-height:1.5}
+.why-ta{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;resize:vertical;outline:none}
+.why-ta:focus{border-color:var(--gold)}
+.why-sb{margin-top:8px;padding:9px 20px;border-radius:10px;background:var(--gold);color:#000;border:none;font-size:13px;font-weight:800;cursor:pointer}
+.why-saved{display:flex;align-items:center;gap:14px}
+.why-qt{flex:1;font-size:15px;font-style:italic;color:var(--gold);line-height:1.5;padding:14px;background:var(--gold-dim);border-radius:10px;border-left:4px solid var(--gold)}
+.why-eb{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--dim);font-size:11px;cursor:pointer}
+
+/* Review */
+.rev-c{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-top:14px}
+.rev-p{font-size:13px;color:var(--dim);margin-bottom:10px}
+.rev-sts{padding:10px;background:var(--bg);border-radius:10px;margin-bottom:12px;font-size:12px;color:var(--dim);line-height:1.7}
+.rev-sts strong{color:var(--text)}
+.rev-q{margin-bottom:10px}
+.rev-q label{font-size:12px;font-weight:700;display:block;margin-bottom:3px}
+.rev-ta{width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-family:inherit;resize:vertical;outline:none}
+.rev-sb{padding:9px 20px;border-radius:10px;background:var(--purple);color:#fff;border:none;font-size:13px;font-weight:800;cursor:pointer}
+.rev-hist{margin-top:12px;max-height:180px;overflow-y:auto}
+.rev-e{padding:10px;background:var(--bg);border-radius:8px;margin-bottom:6px;font-size:11px;border-left:3px solid var(--purple)}
+.rev-e .re-d{color:var(--dim);font-weight:700;margin-bottom:3px}
+.rev-e .re-g{color:var(--green)}.rev-e .re-i{color:var(--gold);margin-top:3px}
+
+/* Letters */
+.let-s{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;transition:all .3s}
+.let-s.sealed{border-color:var(--gold);background:var(--gold-dim)}
+.let-s.opened{border-color:var(--green);background:var(--green-dim)}
+.let-h{display:flex;align-items:center;gap:8px}
+.let-i{font-size:20px}.let-t{flex:1;font-size:13px;font-weight:700}
+.let-b{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;color:var(--dim);background:var(--border)}
+.let-b.sb{color:var(--gold);background:var(--gold-dim)}.let-b.ob{color:var(--green);background:var(--green-dim)}
+.let-body{margin-top:10px}
+.let-ta{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-family:inherit;resize:vertical;outline:none}
+.let-sb{margin-top:6px;padding:8px 18px;border-radius:10px;background:var(--gold);color:#000;border:none;font-size:12px;font-weight:800;cursor:pointer}
+.let-sm{font-size:12px;color:var(--gold);font-style:italic;padding:10px;background:rgba(232,163,23,.06);border-radius:8px;border-left:3px solid var(--gold)}
+.let-om{font-size:13px;color:var(--text);padding:14px;background:rgba(0,200,83,.06);border-radius:8px;border-left:3px solid var(--green);line-height:1.5;white-space:pre-wrap}
+
+/* Milestones */
+.ms-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;margin-top:14px}
+.ms-c{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:10px;text-align:center;opacity:.4;transition:all .3s}
+.ms-c.ach{border-color:var(--green);background:var(--green-dim);opacity:1}
+.ms-c .ms-i{font-size:20px;margin-bottom:2px}
+.ms-c .ms-t{font-size:10px;font-weight:800}.ms-c.ach .ms-t{color:var(--green)}
+.ms-c .ms-d{font-size:9px;color:var(--dim);margin-top:1px}
+.ms-c .ms-dt{font-size:9px;color:var(--green);font-weight:700;margin-top:2px}
+.ms-c .ms-x{font-size:9px;color:var(--gold);font-weight:700}
+.ms-sum{text-align:center;margin-top:8px;font-size:12px;color:var(--dim)}
+.ms-sum strong{color:var(--gold);font-size:16px}
+
+/* Insights */
+.ins-g{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.ins-c{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.ins-c h4{font-size:12px;color:var(--gold);margin-bottom:8px}
+.ins-r{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px}
+.ins-r:last-child{border:none}.ins-l{color:var(--dim)}.ins-v{font-weight:700;font-family:'SF Mono',monospace}
+
+/* Backup */
+.bk-r{display:flex;gap:10px;margin-top:14px;margin-bottom:40px}
+.bk-b{flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:13px;font-weight:700;cursor:pointer;text-align:center}
+.bk-b:hover{border-color:var(--gold);color:var(--text)}
+.bk-b.exp{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.bk-b.imp{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
+
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);padding:12px 24px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;transition:transform .4s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--green);color:#000}
+.toast.error{background:var(--red);color:#fff}
+.toast.info{background:var(--blue);color:#fff}
+#fi{display:none}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+@media(max-width:900px){.dash{grid-template-columns:1fr}.sidebar{position:static}.ins-g{grid-template-columns:1fr}.rec-bar{gap:6px}.rec-item{min-width:65px;padding:5px 8px}.rec-val{font-size:14px}.p-td{font-size:34px;min-width:110px}.p-tb{width:60px;height:60px;font-size:11px}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<input type="file" id="fi" accept=".json" onchange="impD(event)">
+
+<div class="header">
+  <h1>DAILY PRACTICES</h1>
+  <button id="login-btn" style="display:none; margin: 10px auto; padding: 8px 16px; background: var(--blue); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+  Sign in with Google to Sync
+</button>
+<div id="user-info" style="display:none; font-size: 11px; color: var(--dim); margin-bottom: 10px;"></div>
+  <p class="sub">Mind · Recovery · Energy</p>
+  <div class="date-d" id="dateD"></div>
+  <div class="quote-bar"><div class="quote-t" id="quoteT"></div></div>
+  <div class="lv-bar"><div class="lv-icon" id="lvI">🌱</div><div class="lv-info"><div class="lv-row"><div class="lv-title">Level <span id="lvN">1</span> — <span id="lvT">Novice</span></div><div class="lv-xp"><span id="xpC">0</span>/<span id="xpN">100</span></div></div><div class="xp-bar"><div class="xp-fill" id="xpF" style="width:0%"></div></div></div></div>
+  <div class="commit-bar" id="cmtBar"><button class="commit-btn" onclick="commit()">☀️ I commit to practice today</button></div>
+  <div class="commit-done" id="cmtDone" style="display:none"><span>☀️ Committed</span><span class="commit-why" id="cmtWhy"></span></div>
+  <div class="t-status"><div class="s-dot pending" id="dot_med">🧘</div><div class="s-dot pending" id="dot_nsdr">🌊</div><div class="s-dot pending" id="dot_mdo">⚡</div></div>
+  <div class="streak-warn" id="streakWarn">⚠️ Your streak is at risk! Practice today to keep it alive.</div>
+  <div class="rec-bar">
+    <div class="rec-item"><div class="rec-val" id="rDays">0</div><div class="rec-lbl">Days</div></div>
+    <div class="rec-item"><div class="rec-val" id="rStrk">0</div><div class="rec-lbl">Streak</div></div>
+    <div class="rec-item"><div class="rec-val" id="rPerf">0</div><div class="rec-lbl">Perfect</div></div>
+    <div class="rec-item"><div class="rec-val" id="rMin">0</div><div class="rec-lbl">Total Min</div></div>
+    <div class="rec-item"><div class="rec-val" id="rMdo">0/90</div><div class="rec-lbl">MDO</div></div>
+    <div class="rec-item"><div class="rec-val" id="rAch">0</div><div class="rec-lbl">🏆</div></div>
+  </div>
+</div>
+
+<div class="main">
+<div class="dash">
+<div class="prac-col">
+  <div class="sec-t" style="margin-top:24px">Start a Practice</div>
+
+  <div class="p-card card-med" id="c_med"><div class="p-hdr"><div class="p-left"><div class="p-icon">🧘</div><div><div class="p-name">Meditation</div><div class="p-tl">☀️ Morning</div></div></div><div class="done-b">✓</div></div><div class="p-desc">Sit. Breathe. Observe without judgment.</div><div class="p-tw"><div class="p-td" id="t_med">0:00</div><button class="p-tb go" id="b_med" onclick="togT('med')">START</button></div><div class="p-result" id="r_med"></div><div class="p-hist" id="h_med"></div></div>
+
+  <div class="p-card card-nsdr" id="c_nsdr"><div class="p-hdr"><div class="p-left"><div class="p-icon">🌊</div><div><div class="p-name">NSDR</div><div class="p-tl">🌙 Night</div></div></div><div class="done-b">✓</div></div><div class="p-desc">Deep recovery. Muscle repair. Sleep boost.</div><div class="p-tw"><div class="p-td" id="t_nsdr">0:00</div><button class="p-tb go" id="b_nsdr" onclick="togT('nsdr')">START</button></div><div class="p-result" id="r_nsdr"></div><div class="p-hist" id="h_nsdr"></div></div>
+
+  <div class="p-card card-mdo" id="c_mdo"><div class="p-hdr"><div class="p-left"><div class="p-icon">⚡</div><div><div class="p-name">MDO Practice</div><div class="p-tl">🌙 Night · 15-30 min</div></div></div><div class="done-b">✓</div></div><div class="p-desc">Energy mastery. Breath + pelvic floor + circulation.</div><div class="p-tw"><div class="p-td" id="t_mdo">0:00</div><button class="p-tb go" id="b_mdo" onclick="togT('mdo')">START</button></div><div class="p-result" id="r_mdo"></div><div class="p-hist" id="h_mdo"></div></div>
+
+  <div class="em-wrap"><button class="em-btn" onclick="badDay()">⚡ Bad Day — 1 min breathing = day counted</button><div class="em-hint">1 min eyes closed > 0 min. Streak alive.</div></div>
+</div>
+
+<div class="sidebar">
+  <div class="sec-t" style="margin-top:24px">⚡ MDO 90-Day</div>
+  <div class="mdo-m"><h3>MASTERY PROGRAM</h3><div class="mdo-sub" id="mdoSub">Practice daily to progress</div>
+    <div class="mdo-prog"><div class="ring-w"><svg width="90" height="90" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="42"/><circle class="ring-fl" id="mdoR" cx="50" cy="50" r="42" stroke-dasharray="263.9" stroke-dashoffset="263.9"/></svg><div class="ring-t"><div class="ring-d" id="mdoD">0</div><div class="ring-l">of 90</div></div></div>
+    <div class="mdo-sts"><div class="mdo-sr"><span class="mdo-sl">Streak</span><span class="mdo-sv" id="mdoSk">0</span></div><div class="mdo-sr"><span class="mdo-sl">Sessions</span><span class="mdo-sv" id="mdoTt">0</span></div><div class="mdo-sr"><span class="mdo-sl">Avg</span><span class="mdo-sv" id="mdoAv">—</span></div><div class="mdo-sr"><span class="mdo-sl">Longest</span><span class="mdo-sv" id="mdoLg">—</span></div><div class="mdo-sr"><span class="mdo-sl">Hours</span><span class="mdo-sv" id="mdoHr">0</span></div></div></div>
+    <div class="ph-c" id="ph1"><div class="ph-h"><div><div class="ph-n">Phase 1: Foundation</div><div class="ph-d">Day 1–30</div></div><span class="ph-b" id="pb1">—</span></div><div class="ph-desc">Breath. PC muscle. Basic control.</div><div class="ph-f" id="pf1"></div></div>
+    <div class="ph-c" id="ph2"><div class="ph-h"><div><div class="ph-n">Phase 2: Control</div><div class="ph-d">Day 31–60</div></div><span class="ph-b" id="pb2">—</span></div><div class="ph-desc">Edge mastery. Energy circulation.</div><div class="ph-f" id="pf2"></div></div>
+    <div class="ph-c" id="ph3"><div class="ph-h"><div><div class="ph-n">Phase 3: Mastery</div><div class="ph-d">Day 61–90</div></div><span class="ph-b" id="pb3">—</span></div><div class="ph-desc">Full body. Multiple peaks.</div><div class="ph-f" id="pf3"></div></div>
+  </div>
+
+  <div class="sec-t">🔥 Streaks</div>
+  <div class="stk-cards"><div class="sk-c med"><div>🧘</div><div class="sk-v" id="skMed">0</div><div class="sk-l">Med</div></div><div class="sk-c nsdr"><div>🌊</div><div class="sk-v" id="skNsdr">0</div><div class="sk-l">NSDR</div></div><div class="sk-c mdo"><div>⚡</div><div class="sk-v" id="skMdo">0</div><div class="sk-l">MDO</div></div></div>
+
+  <div class="shields-c"><div class="shields-row"><div class="sh-i" id="sh1">🛡️</div><div class="sh-i" id="sh2">🛡️</div><div class="shields-info"><div class="shields-ct"><span id="shLeft">2</span>/2 Streak Shields</div><div class="shields-ds">Auto-protects missed days. Resets monthly.</div></div></div><div class="shields-log" id="shLog"></div></div>
+
+  <div class="slp-c"><h4>🌙 Sleep</h4><div class="slp-r"><input type="number" class="slp-i" id="slpI" placeholder="hrs" step="0.5" min="0" max="16"><button class="slp-s" onclick="savSlp()">Log</button><span style="font-size:10px;color:var(--dim)">hours</span></div><div class="slp-log" id="slpL"></div></div>
+</div>
+</div>
+
+<div class="fw">
+  <div class="sec-t">📅 Calendar</div>
+  <div class="cal-c">
+    <div class="cal-month-label" id="calMonth"></div>
+    <div class="cal-g" id="calG"></div>
+    <div class="cal-legend">
+      <div class="cal-leg-item"><div class="cal-leg-dot" style="background:linear-gradient(90deg,#b388ff,#9c6fff)"></div><span style="color:#b388ff">Meditation</span></div>
+      <div class="cal-leg-item"><div class="cal-leg-dot" style="background:linear-gradient(90deg,#448aff,#2979ff)"></div><span style="color:#448aff">NSDR</span></div>
+      <div class="cal-leg-item"><div class="cal-leg-dot" style="background:linear-gradient(90deg,#00e5ff,#00b8d4)"></div><span style="color:#00e5ff">MDO</span></div>
+      <div class="cal-leg-item"><div class="cal-leg-dot" style="background:linear-gradient(90deg,#b388ff,#448aff,#00e5ff)"></div><span style="color:#fff">Perfect Day</span></div>
+    </div>
+  </div>
+
+  <div class="sec-t" style="margin-top:40px">📝 Your Why</div>
+  <div class="why-c" id="whyC"><div class="why-saved" id="whyS" style="display:none"><div class="why-qt" id="whyT"></div><button class="why-eb" onclick="editWhy()">Edit</button></div><div id="whyI"><p class="why-p">Why are you doing this? Your deepest reason. This appears when your streak is at risk.</p><textarea class="why-ta" id="whyTA" rows="2" placeholder="I am doing this because..."></textarea><button class="why-sb" onclick="savWhy()">Save My Why</button></div></div>
+
+  <div class="sec-t" style="margin-top:40px">📊 Weekly Review</div>
+  <div class="rev-c" id="revC"><div class="rev-p" id="revP"></div><div id="revF" style="display:none"><div class="rev-sts" id="revSts"></div><div class="rev-q"><label>What went well?</label><textarea class="rev-ta" id="revG" rows="2" placeholder="I'm proud that..."></textarea></div><div class="rev-q"><label>What to improve?</label><textarea class="rev-ta" id="revI" rows="2" placeholder="Next week I will..."></textarea></div><button class="rev-sb" onclick="savRev()">Save Review (+50 XP)</button></div><div class="rev-hist" id="revH"></div></div>
+
+  <div class="sec-t" style="margin-top:40px">💌 Letters to Future Self</div>
+  <div class="let-s" id="ls90"><div class="let-h"><span class="let-i">💌</span><span class="let-t">Letter to Day 90 You</span><span class="let-b" id="lb90">Write</span></div><div class="let-body" id="lbody90"></div></div>
+  <div class="let-s" id="ls180"><div class="let-h"><span class="let-i">💌</span><span class="let-t">Letter to Day 180 You</span><span class="let-b" id="lb180">Write</span></div><div class="let-body" id="lbody180"></div></div>
+
+  <div class="sec-t" style="margin-top:40px">🏆 Achievements — <span id="achCt">0</span></div>
+  <div class="ms-sum">XP: <strong id="totXP">0</strong></div>
+  <div class="ms-g" id="msG"></div>
+
+  <div class="sec-t" style="margin-top:40px">📊 Insights</div>
+  <div class="ins-g">
+    <div class="ins-c"><h4>Averages</h4><div class="ins-r"><span class="ins-l">Med</span><span class="ins-v" id="iAM">—</span></div><div class="ins-r"><span class="ins-l">NSDR</span><span class="ins-v" id="iAN">—</span></div><div class="ins-r"><span class="ins-l">MDO</span><span class="ins-v" id="iAD">—</span></div><div class="ins-r"><span class="ins-l">Most</span><span class="ins-v" id="iMo">—</span></div></div>
+    <div class="ins-c"><h4>Consistency</h4><div class="ins-r"><span class="ins-l">Best streak</span><span class="ins-v" id="iBs">0</span></div><div class="ins-r"><span class="ins-l">Best MDO</span><span class="ins-v" id="iBm">0</span></div><div class="ins-r"><span class="ins-l">This week</span><span class="ins-v" id="iWk">0</span></div><div class="ins-r"><span class="ins-l">Rate</span><span class="ins-v" id="iRt">—</span></div></div>
+  </div>
+
+  <div class="sec-t" style="margin-top:40px">💾 Data & Backup</div>
+
+  <div class="bk-r"><button class="bk-b exp" onclick="expD()">📥 Export Now</button><button class="bk-b imp" onclick="document.getElementById('fi').click()">📤 Import</button><button class="bk-b" onclick="if(confirm('Delete ALL?')&&confirm('SURE?')){DKS.forEach(k=>localStorage.removeItem(k));refreshAll();toast('Reset','info')}">🗑</button></div>
+</div>
+</div>
+
+<script>
+const TY=['med','nsdr','mdo'],NM={med:'Meditation',nsdr:'NSDR',mdo:'MDO'};
+const DKS=['dp_log','dp_milestones','dp_sleep','dp_why','dp_shields','dp_reviews','dp_letters','dp_commit'];
+const LVS=[{min:0,t:'Novice',i:'🌱'},{min:100,t:'Beginner',i:'🌿'},{min:300,t:'Seeker',i:'🔍'},{min:600,t:'Practitioner',i:'🧘'},{min:1000,t:'Disciplined',i:'💪'},{min:1600,t:'Focused',i:'🎯'},{min:2500,t:'Awakened',i:'👁️'},{min:3800,t:'Master',i:'🔥'},{min:5500,t:'Sage',i:'🏔️'},{min:8000,t:'Enlightened',i:'💎'}];
+const PHT=[["Slow deep breathing","PC squeeze 5s×10","Body scan—notice, don't react","Belly breath: 4in, 6out","Relax jaw + shoulders","Stop at 70%, breathe","Tension vs relaxation awareness","Extend +2min/week","Reverse kegels—relax PF","Arousal scale 1-10"],["Edge at 80% for 2+min","Breath-lock: inhale,hold,squeeze","Energy UP spine on exhale","3 mini-peaks, 1 session","Whole body sensation","Cool-draw breath at peak","Separate orgasm from ejac","5+min at 80-90%","Find point-of-no-return","Experiment breath rhythms"],["Full-body waves, zero ejac","Stack 5+ peaks","Energy orgasm, no touch","Channel energy to morning","90%+ for 10+min, breath only","Complete separation","Different positions","30+min sustained peaks","Energy → daily confidence","You are the master"]];
+const QTS=['"Discipline = freedom." — Jocko','"The body achieves what the mind believes."','"Small daily improvements → staggering results."','"Show up. Even when you don\'t feel like it."','"When spider webs unite, they tie a lion." — Ethiopian','"1% better every day = 37× better in a year."','"He who has health has hope." — Ethiopian','"The worst session > the best skip."','"You are one practice away from a good mood."','"Mastery is not about perfection. It\'s about consistency."','"The best project you\'ll ever work on is you."','"Energy flows where attention goes."'];
+
+function sg(k,f){try{const v=localStorage.getItem(k);if(v===null)return f;return JSON.parse(v)}catch(e){return f}}
+function gL(){let d=sg('dp_log',{});if(typeof d!=='object'||d===null)d={};return d}
+function tK(){return new Date().toDateString()}
+function dS(){const t=new Date();return t.getDate()+'/'+(t.getMonth()+1)+'/'+t.getFullYear()}
+function dFromKey(k){const d=new Date(k);return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear()}
+function fT(s){const m=Math.floor(s/60),sc=s%60;return m+':'+(sc<10?'0':'')+sc}
+function toast(m,t){const el=document.getElementById('toast');el.textContent=m;el.className='toast '+t;requestAnimationFrame(()=>el.classList.add('show'));setTimeout(()=>el.classList.remove('show'),3500)}
+
+// ═══ DST-SAFE DATE HELPER ═══
+function dayAgo(n){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-n);return d}
+
+// ═══════════════════════════════════════════════════════
+// ═══ AUTO-DOWNLOAD SYSTEM ═════════════════════════════
+// ═══════════════════════════════════════════════════════
+// Triggers standard browser download instead of saving internally
+function createAutoBackup(trigger){
+  try {
+    // Build snapshot of all data keys
+    const snapshot={};
+    DKS.forEach(k=>{
+      const v=localStorage.getItem(k);
+      if(v!==null){try{snapshot[k]=JSON.parse(v)}catch(e){snapshot[k]=v}}
+    });
+    snapshot._app='Daily Practices';
+    snapshot._trigger=trigger||'manual';
+    snapshot._date=new Date().toISOString();
+    snapshot._label=trigger+' — '+dS()+' '+new Date().toLocaleTimeString();
+
+    // Format the JSON data
+    const json = JSON.stringify(snapshot, null, 2);
+    // Fixed file name format: practice-YYYY-MM-DD.json
+    const fn = 'practice-' + snapshot._date.slice(0,10) + '.json';
+
+    // Trigger standard browser download (uses the existing fbE download helper function)
+    fbE(json, fn);
+    
+  } catch(e){
+    console.error('Auto-download failed:',e);
+    toast('❌ Auto-backup failed', 'error');
+  }
+}
+
+// ═══ TIMERS ═══
+const TM={med:{i:null,s:0,st:0,on:false,dk:null},nsdr:{i:null,s:0,st:0,on:false,dk:null},mdo:{i:null,s:0,st:0,on:false,dk:null}};
+function togT(type){const t=TM[type];const btn=document.getElementById('b_'+type);const disp=document.getElementById('t_'+type);const card=document.getElementById('c_'+type);
+  if(!t.on){const log=gL();const td=log[tK()];if(td&&td.practices&&td.practices[type]){toast('Already logged','info');return}
+    TY.forEach(o=>{if(o!==type&&TM[o].on)stopLog(o)});
+    t.on=true;t.s=0;t.st=Date.now();t.dk=tK();card.classList.add('running');card.classList.remove('logged');btn.textContent='STOP';btn.className='p-tb stp';disp.textContent='0:00';
+    t.i=setInterval(()=>{t.s=Math.floor((Date.now()-t.st)/1000);disp.textContent=fT(t.s)},1000);
+  }else stopLog(type)}
+
+function stopLog(type){const t=TM[type];const btn=document.getElementById('b_'+type);const disp=document.getElementById('t_'+type);const card=document.getElementById('c_'+type);const res=document.getElementById('r_'+type);
+  clearInterval(t.i);t.s=Math.floor((Date.now()-t.st)/1000);t.on=false;card.classList.remove('running');
+  if(t.s<60){btn.textContent='START';btn.className='p-tb go';disp.textContent='0:00';t.s=0;t.dk=null;toast('⚠️ Min 1 minute','error');return}
+  const min=Math.round(t.s/60);const log=gL();const key=t.dk||tK();const crossedMidnight=key!==tK();
+  if(!log[key])log[key]={date:dFromKey(key),practices:{}};
+  log[key].practices[type]={duration:min,seconds:t.s,timestamp:new Date().toISOString()};
+  const keys=Object.keys(log);if(keys.length>5000){keys.sort((a,b)=>new Date(a)-new Date(b));for(let i=0;i<keys.length-5000;i++)delete log[keys[i]]}
+  localStorage.setItem('dp_log',JSON.stringify(log));
+  t.dk=null;
+  if(!crossedMidnight){card.classList.add('logged');btn.textContent='DONE';btn.className='p-tb dn';disp.textContent=fT(t.s);res.textContent='✓ '+min+'m ('+fT(t.s)+')';}
+  refreshAll();
+  
+  // 🔄 AUTO-DOWNLOAD after practice logged
+  createAutoBackup(NM[type]);
+  
+  toast('✓ '+NM[type]+': '+min+'m'+(crossedMidnight?' (saved to prev day)':''),'success')}
+
+function renderCards(){const log=gL();const td=log[tK()];
+  TY.forEach(type=>{const card=document.getElementById('c_'+type);const dot=document.getElementById('dot_'+type);const btn=document.getElementById('b_'+type);const disp=document.getElementById('t_'+type);const res=document.getElementById('r_'+type);
+    const done=td&&td.practices&&td.practices[type];const t=TM[type];
+    if(done&&!t.on){card.classList.add('logged');card.classList.remove('running');dot.classList.add('done');dot.classList.remove('pending');btn.textContent='DONE';btn.className='p-tb dn';const sec=done.seconds||done.duration*60;disp.textContent=fT(sec);res.textContent='✓ '+done.duration+'m'}
+    else if(!t.on){card.classList.remove('logged','running');dot.classList.remove('done');dot.classList.add('pending');btn.textContent='START';btn.className='p-tb go';disp.textContent='0:00';res.textContent=''}})}
+
+function renderHists(){TY.forEach(type=>{const el=document.getElementById('h_'+type);const log=gL();const entries=[];
+  Object.keys(log).sort((a,b)=>new Date(b)-new Date(a)).forEach(k=>{if(log[k].practices&&log[k].practices[type]){const p=log[k].practices[type];entries.push({date:log[k].date,dur:p.duration,sec:p.seconds||p.duration*60})}});
+  if(!entries.length){el.innerHTML='';return}let h='';entries.slice(0,5).forEach((e,i)=>{let c='';if(i<entries.length-1){const d=e.dur-entries[i+1].dur;if(d>0)c='<span class="hc up">+'+d+'m</span>';else if(d<0)c='<span class="hc dn">'+d+'m</span>'}h+='<div class="he"><span class="hd">'+e.date+'</span><span class="hv">'+fT(e.sec)+'</span>'+c+'</div>'});el.innerHTML=h})}
+
+// ═══ BAD DAY ═══
+function badDay(){const log=gL();const key=tK();if(log[key]&&log[key].practices&&Object.keys(log[key].practices).length>0){toast('Already logged!','info');return}
+  if(!confirm('⚡ Bad Day\n\nClose eyes. 1 min deep breathing.\nDo it NOW. Then click OK.'))return;
+  if(!log[key])log[key]={date:dS(),practices:{}};log[key].practices.med={duration:1,seconds:60,timestamp:new Date().toISOString(),badDay:true};
+  localStorage.setItem('dp_log',JSON.stringify(log));
+  refreshAll();
+  
+  // 🔄 AUTO-DOWNLOAD after bad day logged
+  createAutoBackup('Bad Day');
+  
+  toast('⚡ Bad day logged. Streak alive. 💪','success')}
+
+// ═══ STREAKS (DST-SAFE) ═══
+function cTS(type){const log=gL();let s=0;const tS=dayAgo(0).toDateString();const yS=dayAgo(1).toDateString();const has=d=>log[d]&&log[d].practices&&log[d].practices[type];if(!has(tS)&&!has(yS))return 0;let start=has(tS)?0:1;for(let i=start;i<5000;i++){if(has(dayAgo(i).toDateString()))s++;else break}return s}
+function cOS(){const log=gL();const shields=gSh();let s=0;const tS=dayAgo(0).toDateString();const yS=dayAgo(1).toDateString();
+  const hasD=d=>log[d]&&log[d].practices&&Object.keys(log[d].practices).length>0;
+  const shD=d=>shields.used&&shields.used.includes(d);
+  if(!hasD(tS)&&!hasD(yS)&&!shD(yS))return 0;let start=(hasD(tS)||shD(tS))?0:1;
+  for(let i=start;i<5000;i++){const ds=dayAgo(i).toDateString();if(hasD(ds)||shD(ds))s++;else break}return s}
+function renderStreaks(){document.getElementById('skMed').textContent=cTS('med');document.getElementById('skNsdr').textContent=cTS('nsdr');document.getElementById('skMdo').textContent=cTS('mdo')}
+
+// ═══ SHIELDS (DST-SAFE) ═══
+function gSh(){let s=sg('dp_shields',{month:null,remaining:2,used:[]});const cm=new Date().getMonth()+'-'+new Date().getFullYear();if(s.month!==cm)s={month:cm,remaining:2,used:[]};return s}
+function autoShield(){const log=gL();const y=dayAgo(1).toDateString();const t2=dayAgo(2).toDateString();
+  const hasY=log[y]&&log[y].practices&&Object.keys(log[y].practices).length>0;const had2=log[t2]&&log[t2].practices&&Object.keys(log[t2].practices).length>0;
+  const sh=gSh();if(!hasY&&had2&&sh.remaining>0&&(!sh.used||!sh.used.includes(y))){sh.remaining--;if(!sh.used)sh.used=[];sh.used.push(y);localStorage.setItem('dp_shields',JSON.stringify(sh));toast('🛡️ Shield auto-applied for yesterday!','info')}}
+function renderShields(){const s=gSh();document.getElementById('shLeft').textContent=s.remaining;document.getElementById('sh1').classList.toggle('used',s.remaining<1);document.getElementById('sh2').classList.toggle('used',s.remaining<2);document.getElementById('shLog').innerHTML=s.used&&s.used.length>0?'Used: '+s.used.join(', '):'No shields used ✨'}
+
+// ═══ STREAK WARNING ═══
+function checkStreakWarn(){const log=gL();const today=tK();const hasToday=log[today]&&log[today].practices&&Object.keys(log[today].practices).length>0;
+  const streak=cOS();const warn=document.getElementById('streakWarn');
+  if(!hasToday&&streak>2){warn.classList.add('show');const why=sg('dp_why',null);if(why&&why.text)warn.innerHTML='⚠️ '+streak+'-day streak at risk! <em>"'+why.text+'"</em>';else warn.innerHTML='⚠️ Your '+streak+'-day streak is at risk! Practice now!'}else warn.classList.remove('show')}
+
+// ═══ STATS ═══
+function cSt(){const log=gL();const keys=Object.keys(log);let tD=keys.length,pD=0,tM=0;const ct={med:0,nsdr:0,mdo:0},tt={med:0,nsdr:0,mdo:0};
+  keys.forEach(k=>{const p=log[k].practices||{};if(Object.keys(p).length===3)pD++;TY.forEach(t=>{if(p[t]){ct[t]++;tt[t]+=(p[t].duration||0);tM+=(p[t].duration||0)}})});return{tD,pD,tM,ct,tt}}
+function renderStats(){const s=cSt();const ms=sg('dp_milestones',{});document.getElementById('rDays').textContent=s.tD;document.getElementById('rStrk').textContent=cOS();document.getElementById('rPerf').textContent=s.pD;document.getElementById('rMin').textContent=s.tM;document.getElementById('rAch').textContent=Object.keys(typeof ms==='object'&&ms?ms:{}).length}
+
+// ═══ COMMITMENT ═══
+function commit(){localStorage.setItem('dp_commit',JSON.stringify({date:tK()}));renderCommit();toast('☀️ Committed. Honor it.','success')}
+function renderCommit(){const c=sg('dp_commit',null);const done=c&&c.date===tK();const why=sg('dp_why',null);
+  document.getElementById('cmtBar').style.display=done?'none':'block';document.getElementById('cmtDone').style.display=done?'block':'none';
+  document.getElementById('cmtWhy').textContent=done&&why&&why.text?'"'+why.text+'"':''}
+
+// ═══ WHY ═══
+function savWhy(){const t=document.getElementById('whyTA').value.trim();if(!t){toast('Write your why','error');return}localStorage.setItem('dp_why',JSON.stringify({text:t,date:dS()}));renderWhy();toast('📝 Why saved','success')}
+function editWhy(){const w=sg('dp_why',null);document.getElementById('whyS').style.display='none';document.getElementById('whyI').style.display='block';if(w&&w.text)document.getElementById('whyTA').value=w.text}
+function renderWhy(){const w=sg('dp_why',null);if(w&&w.text){document.getElementById('whyS').style.display='flex';document.getElementById('whyI').style.display='none';document.getElementById('whyT').textContent='"'+w.text+'"'}else{document.getElementById('whyS').style.display='none';document.getElementById('whyI').style.display='block'}}
+
+// ═══ MDO MASTERY ═══
+function renderMDO(){const s=cSt();const md=s.ct.mdo;const ms=cTS('mdo');const avg=s.ct.mdo>0?Math.round(s.tt.mdo/s.ct.mdo):0;
+  let lg=0;const log=gL();Object.values(log).forEach(d=>{if(d.practices&&d.practices.mdo)lg=Math.max(lg,d.practices.mdo.duration||0)});
+  document.getElementById('rMdo').textContent=Math.min(md,90)+'/90';document.getElementById('mdoD').textContent=Math.min(md,90);
+  document.getElementById('mdoSk').textContent=ms;document.getElementById('mdoTt').textContent=s.ct.mdo;
+  document.getElementById('mdoAv').textContent=avg>0?avg+'m':'—';document.getElementById('mdoLg').textContent=lg>0?lg+'m':'—';
+  document.getElementById('mdoHr').textContent=(s.tt.mdo/60).toFixed(1);
+  document.getElementById('mdoR').style.strokeDashoffset=263.9-(Math.min(100,(md/90)*100)/100)*263.9;
+  document.getElementById('mdoSub').textContent=md>=90?'🏆 MASTERY ACHIEVED!':md>=61?'Phase 3 — '+(90-md)+' left':md>=31?'Phase 2 — '+(60-md)+' to P3':'Phase 1 — '+(30-md)+' to P2';[{e:'ph1',b:'pb1',f:'pf1',s:0,end:30,p:0},{e:'ph2',b:'pb2',f:'pf2',s:30,end:60,p:1},{e:'ph3',b:'pb3',f:'pf3',s:60,end:90,p:2}].forEach(ph=>{
+    const el=document.getElementById(ph.e),badge=document.getElementById(ph.b),focus=document.getElementById(ph.f);el.classList.remove('active','completed','locked');
+    if(md>=ph.end){el.classList.add('completed');badge.textContent='✓';badge.className='ph-b db';focus.style.display='none'}
+    else if(md>=ph.s){el.classList.add('active');badge.textContent='NOW';badge.className='ph-b ab';focus.textContent='Today: '+PHT[ph.p][Math.min(md-ph.s,9)];focus.style.display='block'}
+    else{el.classList.add('locked');badge.textContent='🔒';badge.className='ph-b lb';focus.style.display='none'}})}
+
+// ═══ XP ═══
+function cXP(){const s=cSt();const ms=sg('dp_milestones',{});const rv=sg('dp_reviews',[]);let xp=0;xp+=s.tD*20;xp+=s.pD*30;xp+=s.ct.mdo*15;xp+=s.ct.med*10;xp+=s.ct.nsdr*10;xp+=Object.keys(typeof ms==='object'&&ms?ms:{}).length*40;xp+=(Array.isArray(rv)?rv.length:0)*50;return xp}
+function renderLvl(){const xp=cXP();const lv=LVS.reduce((a,l)=>xp>=l.min?l:a,LVS[0]);const nx=LVS.find(l=>xp<l.min)||LVS[LVS.length-1];
+  document.getElementById('lvI').textContent=lv.i;document.getElementById('lvN').textContent=LVS.indexOf(lv)+1;document.getElementById('lvT').textContent=lv.t;
+  document.getElementById('xpC').textContent=xp;document.getElementById('xpN').textContent=nx.min;document.getElementById('totXP').textContent=xp;
+  document.getElementById('xpF').style.width=(nx.min>lv.min?Math.min(100,((xp-lv.min)/(nx.min-lv.min))*100):100)+'%'}
+
+// ═══ REVIEW ═══
+function wkKey(d){const s=new Date(d);s.setDate(s.getDate()-s.getDay());return s.toDateString()}
+function wkStats(){const log=gL();let ses=0,min=0,days=0,perf=0;for(let i=0;i<7;i++){const d=dayAgo(i);const dt=log[d.toDateString()];if(dt&&dt.practices){const p=dt.practices;const c=Object.keys(p).length;if(c>0)days++;if(c===3)perf++;ses+=c;Object.values(p).forEach(v=>{min+=(v.duration||0)})}}return{ses,min,days,perf}}
+function renderRev(){const isSun=new Date().getDay()===0;const rvs=sg('dp_reviews',[]);const wk=wkKey(new Date());const done=Array.isArray(rvs)&&rvs.some(r=>r.week===wk);
+  const p=document.getElementById('revP');const f=document.getElementById('revF');
+  if(isSun&&!done){p.innerHTML='📊 <strong style="color:var(--purple)">Sunday Review!</strong>';f.style.display='block';const ws=wkStats();document.getElementById('revSts').innerHTML='<strong>'+ws.ses+'</strong> sessions · <strong>'+ws.min+'</strong> min · <strong>'+ws.days+'</strong>/7 days'+(ws.perf?' · <strong>'+ws.perf+'</strong> perfect':'')}
+  else{p.innerHTML=done?'✅ Review done. Next: Sunday.':'📊 Next review: Sunday.';f.style.display='none'}
+  const h=document.getElementById('revH');if(!Array.isArray(rvs)||!rvs.length){h.innerHTML='';return}
+  let html='';rvs.slice(0,5).forEach(r=>{html+='<div class="rev-e"><div class="re-d">'+r.date+'</div>'+(r.good?'<div class="re-g">✅ '+r.good+'</div>':'')+(r.improve?'<div class="re-i">🎯 '+r.improve+'</div>':'')+'</div>'});h.innerHTML=html}
+function savRev(){const g=document.getElementById('revG').value.trim();const im=document.getElementById('revI').value.trim();if(!g&&!im){toast('Write something','error');return}
+  let rvs=sg('dp_reviews',[]);if(!Array.isArray(rvs))rvs=[];rvs.unshift({week:wkKey(new Date()),date:dS(),good:g,improve:im});if(rvs.length>5000)rvs=rvs.slice(0,5000);
+  localStorage.setItem('dp_reviews',JSON.stringify(rvs));document.getElementById('revG').value='';document.getElementById('revI').value='';renderRev();renderLvl();
+  
+  // 🔄 AUTO-DOWNLOAD after weekly review
+  createAutoBackup('Review');
+  
+  toast('📊 Review saved! +50 XP','success')}
+
+// ═══ LETTERS ═══
+function savLet(day){const t=document.getElementById('lt'+day+'T').value.trim();if(!t){toast('Write to your future self','error');return}
+  let lts=sg('dp_letters',{});if(typeof lts!=='object')lts={};lts['d'+day]={text:t,written:dS(),sealed:true,opened:false};localStorage.setItem('dp_letters',JSON.stringify(lts));renderLets();toast('💌 Sealed for Day '+day,'success')}
+function openLet(day){let lts=sg('dp_letters',{});if(lts['d'+day]){lts['d'+day].opened=true;lts['d'+day].openedDate=dS();localStorage.setItem('dp_letters',JSON.stringify(lts));renderLets();toast('💌 Letter opened!','success')}}
+function renderLets(){const lts=sg('dp_letters',{});const s=cSt();const td=s.tD;
+  [90,180].forEach(day=>{const slot=document.getElementById('ls'+day);const body=document.getElementById('lbody'+day);const badge=document.getElementById('lb'+day);const data=lts['d'+day];
+    slot.classList.remove('sealed','opened');
+    if(!data||!data.sealed){badge.textContent='Write';badge.className='let-b';body.innerHTML='<textarea class="let-ta" id="lt'+day+'T" rows="3" placeholder="Dear future me..."></textarea><button class="let-sb" onclick="savLet('+day+')">Seal 💌</button>'}
+    else if(!data.opened&&td<day){slot.classList.add('sealed');badge.textContent='🔒 Day '+day;badge.className='let-b sb';body.innerHTML='<div class="let-sm">Sealed '+data.written+'. Opens in '+(day-td)+' days.</div>'}
+    else if(!data.opened&&td>=day){slot.classList.add('sealed');badge.textContent='🎉 OPEN!';badge.className='let-b ob';body.innerHTML='<div class="let-sm">Written '+data.written+'. You reached Day '+day+'!</div><button class="let-sb" style="background:var(--green);margin-top:8px" onclick="openLet('+day+')">Open 💌</button>'}
+    else{slot.classList.add('opened');badge.textContent='✓';badge.className='let-b ob';body.innerHTML='<div class="let-om">'+data.text+'</div><div style="font-size:10px;color:var(--dim);margin-top:6px">Written '+data.written+' · Opened '+data.openedDate+'</div>'}})}
+
+// ═══ SLEEP ═══
+function savSlp(){const v=parseFloat(document.getElementById('slpI').value);if(!v||v<0||v>16){toast('⚠️ 0-16','error');return}let log=sg('dp_sleep',[]);if(!Array.isArray(log))log=[];log.unshift({date:dS(),hours:v});if(log.length>5000)log=log.slice(0,5000);localStorage.setItem('dp_sleep',JSON.stringify(log));document.getElementById('slpI').value='';renderSlp();
+  
+  // 🔄 AUTO-DOWNLOAD after sleep logged
+  createAutoBackup('Sleep');
+  
+  toast('🌙 '+v+'h','info')}
+function renderSlp(){const log=sg('dp_sleep',[]);const el=document.getElementById('slpL');if(!Array.isArray(log)||!log.length){el.innerHTML='';return}let h='';log.slice(0,4).forEach(e=>{const q=e.hours>=8?'good':e.hours>=6?'ok':'bad';h+='<div class="sle"><span>'+e.date+'</span><span style="font-weight:700;font-family:monospace">'+e.hours+'h</span><span class="sq '+q+'">'+(e.hours>=8?'Great':e.hours>=6?'OK':'Low')+'</span></div>'});el.innerHTML=h}
+
+// ═══ CALENDAR (DST-SAFE) ═══
+function renderCal(){
+  const g=document.getElementById('calG');
+  const log=gL();
+  const today=dayAgo(0);
+
+  // Month label
+  const ml=document.getElementById('calMonth');
+  if(ml)ml.textContent=today.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+  let h='';['Mo','Tu','We','Th','Fr','Sa','Su'].forEach(d=>{h+='<div class="cal-l">'+d+'</div>'});
+
+  // Show 5 weeks = 35 days back
+  const sd=dayAgo(34);
+  let dow=sd.getDay();dow=dow===0?6:dow-1;
+  for(let i=0;i<dow;i++)h+='<div class="cal-d pad"></div>';
+
+  for(let i=34;i>=0;i--){
+    const d=dayAgo(i);
+    const data=log[d.toDateString()];
+    const p=data&&data.practices?data.practices:{};
+    const hasMed=!!p.med, hasNsdr=!!p.nsdr, hasMdo=!!p.mdo;
+    const count=[hasMed,hasNsdr,hasMdo].filter(Boolean).length;
+    const perfect=count===3;
+    const isToday=i===0;
+
+    let cls='cal-d';
+    if(isToday)cls+=' today';
+    if(perfect)cls+=' perfect';
+
+    // Background fill overlay
+    let fill='';
+    if(perfect){
+      fill='<div class="cal-fill perfect"></div>';
+    } else {
+      if(hasMed)fill+='<div class="cal-fill med" style="opacity:1"></div>';
+      if(hasNsdr)fill+='<div class="cal-fill nsdr" style="opacity:1"></div>';
+      if(hasMdo)fill+='<div class="cal-fill mdo" style="opacity:1"></div>';
+    }
+
+    // Day number
+    const dayColor=isToday?'var(--gold)':count===3?'#fff':count>0?'rgba(240,242,245,0.9)':'var(--dim)';
+    const dn='<div class="cal-dn" style="color:'+dayColor+'">'+d.getDate()+'</div>';
+
+    // Bottom colored bars — one per completed practice
+    let bars='<div class="cal-bars">';
+    bars+='<div class="cal-bar med'+(hasMed?' active':'')+'"></div>';
+    bars+='<div class="cal-bar nsdr'+(hasNsdr?' active':'')+'"></div>';
+    bars+='<div class="cal-bar mdo'+(hasMdo?' active':'')+'"></div>';
+    bars+='</div>';
+
+    // Emoji icons for completed practices
+    let icons='';
+    if(count>0){
+      icons='<div class="cal-icons">';
+      if(hasMed)icons+='<span style="color:#b388ff">🧘</span>';
+      if(hasNsdr)icons+='<span style="color:#448aff">🌊</span>';
+      if(hasMdo)icons+='<span style="color:#00e5ff">⚡</span>';
+      icons+='</div>';
+    }
+
+    // Perfect day star burst
+    const star=perfect?'<div style="position:absolute;top:2px;right:2px;font-size:6px;line-height:1">⭐</div>':'';
+
+    // Tooltip via title
+    let tip=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    if(perfect)tip+=' · 🌟 Perfect!';
+    else{if(hasMed)tip+=' · 🧘 Med';if(hasNsdr)tip+=' · 🌊 NSDR';if(hasMdo)tip+=' · ⚡ MDO';}
+
+    h+='<div class="'+cls+'" title="'+tip+'">'+fill+dn+icons+bars+star+'</div>';
+  }
+  g.innerHTML=h;
+}
+
+// ═══ QUOTE ═══
+function showQ(){document.getElementById('quoteT').textContent=QTS[Math.floor(Math.random()*QTS.length)]}
+
+// ═══ MILESTONES (DST-SAFE) ═══
+function checkMS(){const s=cSt();const sk=cOS();const ms2=cTS('mdo');const ms3=cTS('med');
+  let bO=0,bM=0,tO=0,tM=0;const log=gL();for(let i=0;i<5000;i++){const ds=dayAgo(i).toDateString();const hd=log[ds]&&log[ds].practices;if(hd&&Object.keys(hd).length>0){tO++;bO=Math.max(bO,tO)}else tO=0;if(hd&&hd.mdo){tM++;bM=Math.max(bM,tM)}else tM=0}
+  document.getElementById('iBs').textContent=bO;document.getElementById('iBm').textContent=bM;
+  const ms=[
+    {id:'g1',i:'🔥',t:'First Practice',d:'Log 1',xp:20,c:()=>s.tD>=1},{id:'g3',i:'📅',t:'3-Day Streak',d:'3 days',xp:30,c:()=>sk>=3},
+    {id:'g7',i:'📅',t:'7-Day Streak',d:'Full week',xp:50,c:()=>sk>=7},{id:'g14',i:'📅',t:'14-Day',d:'Two weeks',xp:75,c:()=>sk>=14},
+    {id:'g21',i:'🧠',t:'21-Day Habit',d:'Habit formed',xp:100,c:()=>sk>=21},{id:'g30',i:'📅',t:'30-Day',d:'One month',xp:150,c:()=>sk>=30},
+    {id:'g60',i:'📅',t:'60-Day',d:'Two months',xp:200,c:()=>sk>=60},{id:'g90',i:'📅',t:'90-Day',d:'Quarter year',xp:300,c:()=>sk>=90},
+    {id:'p5',i:'🌟',t:'5 Perfect',d:'All 3 ×5',xp:50,c:()=>s.pD>=5},{id:'p15',i:'🌟',t:'15 Perfect',d:'All 3 ×15',xp:100,c:()=>s.pD>=15},
+    {id:'p30',i:'🌟',t:'30 Perfect',d:'All 3 ×30',xp:200,c:()=>s.pD>=30},
+    {id:'t100',i:'⏱️',t:'100 Min',d:'Total',xp:30,c:()=>s.tM>=100},{id:'t500',i:'⏱️',t:'500 Min',d:'8+ hrs',xp:75,c:()=>s.tM>=500},
+    {id:'t1k',i:'⏱️',t:'1000 Min',d:'16+ hrs',xp:150,c:()=>s.tM>=1000},
+    {id:'md10',i:'🧘',t:'10 Med',d:'10 done',xp:40,c:()=>s.ct.med>=10},{id:'md30',i:'🧘',t:'30 Med',d:'30 done',xp:80,c:()=>s.ct.med>=30},
+    {id:'md7s',i:'🧘',t:'7-Day Med',d:'Streak',xp:60,c:()=>ms3>=7},
+    {id:'ns10',i:'🌊',t:'10 NSDR',d:'10 done',xp:40,c:()=>s.ct.nsdr>=10},{id:'ns30',i:'🌊',t:'30 NSDR',d:'30 done',xp:80,c:()=>s.ct.nsdr>=30},
+    {id:'e1',i:'⚡',t:'First MDO',d:'Started',xp:20,c:()=>s.ct.mdo>=1},{id:'e7',i:'⚡',t:'7-Day MDO',d:'Week',xp:50,c:()=>ms2>=7},
+    {id:'e14',i:'⚡',t:'14-Day MDO',d:'Two weeks',xp:75,c:()=>ms2>=14},{id:'e30',i:'🔥',t:'Phase 1',d:'30 MDO',xp:150,c:()=>s.ct.mdo>=30},
+    {id:'e45',i:'🔥',t:'45 MDO',d:'Halfway',xp:100,c:()=>s.ct.mdo>=45},{id:'e60',i:'⚔️',t:'Phase 2',d:'60 MDO',xp:200,c:()=>s.ct.mdo>=60},
+    {id:'e75',i:'⚔️',t:'75 MDO',d:'Final',xp:150,c:()=>s.ct.mdo>=75},{id:'e90',i:'💎',t:'MDO MASTERY',d:'90 days!',xp:500,c:()=>s.ct.mdo>=90},
+    {id:'e21s',i:'⚡',t:'21-Day MDO',d:'Habit',xp:100,c:()=>ms2>=21},{id:'e30s',i:'⚡',t:'30-Day MDO',d:'Month',xp:150,c:()=>ms2>=30},
+    {id:'eLg',i:'⚡',t:'30min MDO',d:'Extended',xp:50,c:()=>{let f=false;Object.values(gL()).forEach(d=>{if(d.practices&&d.practices.mdo&&d.practices.mdo.duration>=30)f=true});return f}},
+    {id:'rv3',i:'📊',t:'3 Reviews',d:'Reflecting',xp:50,c:()=>(sg('dp_reviews',[])).length>=3},
+    {id:'rv10',i:'📊',t:'10 Reviews',d:'Self-aware',xp:100,c:()=>(sg('dp_reviews',[])).length>=10},
+  ];
+  let ach=sg('dp_milestones',{});if(typeof ach!=='object'||ach===null)ach={};
+  const grid=document.getElementById('msG');let h='',nU=[];
+  ms.forEach(m=>{const done=m.c();if(done&&!ach[m.id]){ach[m.id]=dS();nU.push(m)}h+='<div class="ms-c'+(ach[m.id]?' ach':'')+'"><div class="ms-i">'+(ach[m.id]?m.i:'🔒')+'</div><div class="ms-t">'+m.t+'</div><div class="ms-d">'+m.d+'</div>'+(ach[m.id]?'<div class="ms-dt">✓ '+ach[m.id]+'</div>':'')+'<div class="ms-x">+'+m.xp+'</div></div>'});
+  grid.innerHTML=h;localStorage.setItem('dp_milestones',JSON.stringify(ach));document.getElementById('achCt').textContent=Object.keys(ach).length;
+  if(nU.length>0)nU.forEach((m,i)=>{setTimeout(()=>toast(m.i+' '+m.t+' (+'+m.xp+' XP)','success'),i*1500)})}
+
+// ═══ INSIGHTS (DST-SAFE) ═══
+function renderIns(){const s=cSt();
+  document.getElementById('iAM').textContent=s.ct.med>0?Math.round(s.tt.med/s.ct.med)+'m':'—';
+  document.getElementById('iAN').textContent=s.ct.nsdr>0?Math.round(s.tt.nsdr/s.ct.nsdr)+'m':'—';
+  document.getElementById('iAD').textContent=s.ct.mdo>0?Math.round(s.tt.mdo/s.ct.mdo)+'m':'—';
+  let mo='—';const mx=Math.max(s.ct.med,s.ct.nsdr,s.ct.mdo);if(mx>0){if(s.ct.mdo===mx)mo='⚡MDO';else if(s.ct.med===mx)mo='🧘Med';else mo='🌊NSDR'}document.getElementById('iMo').textContent=mo;
+  let wS=0;const log=gL();const wa=dayAgo(7);Object.keys(log).forEach(k=>{if(new Date(k)>=wa)wS+=Object.keys(log[k].practices||{}).length});document.getElementById('iWk').textContent=wS;
+  const keys=Object.keys(log);if(keys.length>0){const sorted=keys.sort((a,b)=>new Date(a)-new Date(b));const first=new Date(sorted[0]);first.setHours(12,0,0,0);const now=new Date();now.setHours(12,0,0,0);const dsF=Math.max(1,Math.round((now-first)/864e5));document.getElementById('iRt').textContent=Math.round((s.tD/dsF)*100)+'%'}else{document.getElementById('iRt').textContent='—'}}
+
+// ═══ MANUAL EXPORT / IMPORT ═══
+function expD(){const d={};DKS.forEach(k=>{const v=localStorage.getItem(k);if(v!==null){try{d[k]=JSON.parse(v)}catch(e){d[k]=v}}});d._app='Daily Practices';d._date=new Date().toISOString();
+  const j=JSON.stringify(d,null,2);const fn='practice-'+new Date().toISOString().slice(0,10)+'.json';
+  if(window.showSaveFilePicker){window.showSaveFilePicker({suggestedName:fn,types:[{description:'JSON',accept:{'application/json':['.json']}}]}).then(h=>h.createWritable()).then(w=>{w.write(j);return w.close()}).then(()=>toast('✅ Saved!','success')).catch(e=>{if(e.name!=='AbortError')fbE(j,fn)});return}fbE(j,fn)}
+function fbE(j,fn){try{const a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(j);a.download=fn;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),300);toast('✅ '+fn,'success')}catch(e){toast('❌ Failed','error')}}
+function impD(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);let n=0;DKS.forEach(k=>{if(d[k]!==undefined){localStorage.setItem(k,typeof d[k]==='string'?d[k]:JSON.stringify(d[k]));n++}});refreshAll();toast('✅ Restored '+n,'success')}catch(e){toast('❌ Error','error')}ev.target.value=''};r.readAsText(f)}
+
+// ═══ DATE ═══
+function showDt(){document.getElementById('dateD').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
+
+// ═══ REFRESH ═══
+function refreshAll(){renderCards();renderHists();renderStreaks();renderStats();renderMDO();renderLvl();renderCal();checkMS();renderIns();renderSlp();renderCommit();renderWhy();renderShields();renderRev();renderLets();checkStreakWarn()}
+
+document.addEventListener('DOMContentLoaded',()=>{showDt();showQ();autoShield();refreshAll();
+  document.getElementById('slpI').addEventListener('keydown',e=>{if(e.key==='Enter')savSlp()})});
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  // Notice we imported signInWithRedirect instead of signInWithPopup
+  import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBNhpnU9EXqLKeiIVQv0qOew75skQxv8xU",
+    authDomain: "ibro-83f84.firebaseapp.com",
+    projectId: "ibro-83f84",
+    storageBucket: "ibro-83f84.firebasestorage.app",
+    messagingSenderId: "888130214428",
+    appId: "1:888130214428:web:9a71f9484db9f0f640ddd9",
+    measurementId: "G-XYYK8FJTYM"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  const loginBtn = document.getElementById('login-btn');
+  const userInfo = document.getElementById('user-info');
+  
+  // Make sure to match the appKeys array to the specific app you are editing!
+  // This one is for Daily Practices:
+  const appKeys = ['dp_log','dp_milestones','dp_sleep','dp_why','dp_shields','dp_reviews','dp_letters','dp_commit'];
+
+  let currentUser = null;
+
+  // Catch any errors that happen during the redirect
+  getRedirectResult(auth).catch((error) => {
+    alert("Google Login Error: " + error.message);
+  });
+
+  const originalSetItem = localStorage.setItem;
+  localStorage.setItem = function(key, value) {
+    originalSetItem.apply(this, arguments); 
+    if (appKeys.includes(key) && currentUser) {
+      setDoc(doc(db, "userData", currentUser.uid), { [key]: value }, { merge: true }).catch(err => console.error(err));
+    }
+  };
+
+  // Uses Redirect instead of Popup!
+  loginBtn.addEventListener('click', () => {
+    signInWithRedirect(auth, provider).catch(error => {
+      alert("Failed to start login: " + error.message);
+    });
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      loginBtn.style.display = 'none';
+      userInfo.style.display = 'block';
+      userInfo.innerHTML = `☁️ Synced as ${user.email} <button id="logout-btn" style="background:transparent; border:none; color:var(--red); cursor:pointer;">(Logout)</button>`;
+      
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        signOut(auth).then(() => window.location.reload());
+      });
+
+      try {
+        const docSnap = await getDoc(doc(db, "userData", user.uid));
+        if (docSnap.exists()) {
+          const cloudData = docSnap.data();
+          let dataRestored = false;
+          appKeys.forEach(k => {
+            if (cloudData[k]) { 
+              originalSetItem.call(localStorage, k, cloudData[k]); 
+              dataRestored = true; 
+            }
+          });
+          if (dataRestored && typeof refreshAll === 'function') {
+            refreshAll(); 
+            // If the app uses toast function, show it
+            if(typeof toast === 'function') toast('☁️ Cloud data synced!', 'success');
+          }
+        } else {
+          appKeys.forEach(k => {
+            const localData = localStorage.getItem(k);
+            if (localData) localStorage.setItem(k, localData);
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      currentUser = null;
+      loginBtn.style.display = 'block';
+      userInfo.style.display = 'none';
+    }
+  });
+</script>
+</body>
+</html>
