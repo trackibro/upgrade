@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BookForge v2 — Reading Tracker & Insight Builder</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#08080d;--bg2:#10101a;--bg3:#181825;--bg4:#1e1e2e;--bg5:#252535;
+--text:#cdd6f4;--text2:#a6adc8;--text3:#6c7086;
+--accent:#cba6f7;--accent2:#b4befe;
+--green:#a6e3a1;--blue:#89b4fa;--yellow:#f9e2af;
+--orange:#fab387;--red:#f38ba8;--teal:#94e2d5;--pink:#f5c2e7;
+--gray:#585b70;--border:#313244;
+--must:#a6e3a1;--recommended:#89b4fa;--useful:#f9e2af;
+--entertaining:#fab387;--garbage:#585b70;--virus:#f38ba8;
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--gray)}
+::selection{background:var(--accent);color:var(--bg)}
+
+#sidebar{width:250px;min-width:250px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh}
+.logo{padding:20px;border-bottom:1px solid var(--border);text-align:center}
+.logo h1{font-size:20px;color:var(--accent);letter-spacing:2px;font-weight:700}
+.logo span{font-size:10px;color:var(--text3);letter-spacing:3px;text-transform:uppercase;display:block;margin-top:2px}
+.nav{flex:1;padding:10px 0;overflow-y:auto}
+.nav-section{padding:8px 20px 4px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-top:8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 20px;cursor:pointer;color:var(--text2);transition:all .15s;font-size:13px;border-left:3px solid transparent}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg3);color:var(--accent);border-left-color:var(--accent)}
+.nav-item .icon{font-size:16px;width:22px;text-align:center}
+.nav-item .badge{margin-left:auto;background:var(--accent);color:var(--bg);font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700}
+.sidebar-footer{padding:12px 15px;border-top:1px solid var(--border)}
+.sidebar-stat{display:flex;justify-content:space-between;padding:4px 0;font-size:11px;color:var(--text3)}
+.sidebar-stat span:last-child{color:var(--accent);font-weight:600}
+.streak-display{text-align:center;padding:10px;margin:8px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)}
+.streak-display .streak-num{font-size:28px;font-weight:700;color:var(--orange)}
+.streak-display .streak-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+
+#main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+#header{padding:16px 30px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);min-height:64px}
+#header h2{font-size:20px;font-weight:600}
+.header-actions{display:flex;gap:8px;align-items:center}
+#content{flex:1;overflow-y:auto;padding:25px 30px}
+
+.btn{padding:7px 16px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:rgba(243,139,168,.1);color:var(--red);border:1px solid rgba(243,139,168,.2)}
+.btn-danger:hover{background:rgba(243,139,168,.2)}
+.btn-success{background:rgba(166,227,161,.1);color:var(--green);border:1px solid rgba(166,227,161,.2)}
+.btn-success:hover{background:rgba(166,227,161,.2)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-icon{width:34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:14px}
+.btn-icon:hover{border-color:var(--accent);color:var(--accent)}
+
+.search-box{position:relative}
+.search-box input{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 12px 7px 34px;border-radius:8px;font-size:13px;width:220px;outline:none;transition:border-color .2s}
+.search-box input:focus{border-color:var(--accent)}
+.search-box .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px}
+
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.fc{padding:5px 12px;border-radius:16px;font-size:11px;cursor:pointer;border:1px solid var(--border);color:var(--text2);background:transparent;transition:all .15s}
+.fc:hover{border-color:var(--text2)}
+.fc.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.book-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.book-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.3)}
+.book-card .cs{position:absolute;top:0;left:0;right:0;height:3px}
+.book-card h3{font-size:14px;font-weight:600;line-height:1.3;margin-bottom:4px}
+.book-card .author{color:var(--text3);font-size:11px;margin-bottom:10px}
+.book-card .meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.cb{padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.cat-must-read{background:rgba(166,227,161,.1);color:var(--must)}
+.cat-recommended{background:rgba(137,180,250,.1);color:var(--recommended)}
+.cat-useful{background:rgba(249,226,175,.1);color:var(--useful)}
+.cat-entertaining{background:rgba(250,179,135,.1);color:var(--entertaining)}
+.cat-garbage{background:rgba(88,91,112,.12);color:var(--garbage)}
+.cat-idea-virus{background:rgba(243,139,168,.1);color:var(--virus)}
+.cc-must-read{background:var(--must)}
+.cc-recommended{background:var(--recommended)}
+.cc-useful{background:var(--useful)}
+.cc-entertaining{background:var(--entertaining)}
+.cc-garbage{background:var(--garbage)}
+.cc-idea-virus{background:var(--virus)}
+.sd{width:7px;height:7px;border-radius:50%;display:inline-block}
+.sd-not-started{background:var(--gray)}
+.sd-reading{background:var(--blue)}
+.sd-completed{background:var(--green)}
+.sd-abandoned{background:var(--red)}
+.pb{width:100%;height:4px;background:var(--bg);border-radius:2px;margin-top:10px;overflow:hidden}
+.pf{height:100%;border-radius:2px;transition:width .3s;background:var(--accent)}
+.pt{font-size:10px;color:var(--text3);margin-top:4px;display:flex;justify-content:space-between}
+
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center}
+.stat-card .sv{font-size:28px;font-weight:700;color:var(--accent);margin-bottom:2px}
+.stat-card .sl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.section-title{font-size:15px;font-weight:600;margin-bottom:12px;color:var(--text);display:flex;align-items:center;gap:8px}
+.section-title .icon{color:var(--accent)}
+
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
+.modal-overlay.active{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:92%;max-width:750px;max-height:90vh;overflow-y:auto;animation:mi .2s ease}
+@keyframes mi{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.mh{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1;border-radius:16px 16px 0 0}
+.mh h3{font-size:17px;font-weight:600}
+.mb{padding:22px}
+.mf{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:var(--bg2);border-radius:0 0 16px 16px}
+
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fi{display:flex;flex-direction:column;gap:4px}
+.fi.full{grid-column:1/-1}
+.fi label{font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.fi input,.fi select,.fi textarea{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color .2s}
+.fi input:focus,.fi select:focus,.fi textarea:focus{border-color:var(--accent)}
+.fi textarea{resize:vertical;min-height:70px}
+.fi select{cursor:pointer}
+
+.ic{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:8px;transition:all .2s;position:relative}
+.ic:hover{border-color:var(--border)}
+.ic .it{font-size:13px;line-height:1.6;margin-bottom:8px}
+.ic .im{display:flex;gap:8px;align-items:center;font-size:10px;color:var(--text3);flex-wrap:wrap}
+.ic .im .br{color:var(--accent);cursor:pointer}
+.ic .ia{position:absolute;top:10px;right:10px;display:flex;gap:3px;opacity:0;transition:opacity .15s}
+.ic:hover .ia{opacity:1}
+.itag{padding:2px 6px;border-radius:4px;font-size:9px;background:var(--bg);color:var(--text3)}
+
+.detail-header{display:flex;gap:22px;margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--border)}
+.detail-cover{width:100px;min-width:100px;height:145px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:36px}
+.detail-info{flex:1}
+.detail-info h2{font-size:20px;margin-bottom:3px}
+.detail-info .author{color:var(--text3);font-size:13px;margin-bottom:10px}
+.detail-scores{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px}
+.score-item{text-align:center;padding:8px;background:var(--bg);border-radius:8px}
+.score-item .sval{font-size:18px;font-weight:700;color:var(--accent)}
+.score-item .slab{font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+.dtabs{display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid var(--border)}
+.dtab{padding:9px 16px;cursor:pointer;font-size:12px;color:var(--text3);border-bottom:2px solid transparent;transition:all .15s}
+.dtab:hover{color:var(--text)}
+.dtab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tc{display:none}
+.tc.active{display:block}
+
+.plan-phase{margin-bottom:18px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.pp-h{padding:14px 18px;background:var(--bg4);display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.pp-h .num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.pp-h h3{font-size:14px;font-weight:600;flex:1}
+.pp-h .pp{font-size:11px;color:var(--text3)}
+.pb-item{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.pb-item:last-child{border-bottom:none}
+.pb-item:hover{background:var(--bg4)}
+.pb-item .chk{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;transition:all .15s;flex-shrink:0}
+.pb-item.completed .chk{background:var(--green);border-color:var(--green);color:var(--bg)}
+.pb-item.reading .chk{border-color:var(--blue);color:var(--blue)}
+.pb-item .bi{flex:1;min-width:0}
+.pb-item .bi .t{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb-item .bi .a{font-size:10px;color:var(--text3)}
+
+.action-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.action-item:last-child{border-bottom:none}
+.action-check{width:18px;height:18px;border-radius:4px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:2px;transition:all .15s}
+.action-check.done{background:var(--green);border-color:var(--green);color:var(--bg)}
+.action-text{flex:1;font-size:13px;line-height:1.5}
+.action-text.done{text-decoration:line-through;color:var(--text3)}
+.lev-badge{background:var(--accent);color:var(--bg);padding:2px 5px;border-radius:4px;font-size:9px;font-weight:700;margin-left:6px;white-space:nowrap}
+
+.timer-display{font-size:48px;font-weight:700;color:var(--accent);text-align:center;font-variant-numeric:tabular-nums;letter-spacing:2px}
+.timer-controls{display:flex;gap:10px;justify-content:center;margin-top:15px}
+
+.session-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:12px}
+.session-item .s-date{color:var(--text3);min-width:90px}
+.session-item .s-duration{color:var(--accent);font-weight:600;min-width:60px}
+.session-item .s-pages{color:var(--green);min-width:70px}
+.session-item .s-book{flex:1;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* --- PREMIUM 3D FLASHCARD STYLES --- */
+.fc-session-header { background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:15px 20px; margin-bottom:30px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 15px rgba(0,0,0,0.1); }
+.fc-progress-bg { flex:1; height:8px; background:var(--bg); border-radius:4px; margin:0 20px; overflow:hidden; }
+.fc-progress-fill { height:100%; background:linear-gradient(90deg, var(--blue), var(--green)); transition:width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+
+.fc-wrap { position:relative; max-width:550px; margin:0 auto; height:320px; perspective:1200px; }
+.fc-stack-1, .fc-stack-2 { position:absolute; top:0; left:0; width:100%; height:100%; background:var(--bg4); border:1px solid var(--border); border-radius:20px; z-index:-1; transition:all 0.3s; }
+.fc-stack-1 { transform:translateY(12px) scale(0.96); opacity:0.6; }
+.fc-stack-2 { transform:translateY(24px) scale(0.92); opacity:0.3; }
+
+.fc-inner { position:relative; width:100%; height:100%; text-align:center; transition:transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style:preserve-3d; cursor:pointer; box-shadow:0 15px 35px rgba(0,0,0,0.25); border-radius:20px; }
+.fc-inner.flipped { transform:rotateY(180deg); }
+
+.fc-face { position:absolute; width:100%; height:100%; backface-visibility:hidden; background:var(--bg3); border:1px solid var(--border); border-radius:20px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; transition:border-color 0.3s; }
+.fc-face:hover { border-color:var(--accent); }
+.fc-front { z-index:2; }
+.fc-back { transform:rotateY(180deg); background:var(--bg2); border:2px solid var(--accent); }
+
+.fc-blank { display:inline-block; min-width:40px; border-bottom:2px solid var(--accent); color:transparent; user-select:none; margin:0 4px; background:rgba(203, 166, 247, 0.1); border-radius:4px 4px 0 0; }
+.fc-book-badge { position:absolute; top:20px; left:50%; transform:translateX(-50%); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; background:var(--bg); padding:4px 12px; border-radius:20px; color:var(--text2); border:1px solid var(--border); white-space:nowrap; }
+
+.fc-actions { display:flex; gap:15px; justify-content:center; margin-top:35px; opacity:0; transform:translateY(10px); transition:all 0.4s 0.2s; pointer-events:none; }
+.fc-actions.show { opacity:1; transform:translateY(0); pointer-events:auto; }
+.btn-fc { flex:1; max-width:200px; padding:12px; font-size:14px; font-weight:600; border-radius:12px; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.2s; cursor:pointer; border:none; }
+.btn-fc-bad { background:rgba(243, 139, 168, 0.1); color:var(--red); border:1px solid rgba(243, 139, 168, 0.3); }
+.btn-fc-bad:hover { background:rgba(243, 139, 168, 0.2); transform:translateY(-2px); }
+.btn-fc-good { background:rgba(166, 227, 161, 0.1); color:var(--green); border:1px solid rgba(166, 227, 161, 0.3); }
+.btn-fc-good:hover { background:rgba(166, 227, 161, 0.2); transform:translateY(-2px); }
+
+.backup-banner{background:rgba(249,226,175,.08);border:1px solid rgba(249,226,175,.2);border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:12px;margin-bottom:18px;font-size:12px;color:var(--yellow)}
+.empty{text-align:center;padding:50px 20px;color:var(--text3)}
+.empty .icon{font-size:42px;margin-bottom:12px}
+.empty p{font-size:13px;margin-bottom:15px}
+
+.toast{position:fixed;bottom:25px;right:25px;background:var(--bg4);border:1px solid var(--border);color:var(--text);padding:10px 18px;border-radius:10px;font-size:13px;z-index:2000;display:none;box-shadow:0 8px 25px rgba(0,0,0,.4);animation:ti .25s ease}
+.toast.show{display:flex;align-items:center;gap:8px}
+@keyframes ti{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+.toast.warning{border-left:3px solid var(--yellow)}
+
+.compare-table{width:100%;border-collapse:collapse;font-size:12px}
+.compare-table th{text-align:left;padding:10px;color:var(--text3);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;background:var(--bg)}
+.compare-table td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.compare-table tr:hover td{background:var(--bg3)}
+.compare-table .score-cell{text-align:center;font-weight:600}
+.score-high{color:var(--green)}
+.score-mid{color:var(--yellow)}
+.score-low{color:var(--red)}
+
+.settings-section{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px}
+.settings-section h3{font-size:14px;margin-bottom:10px;color:var(--accent)}
+.settings-section p{font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5}
+
+kbd{background:var(--bg);padding:2px 7px;border-radius:4px;color:var(--accent);font-size:11px;border:1px solid var(--border)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:900px){.two-col{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div id="sidebar"></div>
+<div id="main">
+  <div id="header"></div>
+  <div id="content"></div>
+</div>
+<div class="modal-overlay" id="mo"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== CONFIG ====================
+const CATS={'must-read':{l:'Must Read',c:'var(--must)'},'recommended':{l:'Recommended',c:'var(--recommended)'},'useful':{l:'Useful',c:'var(--useful)'},'entertaining':{l:'Entertaining',c:'var(--entertaining)'},'garbage':{l:'Garbage',c:'var(--garbage)'},'idea-virus':{l:'Idea Virus',c:'var(--virus)'}};
+const STATS=['not-started','reading','completed','abandoned'];
+const PHASES={1:'Fix Your Foundation',2:'Understand Women (Science)',3:'Attract & Connect',4:'Masculine Development',5:'Long-Term Mastery',6:'Bonus',0:'Not Assigned'};
+const DB_NAME='bookforge_db';const DB_VER=1;const STORE='data';
+
+// ==================== UID ====================
+function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,9)}
+
+// ==================== DEFAULT BOOKS ====================
+const DEFAULTS=[
+{id:uid(),title:"No More Mr. Nice Guy",author:"Robert Glover",category:"must-read",phase:1,status:"not-started",progress:0,currentPage:0,totalPages:224,rating:9.5,insights:[],actions:[],notes:"Read FIRST. Fixes covert contracts, people-pleasing, Nice Guy Syndrome.",color:"#a6e3a1",leverageScore:10,lindyScore:8,truthScore:9,usefulnessScore:10,uniqueIdeasScore:8,overallScore:9.5,dateAdded:new Date().toISOString(),dateStarted:"",dateCompleted:"",sessions:[]},
+{id:uid(),title:"Attached",author:"Amir Levine & Rachel Heller",category:"must-read",phase:1,status:"not-started",progress:0,currentPage:0,totalPages:304,rating:8.5,insights:[],actions:[],notes:"Attachment theory. Anxious-avoidant trap.",color:"#89b4fa",leverageScore:8,lindyScore:8,truthScore:9,usefulnessScore:9,uniqueIdeasScore:8,overallScore:8.5,dateAdded:new Date().toISOString(),dateStarted:"",dateCompleted:"",sessions:[]}
+];
+
+// ==================== STATE ====================
+let S={books:[],view:'dashboard',filter:{cat:'all',status:'all',q:''},detailId:null,detailTab:'insights',timerBook:null,timerStart:null,timerElapsed:0,timerRunning:false,timerInterval:null,dailyGoal:30,readingLog:[]};
+
+// ==================== INDEXEDDB ====================
+let db=null;
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{e.target.result.createObjectStore(STORE)};r.onsuccess=e=>{db=e.target.result;res(db)};r.onerror=e=>rej(e)})}
+function idbSave(data){return new Promise((res,rej)=>{if(!db)return res();const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(data,'state');tx.oncomplete=()=>res();tx.onerror=e=>rej(e)})}
+function idbLoad(){return new Promise((res,rej)=>{if(!db)return res(null);const tx=db.transaction(STORE,'readonly');const r=tx.objectStore(STORE).get('state');r.onsuccess=()=>res(r.result||null);r.onerror=e=>rej(e)})}
+
+// ==================== SAVE / LOAD ====================
+function getSaveData(){return{books:S.books,dailyGoal:S.dailyGoal,readingLog:S.readingLog,lastBackup:new Date().toISOString(),version:2}}
+async function save(){
+  const d=getSaveData();
+  localStorage.setItem('bookforge_v2',JSON.stringify(d));
+  try{await idbSave(d)}catch(e){}
+}
+async function load(){
+  let d=null;
+  const ls=localStorage.getItem('bookforge_v2');
+  if(ls){try{d=JSON.parse(ls)}catch(e){}}
+  if(!d){try{d=await idbLoad()}catch(e){}}
+  if(!d){const old=localStorage.getItem('bookforge_data');if(old){try{const books=JSON.parse(old);d={books:books.map(b=>({...b,actions:b.actions||[],sessions:b.sessions||[]})),dailyGoal:30,readingLog:[]}}catch(e){}}}
+  if(d&&d.books&&d.books.length){
+    S.books=d.books.map(b=>({...b,actions:b.actions||[],sessions:b.sessions||[],leverageScore:b.leverageScore||1}));
+    S.dailyGoal=d.dailyGoal||30;
+    S.readingLog=d.readingLog||[];
+  }
+  else{S.books=DEFAULTS.map(b=>({...b,id:uid()}));save()}
+}
+
+function checkBackup(){
+  const d=getSaveData();
+  const last=d.lastBackup?new Date(d.lastBackup):null;
+  const now=new Date();
+  if(!last||now-last>7*24*60*60*1000)return true;
+  return false;
+}
+
+// ==================== AUTO-DOWNLOAD SYSTEM ====================
+function createAutoBackup() {
+  try {
+    const d = getSaveData();
+    const j = JSON.stringify(d, null, 2);
+    const blob = new Blob([j], {type: 'application/json'});
+    const fn = 'book-' + getTodayKey() + '.json';
+    dl(blob, fn);
+  } catch(e) {
+    console.error('Auto-backup failed:', e);
+  }
+}
+
+// ==================== TOAST ====================
+function toast(msg,type='success'){const t=document.getElementById('toast');t.innerHTML=`${type==='success'?'✅':type==='error'?'❌':'⚠️'} ${msg}`;t.className='toast show '+type;clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500)}
+
+// ==================== HELPERS ====================
+function getBook(id){return S.books.find(b=>b.id===id)}
+function scoreColor(s){return s>=8?'score-high':s>=6?'score-mid':'score-low'}
+function fmtTime(sec){const h=Math.floor(sec/3600);const m=Math.floor((sec%3600)/60);const s=sec%60;return h?`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${m}:${String(s).padStart(2,'0')}`}
+function fmtMins(m){const h=Math.floor(m/60);const r=m%60;return h?`${h}h ${r}m`:`${r}m`}
+function getTodayKey(){return new Date().toISOString().slice(0,10)}
+function getTodayMins(){return(S.readingLog.find(r=>r.date===getTodayKey())||{mins:0}).mins}
+function getTodayPages(){return(S.readingLog.find(r=>r.date===getTodayKey())||{pages:0}).pages||0}
+function getStreak(){const log=S.readingLog.sort((a,b)=>b.date.localeCompare(a.date));let streak=0;const today=new Date();for(let i=0;i<90;i++){const d=new Date(today);d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);if(log.find(r=>r.date===k&&r.mins>=S.dailyGoal))streak++;else if(i>0)break}return streak}
+function getReaderLevel(p){
+    if(p<1000)return{l:'Novice',m:1000};
+    if(p<3000)return{l:'Seeker',m:3000};
+    if(p<10000)return{l:'Scholar',m:10000};
+    if(p<25000)return{l:'Master',m:25000};
+    return{l:'Sage',m:p||1};
+}
+
+// ==================== RENDER ====================
+function render(){renderSidebar();renderHeader();
+switch(S.view){case'dashboard':renderDashboard();break;case'library':renderLibrary();break;case'plan':renderPlan();break;case'insights':renderInsights();break;case'timer':renderTimer();break;case'flashcards':renderFlashcards();break;case'compare':renderCompare();break;case'sessions':renderSessions();break;case'settings':renderSettings();break}}
+
+function renderSidebar(){
+  const b=S.books,completed=b.filter(x=>x.status==='completed').length,reading=b.filter(x=>x.status==='reading').length,pages=b.reduce((a,x)=>a+x.currentPage,0),ins=b.reduce((a,x)=>a+x.insights.length,0),streak=getStreak();
+  const lvl=getReaderLevel(pages);const lvlPct=pages>=lvl.m?100:Math.round((pages/lvl.m)*100);
+  document.getElementById('sidebar').innerHTML=`
+  <div class="logo"><h1>📖 BookForge</h1><span>v2.0 · Track · Read · Grow</span></div>
+  <div class="nav">
+    <div class="nav-section">Main</div>
+    ${navItem('dashboard','📊','Dashboard')}
+    ${navItem('library','📚','Library',b.length)}
+    ${navItem('plan','🗺️','Reading Plan')}
+    <div class="nav-section">Tools</div>
+    ${navItem('timer','⏱️','Reading Timer',S.timerRunning?'●':'')}
+    ${navItem('insights','💡','Insights',ins)}
+    ${navItem('flashcards','🧠','Flashcards')}
+    ${navItem('sessions','📅','Sessions')}
+    ${navItem('compare','⚖️','Compare Books')}
+    <div class="nav-section">System</div>
+    ${navItem('settings','⚙️','Settings')}
+  </div>
+  <div class="streak-display">
+    <div class="streak-num">🔥 ${streak}</div><div class="streak-label">Day Streak</div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+        <div class="streak-num" style="color:var(--accent);font-size:24px">${pages.toLocaleString()}</div>
+        <div class="streak-label">Total Pages Read</div>
+    </div>
+  </div>
+  <div style="padding:10px 15px;border-top:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:1px"><span>${lvl.l}</span><span>${lvlPct}%</span></div>
+      <div style="width:100%;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:100%;width:${lvlPct}%;background:var(--accent)"></div></div>
+  </div>`;
+}
+function navItem(id,icon,label,badge){return`<div class="nav-item ${S.view===id?'active':''}" onclick="nav('${id}')"><span class="icon">${icon}</span>${label}${badge!==undefined&&badge!==''?`<span class="badge">${badge}</span>`:''}</div>`}
+
+function renderHeader(){
+  const titles={dashboard:'Dashboard',library:'Library',plan:'Reading Plan',insights:'Insights',timer:'Reading Timer',flashcards:'Active Recall Flashcards',compare:'Compare Books',sessions:'Reading Sessions',settings:'Settings'};
+  let a='';
+  if(S.view==='library')a=`<div class="header-actions"><div class="search-box"><span class="si">🔍</span><input placeholder="Search..." value="${S.filter.q}" oninput="S.filter.q=this.value;renderLibrary()"></div><button class="btn btn-primary" onclick="openAddBook()">+ Add Book</button></div>`;
+  else if(S.view==='insights')a=`<div class="header-actions"><div class="search-box"><span class="si">🔍</span><input placeholder="Search insights..." id="isq" oninput="renderInsights()"></div><button class="btn btn-secondary" onclick="exportInsightsMD()">📋 Export MD</button></div>`;
+  document.getElementById('header').innerHTML=`<h2>${titles[S.view]||''}</h2>${a}`;
+}
+
+// ==================== DASHBOARD ====================
+function renderDashboard(){
+  const b=S.books,completed=b.filter(x=>x.status==='completed').length,reading=b.filter(x=>x.status==='reading'),pages=b.reduce((a,x)=>a+x.currentPage,0);
+  const totalActs=b.reduce((a,x)=>a+(x.actions||[]).length,0);
+  const doneActs=b.reduce((a,x)=>a+(x.actions||[]).filter(ac=>ac.done).length,0);
+  const implRate=totalActs?Math.round((doneActs/totalActs)*100):0;
+  const ratedBooks=b.filter(x=>x.leverageScore>0);
+  const avgLeverage=ratedBooks.length?(ratedBooks.reduce((a,x)=>a+x.leverageScore,0)/ratedBooks.length).toFixed(1):'1.0';
+
+  const todayMins=getTodayMins(),todayPages=getTodayPages(),goalPct=Math.min(100,Math.round(todayMins/S.dailyGoal*100));
+  const needsBackup=checkBackup();
+  let recentIns=b.flatMap(bk=>bk.insights.map(i=>({...i,bookTitle:bk.title,bookColor:bk.color,bookId:bk.id}))).sort((a,c)=>new Date(c.date)-new Date(a.date)).slice(0,4);
+  
+  document.getElementById('content').innerHTML=`
+  ${needsBackup?`<div class="backup-banner"><span class="bb-icon">⚠️</span><span class="bb-text">It's been a while since your last backup. Export your data to keep it safe!</span><button class="btn btn-sm btn-secondary" onclick="exportJSON()">Export Now</button></div>`:''}
+  <div class="stats-grid" style="grid-template-columns:repeat(5,1fr)">
+    <div class="stat-card"><div class="sv">${b.length}</div><div class="sl">Total Books</div></div>
+    <div class="stat-card"><div class="sv">${pages.toLocaleString()}</div><div class="sl">Pages Read</div></div>
+    <div class="stat-card"><div class="sv">${avgLeverage}x</div><div class="sl">Avg Leverage</div></div>
+    <div class="stat-card" title="Percentage of Action Items Completed"><div class="sv" style="color:${implRate>=50?'var(--green)':'var(--orange)'}">${implRate}%</div><div class="sl">Action Rate</div></div>
+    <div class="stat-card"><div class="sv">${totalActs-doneActs}</div><div class="sl">Open Actions</div></div>
+  </div>
+  
+  <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;display:flex;gap:30px;align-items:center">
+    <div style="flex:1">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:600">📅 Today's Time Goal: ${fmtMins(todayMins)} / ${fmtMins(S.dailyGoal)}</span>
+        <span style="font-size:12px;color:var(--text3)">${goalPct}%</span>
+      </div>
+      <div style="width:100%;height:8px;background:var(--bg);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${goalPct}%;background:${goalPct>=100?'var(--green)':'var(--accent)'};border-radius:4px;transition:width .3s"></div>
+      </div>
+    </div>
+    <div style="padding-left:30px;border-left:1px solid var(--border);min-width:150px">
+      <span style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Pages Today</span>
+      <div style="font-size:24px;font-weight:700;color:var(--green)">+${todayPages} <span style="font-size:12px;color:var(--text3);font-weight:400">pgs</span></div>
+    </div>
+  </div>
+  
+  <div class="two-col">
+    <div>
+      <div class="section-title"><span class="icon">📖</span> Currently Reading</div>
+      ${reading.length?reading.map(bk=>`<div class="session-item" style="cursor:pointer" onclick="openDetail('${bk.id}')">
+        <div style="width:6px;height:30px;border-radius:3px;background:${bk.color}"></div>
+        <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${bk.title}</div><div style="font-size:10px;color:var(--text3)">${bk.author}</div></div>
+        <div style="text-align:right"><div style="width:60px;height:4px;background:var(--bg);border-radius:2px;overflow:hidden"><div style="height:100%;width:${bk.progress}%;background:var(--accent);border-radius:2px"></div></div><div style="font-size:10px;color:var(--text3);margin-top:2px">${bk.progress}%</div></div>
+      </div>`).join(''):'<div class="empty"><p>No books in progress</p><button class="btn btn-sm btn-primary" onclick="nav(\'library\')">Browse Library</button></div>'}
+      
+      <div style="margin-top:20px">
+        <div class="section-title"><span class="icon">⚡</span> Highest Leverage Actions</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)">Apply what you read. These open actions are sorted by their book's Leverage Multiplier.</div>
+        ${renderOpenActions()}
+      </div>
+    </div>
+    <div>
+      <div class="section-title"><span class="icon">💡</span> Recent Insights</div>
+      ${recentIns.length?recentIns.map(i=>`<div class="ic"><div class="it">"${esc(i.text)}"</div><div class="im"><span class="br" onclick="openDetail('${i.bookId}')">📖 ${esc(i.bookTitle)}</span><span>${new Date(i.date).toLocaleDateString()}</span></div></div>`).join(''):'<div class="empty"><p>No insights yet</p></div>'}
+    </div>
+  </div>`;
+}
+function renderOpenActions(){
+  let all=S.books.flatMap(bk=>(bk.actions||[]).filter(a=>!a.done).map(a=>({...a,bookId:bk.id,bookTitle:bk.title,leverage:bk.leverageScore||1}))).sort((a,b)=>b.leverage-a.leverage).slice(0,7);
+  if(!all.length)return'<div style="font-size:12px;color:var(--text3);padding:8px">All caught up! Excellent implementation. ✅</div>';
+  return all.map(a=>`<div class="action-item"><div class="action-check" onclick="event.stopPropagation();toggleAction('${a.bookId}','${a.id}')"></div><div class="action-text"><span style="color:var(--accent);font-size:11px">${esc(a.bookTitle)}</span> <span class="lev-badge" title="Leverage Multiplier">${a.leverage}x</span><br>${esc(a.text)}</div></div>`).join('');
+}
+
+// ==================== LIBRARY ====================
+function renderLibrary(){
+  let books=S.books.filter(b=>{
+    if(S.filter.cat!=='all'&&b.category!==S.filter.cat)return false;
+    if(S.filter.status!=='all'&&b.status!==S.filter.status)return false;
+    if(S.filter.q&&!b.title.toLowerCase().includes(S.filter.q.toLowerCase())&&!b.author.toLowerCase().includes(S.filter.q.toLowerCase()))return false;
+    return true;
+  });
+  document.getElementById('content').innerHTML=`
+  <div class="filters">
+    <div class="fc ${S.filter.cat==='all'?'active':''}" onclick="sf('cat','all')">All</div>
+    ${Object.keys(CATS).map(k=>`<div class="fc ${S.filter.cat===k?'active':''}" onclick="sf('cat','${k}')">${CATS[k].l}</div>`).join('')}
+    <span style="color:var(--border);padding:0 4px">│</span>
+    <div class="fc ${S.filter.status==='all'?'active':''}" onclick="sf('status','all')">Any</div>
+    ${STATS.map(s=>`<div class="fc ${S.filter.status===s?'active':''}" onclick="sf('status','${s}')">${s.replace('-',' ')}</div>`).join('')}
+  </div>
+  <div style="margin-bottom:10px;font-size:12px;color:var(--text3)">${books.length} book${books.length!==1?'s':''}</div>
+  <div class="grid">${books.map(b=>`<div class="book-card" onclick="openDetail('${b.id}')">
+    <div class="cs cc-${b.category}"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+      <h3>${esc(b.title)}</h3><span class="cb cat-${b.category}">${CATS[b.category]?.l||b.category}</span>
+    </div>
+    <div class="author">${esc(b.author)}</div>
+    <div class="meta">
+      <span class="sd sd-${b.status}"></span><span style="font-size:11px;color:var(--text3)">${b.status.replace('-',' ')}</span>
+      <span style="font-size:11px;color:var(--accent);font-weight:700">⚡ ${b.leverageScore||1}x</span>
+      <span style="font-size:11px;color:var(--text3)">${b.insights.length} 💡</span>
+      <span style="font-size:11px;color:var(--text3)">${(b.actions||[]).filter(a=>!a.done).length} ☐</span>
+    </div>
+    <div class="pb"><div class="pf" style="width:${b.progress}%"></div></div>
+    <div class="pt"><span>${b.currentPage}/${b.totalPages}p</span><span>${b.progress}%</span></div>
+  </div>`).join('')}</div>
+  ${!books.length?'<div class="empty"><div class="icon">📚</div><p>No books match filters</p></div>':''}`;
+}
+
+// ==================== READING PLAN ====================
+function renderPlan(){
+  document.getElementById('content').innerHTML=[1,2,3,4,5,6,0].map(p=>{
+    const books=S.books.filter(b=>b.phase===p);
+    if(!books.length)return'';
+    const done=books.filter(b=>b.status==='completed').length;
+    return`<div class="plan-phase"><div class="pp-h">${p?`<div class="num">${p}</div>`:'<div class="num" style="background:var(--gray)">—</div>'}<h3>${PHASES[p]}</h3><div class="pp">${done}/${books.length}</div></div>
+    ${books.map(b=>`<div class="pb-item ${b.status}" onclick="openDetail('${b.id}')">
+      <div class="chk">${b.status==='completed'?'✓':b.status==='reading'?'◉':''}</div>
+      <div class="bi"><div class="t">${esc(b.title)}</div><div class="a">${esc(b.author)}</div></div>
+      <span class="lev-badge" style="margin-right:10px" title="Leverage Multiplier">${b.leverageScore||1}x</span>
+      <span class="cb cat-${b.category}" style="font-size:9px">${CATS[b.category]?.l||''}</span>
+      <div style="width:80px"><div style="width:100%;height:4px;background:var(--bg);border-radius:2px;overflow:hidden"><div style="height:100%;width:${b.progress}%;background:var(--accent);border-radius:2px"></div></div><div style="font-size:10px;color:var(--text3);text-align:right;margin-top:2px">${b.progress}%</div></div>
+    </div>`).join('')}</div>`}).join('');
+}
+
+// ==================== INSIGHTS ====================
+function renderInsights(){
+  const sq=document.getElementById('isq');const q=sq?sq.value.toLowerCase():'';
+  let all=S.books.flatMap(bk=>bk.insights.map(i=>({...i,bookId:bk.id,bookTitle:bk.title,bookColor:bk.color}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(q)all=all.filter(i=>i.text.toLowerCase().includes(q)||i.bookTitle.toLowerCase().includes(q)||(i.chapter&&i.chapter.toLowerCase().includes(q)));
+  document.getElementById('content').innerHTML=`
+  <div style="margin-bottom:12px;font-size:12px;color:var(--text3)">${all.length} insight${all.length!==1?'s':''}</div>
+  ${all.length?all.map(i=>`<div class="ic">
+    <div class="ia"><button class="btn-icon" style="width:24px;height:24px;font-size:10px" onclick="event.stopPropagation();copyText('${esc(i.text)}')">📋</button><button class="btn-icon" style="width:24px;height:24px;font-size:10px" onclick="event.stopPropagation();delInsight('${i.bookId}','${i.id}')">🗑️</button></div>
+    <div class="it">"${esc(i.text)}"</div>
+    <div class="im"><span style="width:6px;height:6px;border-radius:50%;background:${i.bookColor};display:inline-block"></span><span class="br" onclick="openDetail('${i.bookId}')">${esc(i.bookTitle)}</span>${i.chapter?`<span>📑 ${esc(i.chapter)}</span>`:''}<span>📅 ${new Date(i.date).toLocaleDateString()}</span>${(i.tags||[]).map(t=>`<span class="itag">${esc(t)}</span>`).join('')}</div>
+  </div>`).join(''):'<div class="empty"><div class="icon">💡</div><p>No insights yet</p></div>'}`;
+}
+
+// ==================== READING TIMER ====================
+function renderTimer(){
+  const reading=S.books.filter(b=>b.status==='reading');
+  document.getElementById('content').innerHTML=`
+  <div style="max-width:500px;margin:0 auto;text-align:center">
+    <div style="margin-bottom:20px"><div class="fi"><label>Book</label><select id="timer-book" style="text-align:center">
+      <option value="">Select a book...</option>
+      ${reading.map(b=>`<option value="${b.id}" ${S.timerBook===b.id?'selected':''}>${b.title}</option>`).join('')}
+      ${!reading.length?'<option disabled>No books currently "reading"</option>':''}
+    </select></div></div>
+    <div class="timer-display" id="timer-display">${fmtTime(S.timerElapsed)}</div>
+    <div class="timer-controls">
+      ${S.timerRunning?`<button class="btn btn-secondary" onclick="pauseTimer()">⏸ Pause</button>`:`<button class="btn btn-primary" onclick="startTimer()">▶ Start</button>`}
+      <button class="btn btn-danger" onclick="stopTimer()">⏹ Stop & Save</button>
+    </div>
+    <div style="margin-top:30px;text-align:left">
+      <div class="section-title"><span class="icon">📅</span> Recent Sessions</div>
+      ${renderRecentSessions()}
+    </div>
+  </div>`;
+}
+function startTimer(){
+  const sel=document.getElementById('timer-book');
+  if(sel&&sel.value)S.timerBook=sel.value;
+  if(!S.timerBook){toast('Select a book first','error');return}
+  S.timerRunning=true;S.timerStart=Date.now()-S.timerElapsed*1000;
+  S.timerInterval=setInterval(()=>{S.timerElapsed=Math.floor((Date.now()-S.timerStart)/1000);const d=document.getElementById('timer-display');if(d)d.textContent=fmtTime(S.timerElapsed)},1000);
+  renderTimer();
+}
+function pauseTimer(){S.timerRunning=false;clearInterval(S.timerInterval);renderTimer()}
+
+function stopTimer(){
+  if(S.timerElapsed<10){
+    clearInterval(S.timerInterval);S.timerRunning=false;S.timerElapsed=0;renderTimer();
+    toast('Session too short to save','warning');
+    return;
+  }
+  
+  clearInterval(S.timerInterval);S.timerRunning=false;
+  
+  openModal(`
+    <div class="mh"><h3>Session Complete! 🎉</h3><button class="btn-icon" onclick="closeModal();renderTimer()">✕</button></div>
+    <div class="mb" style="text-align:center">
+      <div style="font-size:32px;color:var(--accent);font-weight:bold;margin-bottom:10px">${fmtTime(S.timerElapsed)}</div>
+      <p style="color:var(--text2);margin-bottom:20px;font-size:13px">Great job! How many pages did you read during this session?</p>
+      <div class="fi" style="max-width:200px;margin:0 auto">
+        <input type="number" id="prompt-pages" value="0" min="0" style="text-align:center;font-size:24px;padding:15px;border-color:var(--accent)" onkeydown="if(event.key==='Enter')finalizeSession()">
+      </div>
+    </div>
+    <div class="mf" style="justify-content:center">
+      <button class="btn btn-primary" style="font-size:14px;padding:10px 24px" onclick="finalizeSession()">💾 Save Session</button>
+    </div>
+  `);
+  setTimeout(()=>{const el=document.getElementById('prompt-pages');if(el){el.focus();el.select()}},100);
+}
+
+function finalizeSession(){
+  const pagesEl=document.getElementById('prompt-pages');
+  const pages=pagesEl?parseInt(pagesEl.value)||0:0;
+  const mins=Math.ceil(S.timerElapsed/60);
+  
+  if(S.timerBook){
+    const b=getBook(S.timerBook);
+    if(b){
+      b.sessions=b.sessions||[];
+      b.sessions.push({id:uid(),date:new Date().toISOString(),duration:S.timerElapsed,pages});
+      if(pages>0){
+        b.currentPage = b.totalPages > 0 ? Math.min(b.currentPage + pages, b.totalPages) : b.currentPage + pages;
+        b.progress=b.totalPages?Math.round(b.currentPage/b.totalPages*100):0;
+        if(b.progress>=100&&b.status!=='completed'&&b.totalPages>0){
+          b.status='completed';
+          b.dateCompleted=b.dateCompleted||new Date().toISOString();
+        }
+      }
+    }
+  }
+  
+  const today=getTodayKey();let entry=S.readingLog.find(r=>r.date===today);
+  if(!entry){entry={date:today,mins:0,pages:0};S.readingLog.push(entry)}
+  entry.mins+=mins;
+  entry.pages=(entry.pages||0)+pages; 
+  
+  S.timerElapsed=0;
+  save();
+  closeModal();
+  render();
+  createAutoBackup();
+  toast(`Session saved: ${fmtMins(mins)} + ${pages} pgs!`);
+}
+
+function renderRecentSessions(){
+  let all=S.books.flatMap(b=>(b.sessions||[]).map(s=>({...s,bookTitle:b.title,bookColor:b.color}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,10);
+  if(!all.length)return'<div style="font-size:12px;color:var(--text3);padding:8px">No sessions yet</div>';
+  return all.map(s=>`<div class="session-item"><div style="width:6px;height:24px;border-radius:3px;background:${s.bookColor}"></div><span class="s-date">${new Date(s.date).toLocaleDateString()}</span><span class="s-duration">⏱ ${fmtTime(s.duration)}</span><span class="s-pages">📄 ${s.pages}p</span><span class="s-book">${esc(s.bookTitle)}</span></div>`).join('');
+}
+
+// ==================== FLASHCARDS (ACTIVE RECALL ENGINE) ====================
+let fcSession =[];
+let fcTotal = 0;
+let fcMastered = 0;
+let fcRevealed = false;
+
+function generateSmartHint(text) {
+    if(!text || text.length < 20) return `"Recall the key insight from this book..."`;
+    let words = text.split(' ');
+    let candidates = words.map((w,i)=>({w,i,len:w.replace(/[^a-zA-Z]/g,'').length})).filter(x=>x.len>4);
+    if(candidates.length === 0) return `"${esc(text)}"`;
+    
+    candidates.sort(()=>Math.random()-.5);
+    let numToHide = Math.max(1, Math.min(3, Math.floor(words.length * 0.25)));
+    let toHide = candidates.slice(0, numToHide);
+    
+    let result = [...words];
+    toHide.forEach(x => { result[x.i] = `<span class="fc-blank">?????</span>`; });
+    return `"... ${result.join(' ')} ..."`;
+}
+
+function renderFlashcards(){
+    const allInsights = S.books.flatMap(bk=>bk.insights.map(i=>({...i, bookTitle:bk.title, bookColor:bk.color})));
+    if(!allInsights.length){
+        document.getElementById('content').innerHTML='<div class="empty"><div class="icon">🧠</div><p>No insights to review yet.<br>Add notes from your books to build your brain engine!</p></div>';
+        return;
+    }
+    
+    fcSession = allInsights.sort(()=>Math.random()-.5);
+    fcTotal = fcSession.length;
+    fcMastered = 0;
+    fcRevealed = false;
+    
+    renderActiveCard();
+}
+
+function renderActiveCard() {
+    const container = document.getElementById('content');
+    
+    if(fcSession.length === 0) {
+        container.innerHTML = `
+        <div style="max-width:500px; margin:40px auto; text-align:center; animation:mi 0.5s ease">
+            <div style="font-size:60px; margin-bottom:20px">🏆</div>
+            <h2 style="font-size:24px; color:var(--accent); margin-bottom:10px">Session Complete!</h2>
+            <p style="color:var(--text2); margin-bottom:30px; font-size:14px">You reviewed ${fcTotal} insights and strengthened your mental models.</p>
+            <button class="btn btn-primary" style="padding:12px 30px; font-size:14px" onclick="renderFlashcards()">🔄 Start New Session</button>
+        </div>`;
+        return;
+    }
+
+    const card = fcSession[0];
+    const progressPct = Math.round((fcMastered / fcTotal) * 100);
+    const hasMultipleCards = fcSession.length > 1;
+    const hasThreeCards = fcSession.length > 2;
+
+    container.innerHTML = `
+    <div style="max-width:650px; margin:0 auto; padding-top:10px">
+        
+        <div class="fc-session-header">
+            <div style="font-size:12px; color:var(--text3); font-weight:600">🧠 ACTIVE RECALL</div>
+            <div class="fc-progress-bg"><div class="fc-progress-fill" style="width:${progressPct}%"></div></div>
+            <div style="font-size:12px; font-weight:700; color:var(--accent)">${fcMastered} / ${fcTotal}</div>
+        </div>
+
+        <div class="fc-wrap">
+            ${hasThreeCards ? '<div class="fc-stack-2"></div>' : ''}
+            ${hasMultipleCards ? '<div class="fc-stack-1"></div>' : ''}
+            
+            <div class="fc-inner ${fcRevealed ? 'flipped' : ''}" onclick="if(!fcRevealed){fcRevealed=true; renderActiveCard();}">
+                
+                <div class="fc-face fc-front">
+                    <div class="fc-book-badge" style="color:${card.bookColor}; border-color:${card.bookColor}44">${esc(card.bookTitle)}</div>
+                    <div style="font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:20px">Fill in the blank</div>
+                    <div style="font-size:18px; line-height:1.7; font-style:italic; color:var(--text); padding:0 20px">
+                        ${generateSmartHint(card.text)}
+                    </div>
+                    ${(card.tags && card.tags.length) ? `<div style="margin-top:25px; display:flex; gap:6px; flex-wrap:wrap; justify-content:center">${card.tags.map(t=>`<span style="font-size:10px; background:var(--bg); padding:4px 10px; border-radius:6px; color:var(--text2); border:1px solid var(--border)">#${esc(t)}</span>`).join('')}</div>` : ''}
+                    <div style="position:absolute; bottom:20px; font-size:10px; color:var(--accent); opacity:0.6; letter-spacing:2px; text-transform:uppercase">Tap card to flip</div>
+                </div>
+                
+                <div class="fc-face fc-back">
+                    <div class="fc-book-badge" style="background:var(--accent); color:var(--bg); border:none">The Insight</div>
+                    <div style="font-size:20px; line-height:1.6; font-weight:500; color:var(--text); padding:0 20px">"${esc(card.text)}"</div>
+                    ${card.chapter ? `<div style="margin-top:20px; font-size:12px; color:var(--text3)">📑 ${esc(card.chapter)}</div>` : ''}
+                </div>
+
+            </div>
+        </div>
+
+        <div class="fc-actions ${fcRevealed ? 'show' : ''}">
+            <button class="btn btn-fc btn-fc-bad" onclick="rateCard(false)">
+                <span style="font-size:20px">🔴</span>
+                <span>Needs Review</span>
+                <span style="font-size:9px; opacity:0.7; font-weight:400">Puts card back in deck</span>
+            </button>
+            <button class="btn btn-fc btn-fc-good" onclick="rateCard(true)">
+                <span style="font-size:20px">🟢</span>
+                <span>Mastered It</span>
+                <span style="font-size:9px; opacity:0.7; font-weight:400">Removes from session</span>
+            </button>
+        </div>
+
+    </div>`;
+}
+
+function rateCard(mastered) {
+    const card = fcSession.shift();
+    if (mastered) {
+        fcMastered++;
+    } else {
+        const insertIndex = Math.min(Math.floor(Math.random() * 3) + 2, fcSession.length);
+        fcSession.splice(insertIndex, 0, card);
+    }
+    fcRevealed = false;
+    renderActiveCard();
+}
+
+// ==================== COMPARE ====================
+function renderCompare(){
+  const sorted=[...S.books].sort((a,b)=>(b.leverageScore||0)-(a.leverageScore||0));
+  document.getElementById('content').innerHTML=`
+  <div style="overflow-x:auto">
+  <table class="compare-table">
+    <thead><tr><th>#</th><th>Title</th><th>Author</th><th>Leverage</th><th>Overall</th><th>Truth</th><th>Useful</th><th>Ideas</th><th>Lindy</th><th>Status</th><th>Pages</th><th>Insights</th></tr></thead>
+    <tbody>${sorted.map((b,i)=>`<tr style="cursor:pointer" onclick="openDetail('${b.id}')">
+      <td style="color:var(--text3)">${i+1}</td>
+      <td><strong>${esc(b.title)}</strong></td>
+      <td style="color:var(--text3)">${esc(b.author)}</td>
+      <td class="score-cell" style="color:var(--accent);font-size:14px">${b.leverageScore||1}x</td>
+      <td class="score-cell ${scoreColor(b.overallScore)}">${b.overallScore||'—'}</td>
+      <td class="score-cell ${scoreColor(b.truthScore)}">${b.truthScore||'—'}</td>
+      <td class="score-cell ${scoreColor(b.usefulnessScore)}">${b.usefulnessScore||'—'}</td>
+      <td class="score-cell ${scoreColor(b.uniqueIdeasScore)}">${b.uniqueIdeasScore||'—'}</td>
+      <td class="score-cell ${scoreColor(b.lindyScore)}">${b.lindyScore||'—'}</td>
+      <td><span class="sd sd-${b.status}"></span> ${b.status.replace('-',' ')}</td>
+      <td><div style="width:50px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:4px"><div style="height:100%;width:${b.progress}%;background:var(--accent);border-radius:2px"></div></div> ${b.currentPage}</td>
+      <td style="text-align:center">${b.insights.length}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ==================== SESSIONS ====================
+function renderSessions(){
+  const all=S.books.flatMap(b=>(b.sessions||[]).map(s=>({...s,bookTitle:b.title,bookColor:b.color}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const totalMins=Math.round(all.reduce((a,s)=>a+s.duration,0)/60);
+  const totalPages=all.reduce((a,s)=>a+s.pages,0);
+  
+  let last28=[];const today=new Date();
+  for(let i=27;i>=0;i--){const d=new Date(today);d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);const entry=S.readingLog.find(r=>r.date===k);last28.push({date:k,mins:entry?entry.mins:0,day:d.toLocaleDateString('en',{weekday:'short'})})}
+  
+  document.getElementById('content').innerHTML=`
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="stat-card"><div class="sv">${all.length}</div><div class="sl">Sessions</div></div>
+    <div class="stat-card"><div class="sv">${fmtMins(totalMins)}</div><div class="sl">Total Time</div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--green)">${totalPages}</div><div class="sl">Pages Tracked</div></div>
+    <div class="stat-card"><div class="sv">🔥 ${getStreak()}</div><div class="sl">Streak</div></div>
+  </div>
+  <div class="section-title"><span class="icon">📊</span> Last 28 Days</div>
+  <div style="display:flex;gap:3px;align-items:end;height:100px;margin-bottom:25px;padding:10px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)">
+    ${last28.map(d=>{const h=d.mins?Math.max(8,Math.min(80,d.mins/S.dailyGoal*60)):4;const c=d.mins>=S.dailyGoal?'var(--green)':d.mins>0?'var(--accent)':'var(--border)';return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="width:100%;height:${h}px;background:${c};border-radius:3px" title="${d.date}: ${d.mins}min"></div><span style="font-size:7px;color:var(--text3)">${d.day[0]}</span></div>`}).join('')}
+  </div>
+  <div style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+    <div class="section-title" style="margin-bottom:0"><span class="icon">📅</span> All Sessions</div>
+    <div class="fi" style="width:140px"><label style="font-size:10px">Daily Goal (min)</label><input type="number" value="${S.dailyGoal}" min="1" onchange="S.dailyGoal=parseInt(this.value)||30;save();createAutoBackup();render()"></div>
+  </div>
+  ${all.length?all.map(s=>`<div class="session-item"><div style="width:6px;height:24px;border-radius:3px;background:${s.bookColor}"></div><span class="s-date">${new Date(s.date).toLocaleDateString()}</span><span class="s-duration">⏱ ${fmtTime(s.duration)}</span><span class="s-pages">📄 ${s.pages}p</span><span class="s-book">${esc(s.bookTitle)}</span></div>`).join(''):'<div class="empty"><p>No sessions recorded yet. Use the timer!</p></div>'}`;
+}
+
+// ==================== SETTINGS ====================
+function renderSettings(){
+  document.getElementById('content').innerHTML=`
+  <div class="settings-section"><h3>📤 Export Data</h3><p>Download your complete library (books, insights, actions, sessions, reading log) in multiple formats.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="exportJSON()">💾 Export JSON</button>
+      <button class="btn btn-secondary" onclick="exportCSV()">📊 Export CSV</button>
+      <button class="btn btn-secondary" onclick="exportInsightsMD()">💡 Export Insights (MD)</button>
+      <button class="btn btn-secondary" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+      <button class="btn btn-secondary" onclick="exportFullMD()">📝 Full Markdown Report</button>
+    </div>
+  </div>
+  <div class="settings-section"><h3>📥 Import Data</h3><p>Import a previously exported JSON file. This REPLACES all current data.</p>
+    <input type="file" id="imp" accept=".json" style="display:none" onchange="importJSON(event)">
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-secondary" onclick="document.getElementById('imp').click()">📁 Import JSON File</button>
+      <button class="btn btn-secondary" onclick="importFromClipboard()">📋 Import from Clipboard</button>
+    </div>
+  </div>
+  <div class="settings-section"><h3>🛡️ Data Safety</h3>
+    <p>Your data is stored in <strong>3 layers</strong>:</p>
+    <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:10px">
+      ✅ <strong>localStorage</strong> — survives tab close, browser restart<br>
+      ✅ <strong>IndexedDB</strong> — survives localStorage clear, more storage<br>
+      ⚠️ Both are cleared when you "Clear browsing data" → <strong>Export regularly!</strong>
+    </div>
+    <button class="btn btn-success btn-sm" onclick="forceBackup()">Force Backup to Both Stores</button>
+  </div>
+  <div class="settings-section"><h3>🎯 Reading Goals</h3>
+    <div class="fi" style="max-width:200px"><label>Daily Reading Goal (minutes)</label><input type="number" value="${S.dailyGoal}" min="1" onchange="S.dailyGoal=parseInt(this.value)||30;save();createAutoBackup();toast('Goal updated')"></div>
+  </div>
+  <div class="settings-section"><h3>🔄 Reset</h3><p>Reset to default reading list. All progress, insights, sessions lost.</p>
+    <button class="btn btn-danger" onclick="if(confirm('⚠️ Reset ALL data? This cannot be undone!')){S.books=DEFAULTS.map(b=>({...b,id:uid()}));S.readingLog=[];save();render();toast('Data reset')}">🗑️ Reset Everything</button>
+  </div>
+  <div class="settings-section"><h3>⌨️ Keyboard Shortcuts</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;color:var(--text3)">
+      <div><kbd>1</kbd>-<kbd>9</kbd> Navigate views</div>
+      <div><kbd>Ctrl+N</kbd> Add book</div>
+      <div><kbd>Ctrl+E</kbd> Export JSON</div>
+      <div><kbd>Ctrl+S</kbd> Force save</div>
+      <div><kbd>Esc</kbd> Close modal</div>
+      <div><kbd>Ctrl+F</kbd> Search (in library)</div>
+    </div>
+  </div>`;
+}
+
+// ==================== BOOK DETAIL ====================
+function openDetail(id){S.detailId=id;S.detailTab='insights';renderDetail()}
+function renderDetail(){
+  const b=getBook(S.detailId);if(!b)return;
+  const t=S.detailTab;
+  let tc='';
+  if(t==='insights'){
+    tc=`<div style="display:flex;gap:6px;margin-bottom:14px">
+      <input id="ni" placeholder="Capture an insight..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:13px;outline:none" onkeydown="if(event.key==='Enter')addInsight('${b.id}')">
+      <input id="nc" placeholder="Chapter" style="width:80px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px;border-radius:8px;font-size:12px;outline:none">
+      <input id="nt" placeholder="Tags (,)" style="width:100px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px;border-radius:8px;font-size:12px;outline:none">
+      <button class="btn btn-primary btn-sm" onclick="addInsight('${b.id}')">+</button>
+    </div>
+    ${b.insights.length?b.insights.sort((a,c)=>new Date(c.date)-new Date(a.date)).map(i=>`<div class="ic">
+      <div class="ia"><button class="btn-icon" style="width:22px;height:22px;font-size:9px" onclick="copyText(\`${esc(i.text)}\`)">📋</button><button class="btn-icon" style="width:22px;height:22px;font-size:9px" onclick="delInsight('${b.id}','${i.id}')">🗑️</button></div>
+      <div class="it">"${esc(i.text)}"</div>
+      <div class="im">${i.chapter?`<span>📑 ${esc(i.chapter)}</span>`:''}<span>📅 ${new Date(i.date).toLocaleDateString()}</span>${(i.tags||[]).map(t2=>`<span class="itag">${esc(t2)}</span>`).join('')}</div>
+    </div>`).join(''):'<div class="empty"><p>No insights yet</p></div>'}`;
+  }else if(t==='actions'){
+    tc=`<div style="display:flex;gap:6px;margin-bottom:14px">
+      <input id="na" placeholder="Add action item..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:13px;outline:none" onkeydown="if(event.key==='Enter')addAction('${b.id}')">
+      <button class="btn btn-primary btn-sm" onclick="addAction('${b.id}')">+</button>
+    </div>
+    ${(b.actions||[]).length?(b.actions||[]).map(a=>`<div class="action-item">
+      <div class="action-check ${a.done?'done':''}" onclick="toggleAction('${b.id}','${a.id}')">${a.done?'✓':''}</div>
+      <div class="action-text ${a.done?'done':''}">${esc(a.text)}</div>
+      <button class="btn-icon" style="width:22px;height:22px;font-size:9px" onclick="delAction('${b.id}','${a.id}')">🗑️</button>
+    </div>`).join(''):'<div class="empty"><p>No action items yet. What should you DO from this book?</p></div>'}`;
+  }else if(t==='notes'){
+    tc=`<textarea style="width:100%;min-height:300px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:14px;border-radius:8px;font-size:13px;line-height:1.7;font-family:inherit;outline:none;resize:vertical" oninput="updateNotes('${b.id}',this.value)" onchange="createAutoBackup();toast('Notes saved! 📝')">${b.notes||''}</textarea>`;
+  }else if(t==='progress'){
+    tc=`
+    <div style="margin-bottom:20px; padding:16px; background:var(--bg4); border-radius:10px; border:1px solid var(--accent); position:relative; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.2)">
+      <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:var(--accent)"></div>
+      <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:10px; padding-left:8px; display:flex; align-items:center; gap:6px"><span style="color:var(--accent)">⚡</span> Quick Log (Add Pages Read)</div>
+      <div style="display:flex; gap:8px; padding-left:8px">
+        <input type="number" id="ql-pages" placeholder="Pages read (e.g. 20)" min="1" style="flex:1; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:9px 12px; border-radius:8px; font-size:13px; outline:none" onkeydown="if(event.key==='Enter')quickLog('${b.id}')">
+        <input type="number" id="ql-mins" placeholder="Minutes (optional)" min="0" style="flex:1; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:9px 12px; border-radius:8px; font-size:13px; outline:none" onkeydown="if(event.key==='Enter')quickLog('${b.id}')">
+        <button class="btn btn-primary" onclick="quickLog('${b.id}')">+ Log Session</button>
+      </div>
+    </div>
+    
+    <div class="fg">
+      <div class="fi"><label>Status</label><select onchange="updateField('${b.id}','status',this.value)">${STATS.map(s=>`<option value="${s}" ${b.status===s?'selected':''}>${s.replace('-',' ')}</option>`).join('')}</select></div>
+      <div class="fi"><label>Set Exact Page</label><input type="number" value="${b.currentPage}" min="0" onchange="updatePage('${b.id}',this.value)" title="Use this if you just want to set your exact current page number without adding."></div>
+      <div class="fi"><label>Total Pages in Book</label><input type="number" value="${b.totalPages}" onchange="updateField('${b.id}','totalPages',parseInt(this.value)||0);recalcProgress('${b.id}')"></div>
+    </div>
+    
+    <div style="margin-top:18px">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:6px;display:flex;justify-content:space-between">
+          <span>Overall Progress</span>
+          <span style="font-weight:600;color:var(--text)">${b.currentPage} / ${b.totalPages||'?'} pgs</span>
+      </div>
+      <div style="width:100%;height:16px;background:var(--bg);border-radius:8px;overflow:hidden"><div style="height:100%;width:${b.progress}%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--bg)">${b.progress}%</div></div>
+    </div>
+    <div style="margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <div class="stat-card"><div class="sl">Added</div><div style="font-size:12px;color:var(--text);margin-top:4px">${b.dateAdded?new Date(b.dateAdded).toLocaleDateString():'—'}</div></div>
+      <div class="stat-card"><div class="sl">Started</div><div style="font-size:12px;color:var(--text);margin-top:4px">${b.dateStarted?new Date(b.dateStarted).toLocaleDateString():'—'}</div></div>
+      <div class="stat-card"><div class="sl">Completed</div><div style="font-size:12px;color:var(--text);margin-top:4px">${b.dateCompleted?new Date(b.dateCompleted).toLocaleDateString():'—'}</div></div>
+    </div>
+    <div style="margin-top:20px"><div class="section-title"><span class="icon">⏱️</span>Sessions</div>
+      ${(b.sessions||[]).length?(b.sessions||[]).sort((a,c)=>new Date(c.date)-new Date(a.date)).map(s=>`<div class="session-item"><span class="s-date">${new Date(s.date).toLocaleDateString()}</span><span class="s-duration">⏱ ${fmtTime(s.duration)}</span><span class="s-pages">📄 ${s.pages}p</span></div>`).join(''):'<div style="font-size:12px;color:var(--text3)">No sessions recorded</div>'}
+    </div>`;
+  }
+  openModal(`<div class="mh"><h3 style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:${b.color}"></span>${esc(b.title)}</h3><div style="display:flex;gap:4px"><button class="btn-icon" onclick="openAddBook('${b.id}')" title="Edit">✏️</button><button class="btn-icon" onclick="closeModal()">✕</button></div></div>
+  <div class="mb" style="padding-top:0">
+    <div class="detail-header" style="padding-top:18px">
+      <div class="detail-cover" style="background:${b.color}22;border:1px solid ${b.color}44">📖</div>
+      <div class="detail-info"><h2>${esc(b.title)}</h2><div class="author">${esc(b.author)}</div>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><span class="cb cat-${b.category}">${CATS[b.category]?.l||''}</span><span class="sd sd-${b.status}"></span><span style="font-size:11px;color:var(--text3)">${b.status.replace('-',' ')}</span>${b.phase?`<span style="font-size:11px;color:var(--text3)">• Phase ${b.phase}</span>`:''}</div>
+        <div class="pb"><div class="pf" style="width:${b.progress}%"></div></div><div class="pt"><span>${b.currentPage}/${b.totalPages}p</span><span>${b.progress}%</span></div>
+        <div class="detail-scores">
+          <div class="score-item"><div class="sval">${b.leverageScore||1}x</div><div class="slab">Leverage</div></div>
+          <div class="score-item"><div class="sval">${b.overallScore||'—'}</div><div class="slab">Overall</div></div>
+          <div class="score-item"><div class="sval">${b.truthScore||'—'}</div><div class="slab">Truth</div></div>
+          <div class="score-item"><div class="sval">${b.usefulnessScore||'—'}</div><div class="slab">Useful</div></div>
+          <div class="score-item"><div class="sval">${b.uniqueIdeasScore||'—'}</div><div class="slab">Ideas</div></div>
+          <div class="score-item"><div class="sval">${b.lindyScore||'—'}</div><div class="slab">Lindy</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="dtabs">
+      <div class="dtab ${t==='insights'?'active':''}" onclick="S.detailTab='insights';renderDetail()">💡 Insights (${b.insights.length})</div>
+      <div class="dtab ${t==='actions'?'active':''}" onclick="S.detailTab='actions';renderDetail()">☐ Actions (${(b.actions||[]).filter(a=>!a.done).length})</div>
+      <div class="dtab ${t==='notes'?'active':''}" onclick="S.detailTab='notes';renderDetail()">📝 Notes</div>
+      <div class="dtab ${t==='progress'?'active':''}" onclick="S.detailTab='progress';renderDetail()">📊 Progress</div>
+    </div>${tc}
+  </div>`);
+  if(t==='insights')setTimeout(()=>{const el=document.getElementById('ni');if(el)el.focus()},100);
+}
+
+// ==================== QUICK LOG ====================
+function quickLog(bookId) {
+    const pagesEl = document.getElementById('ql-pages');
+    const minsEl = document.getElementById('ql-mins');
+    const pages = parseInt(pagesEl.value) || 0;
+    const mins = parseInt(minsEl.value) || 0;
+    
+    if(pages <= 0 && mins <= 0) {
+        toast('Please enter pages or minutes', 'warning');
+        return;
+    }
+    
+    const b = getBook(bookId);
+    if(!b) return;
+    
+    if(pages > 0) {
+        b.currentPage = b.totalPages > 0 ? Math.min(b.currentPage + pages, b.totalPages) : b.currentPage + pages;
+        b.progress = b.totalPages ? Math.round(b.currentPage / b.totalPages * 100) : 0;
+        if(b.progress >= 100 && b.status !== 'completed' && b.totalPages > 0) {
+            b.status = 'completed';
+            b.dateCompleted = b.dateCompleted || new Date().toISOString();
+        }
+    }
+    
+    b.sessions = b.sessions ||[];
+    b.sessions.push({
+        id: uid(),
+        date: new Date().toISOString(),
+        duration: mins * 60,
+        pages: pages
+    });
+    
+    const today = getTodayKey();
+    let entry = S.readingLog.find(r => r.date === today);
+    if(!entry) { entry = { date: today, mins: 0, pages: 0 }; S.readingLog.push(entry); }
+    entry.pages = (entry.pages || 0) + pages;
+    entry.mins = (entry.mins || 0) + mins;
+    
+    save();
+    renderDetail();
+    render();
+    createAutoBackup();
+    toast(`Logged ${pages} pages! Current page is now ${b.currentPage}.`);
+}
+
+// ==================== CRUD ====================
+function addInsight(bookId){const el=document.getElementById('ni');const text=el?.value.trim();if(!text){toast('Write something first','error');return}const ch=document.getElementById('nc')?.value.trim()||'';const tg=document.getElementById('nt')?.value.trim();const tags=tg?tg.split(',').map(t=>t.trim()).filter(Boolean):[];const b=getBook(bookId);if(b){b.insights.push({id:uid(),text,chapter:ch,tags,date:new Date().toISOString()});save();renderDetail();renderSidebar();createAutoBackup();toast('Insight captured! 💡')}}
+function delInsight(bookId,iid){const b=getBook(bookId);if(b){b.insights=b.insights.filter(i=>i.id!==iid);save();renderDetail();createAutoBackup();toast('Deleted')}}
+function addAction(bookId){const el=document.getElementById('na');const text=el?.value.trim();if(!text){toast('Write an action','error');return}const b=getBook(bookId);if(b){b.actions=b.actions||[];b.actions.push({id:uid(),text,done:false,date:new Date().toISOString()});save();renderDetail();createAutoBackup();toast('Action added! ☐')}}
+function toggleAction(bookId,aid){const b=getBook(bookId);if(b){const a=(b.actions||[]).find(x=>x.id===aid);if(a){a.done=!a.done;save();if(S.detailId)renderDetail();else render();createAutoBackup();toast(a.done?'Done! ✅':'Reopened')}}}
+function delAction(bookId,aid){const b=getBook(bookId);if(b){b.actions=(b.actions||[]).filter(a=>a.id!==aid);save();renderDetail();createAutoBackup();toast('Deleted')}}
+function updateNotes(bookId,val){const b=getBook(bookId);if(b){b.notes=val;save()}}
+function updateField(bookId,field,val){const b=getBook(bookId);if(b){b[field]=val;if(field==='status'&&val==='reading'&&!b.dateStarted)b.dateStarted=new Date().toISOString();if(field==='status'&&val==='completed'){b.dateCompleted=b.dateCompleted||new Date().toISOString();b.progress=100;b.currentPage=b.totalPages}save();renderDetail();render();createAutoBackup()}}
+
+function updatePage(bookId,val){
+  const b=getBook(bookId);
+  if(b){
+    const parsed = parseInt(val)||0;
+    b.currentPage = b.totalPages > 0 ? Math.min(parsed, b.totalPages) : parsed;
+    b.progress=b.totalPages?Math.round(b.currentPage/b.totalPages*100):0;
+    if(b.progress>=100&&b.status!=='completed'&&b.totalPages>0){
+        b.status='completed';
+        b.dateCompleted=b.dateCompleted||new Date().toISOString();
+    }
+    save();renderDetail();render();createAutoBackup();
+  }
+}
+
+function recalcProgress(bookId){
+  const b=getBook(bookId);
+  if(b){
+    if (b.totalPages > 0 && b.currentPage > b.totalPages) {
+        b.currentPage = b.totalPages;
+    }
+    b.progress=b.totalPages?Math.round(b.currentPage/b.totalPages*100):0;
+    if(b.progress>=100&&b.status!=='completed'&&b.totalPages>0){
+        b.status='completed';
+        b.dateCompleted=b.dateCompleted||new Date().toISOString();
+    }
+    save();renderDetail();createAutoBackup();
+  }
+}
+
+function openAddBook(editId){
+  const b=editId?getBook(editId):null;
+  openModal(`<div class="mh"><h3>${b?'Edit Book':'Add New Book'}</h3><button class="btn-icon" onclick="closeModal()">✕</button></div>
+  <div class="mb"><div class="fg">
+    <div class="fi full"><label>Title</label><input id="ft" value="${b?esc(b.title):''}"></div>
+    <div class="fi"><label>Author</label><input id="fa" value="${b?esc(b.author):''}"></div>
+    <div class="fi"><label>Category</label><select id="fc">${Object.keys(CATS).map(k=>`<option value="${k}" ${b&&b.category===k?'selected':''}>${CATS[k].l}</option>`).join('')}</select></div>
+    <div class="fi"><label>Phase</label><select id="fp">${Object.keys(PHASES).map(k=>`<option value="${k}" ${b&&b.phase==k?'selected':''}>${k==0?'Not Assigned':'Phase '+k}</option>`).join('')}</select></div>
+    <div class="fi"><label>Status</label><select id="fs">${STATS.map(s=>`<option value="${s}" ${b&&b.status===s?'selected':''}>${s.replace('-',' ')}</option>`).join('')}</select></div>
+    <div class="fi"><label>Leverage Multiplier (1-10x)</label><input type="number" step="0.5" min="1" max="10" id="flev" value="${b?b.leverageScore||1:1}" title="How much does applying this book 10x your life?"></div>
+    <div class="fi"><label>Total Pages</label><input type="number" id="ftp" value="${b?b.totalPages:0}"></div>
+    <div class="fi"><label>Current Page</label><input type="number" id="fcp" value="${b?b.currentPage:0}"></div>
+    <div class="fi"><label>Overall (0-10)</label><input type="number" step="0.5" min="0" max="10" id="fo" value="${b?b.overallScore:0}"></div>
+    <div class="fi"><label>Truth</label><input type="number" step="0.5" min="0" max="10" id="ftr" value="${b?b.truthScore:0}"></div>
+    <div class="fi"><label>Usefulness</label><input type="number" step="0.5" min="0" max="10" id="fu" value="${b?b.usefulnessScore:0}"></div>
+    <div class="fi"><label>Unique Ideas</label><input type="number" step="0.5" min="0" max="10" id="fui" value="${b?b.uniqueIdeasScore:0}"></div>
+    <div class="fi"><label>Lindy</label><input type="number" step="0.5" min="0" max="10" id="fl" value="${b?b.lindyScore:0}"></div>
+    <div class="fi full"><label>Notes</label><textarea id="fn" rows="3">${b?esc(b.notes||''):''}</textarea></div>
+    <div class="fi"><label>Color</label><input type="color" id="fco" value="${b?b.color:'#cba6f7'}" style="height:38px;cursor:pointer"></div>
+  </div></div>
+  <div class="mf">${b?`<button class="btn btn-danger" onclick="deleteBook('${b.id}')">Delete</button>`:''}<button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveBook('${editId||''}')">${b?'Save':'Add Book'}</button></div>`);
+  setTimeout(()=>{const el=document.getElementById('ft');if(el)el.focus()},100);
+}
+function saveBook(editId){
+  const d={title:document.getElementById('ft').value.trim(),author:document.getElementById('fa').value.trim(),category:document.getElementById('fc').value,phase:parseInt(document.getElementById('fp').value),status:document.getElementById('fs').value,leverageScore:parseFloat(document.getElementById('flev').value)||1,totalPages:parseInt(document.getElementById('ftp').value)||0,currentPage:parseInt(document.getElementById('fcp').value)||0,overallScore:parseFloat(document.getElementById('fo').value)||0,rating:parseFloat(document.getElementById('fo').value)||0,truthScore:parseFloat(document.getElementById('ftr').value)||0,usefulnessScore:parseFloat(document.getElementById('fu').value)||0,uniqueIdeasScore:parseFloat(document.getElementById('fui').value)||0,lindyScore:parseFloat(document.getElementById('fl').value)||0,notes:document.getElementById('fn').value,color:document.getElementById('fco').value};
+  if(!d.title){toast('Title required','error');return}
+  d.progress=d.totalPages?Math.min(100,Math.round(d.currentPage/d.totalPages*100)):0;
+  if(editId){const idx=S.books.findIndex(b=>b.id===editId);if(idx>-1){if(d.status==='completed'&&S.books[idx].status!=='completed')d.dateCompleted=new Date().toISOString();if(d.status==='reading'&&S.books[idx].status==='not-started')d.dateStarted=new Date().toISOString();S.books[idx]={...S.books[idx],...d}}toast('Updated!')}
+  else{S.books.push({...d,id:uid(),insights:[],actions:[],sessions:[],dateAdded:new Date().toISOString(),dateStarted:d.status==='reading'?new Date().toISOString():'',dateCompleted:d.status==='completed'?new Date().toISOString():''});toast('Book added!')}
+  save();closeModal();render();createAutoBackup();
+}
+function deleteBook(id){if(!confirm('Delete this book and all data?'))return;S.books=S.books.filter(b=>b.id!==id);save();closeModal();render();createAutoBackup();toast('Deleted')}
+
+// ==================== EXPORT / IMPORT ====================
+function exportJSON(){const d=getSaveData();d.exportDate=new Date().toISOString();const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});dl(blob,`bookforge_${getTodayKey()}.json`);save();toast('JSON exported! 💾')}
+function exportCSV(){const h=['Title','Author','Category','Phase','Status','Leverage','Progress','Pages','Overall','Truth','Useful','Ideas','Lindy','Insights','Actions'];const rows=S.books.map(b=>[b.title,b.author,b.category,b.phase,b.status,b.leverageScore||1,b.progress+'%',b.currentPage+'/'+b.totalPages,b.overallScore,b.truthScore,b.usefulnessScore,b.uniqueIdeasScore,b.lindyScore,b.insights.length,(b.actions||[]).length]);const csv=[h,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');dl(new Blob([csv],{type:'text/csv'}),`bookforge_${getTodayKey()}.csv`);toast('CSV exported!')}
+function exportInsightsMD(){let md=`# BookForge Insights\n_Exported: ${new Date().toLocaleString()}_\n\n`;const grouped={};S.books.forEach(b=>{if(b.insights.length){grouped[b.title]=b.insights}});Object.entries(grouped).forEach(([title,ins])=>{md+=`## 📖 ${title}\n\n`;ins.forEach(i=>{md+=`> "${i.text}"${i.chapter?` _(${i.chapter})_`:''}\n\n`})});dl(new Blob([md],{type:'text/markdown'}),`bookforge_insights_${getTodayKey()}.md`);toast('Insights exported as Markdown!')}
+function exportFullMD(){let md=`# 📖 BookForge Complete Report\n_Generated: ${new Date().toLocaleString()}_\n\n## Stats\n- Books: ${S.books.length}\n- Completed: ${S.books.filter(b=>b.status==='completed').length}\n- Pages Read: ${S.books.reduce((a,b)=>a+b.currentPage,0)}\n- Insights: ${S.books.reduce((a,b)=>a+b.insights.length,0)}\n- Streak: ${getStreak()} days\n\n`;[1,2,3,4,5,6,0].forEach(p=>{const books=S.books.filter(b=>b.phase===p);if(!books.length)return;md+=`## Phase ${p}: ${PHASES[p]}\n\n`;books.forEach(b=>{md+=`### ${b.title} — ${b.author}\n- Category: ${CATS[b.category]?.l||b.category}\n- Status: ${b.status} (${b.progress}%)\n- Scores: Leverage ${b.leverageScore||1}x | Overall ${b.overallScore} | Truth ${b.truthScore} | Useful ${b.usefulnessScore} | Ideas ${b.uniqueIdeasScore} | Lindy ${b.lindyScore}\n`;if(b.notes)md+=`- Notes: ${b.notes}\n`;if(b.insights.length){md+=`\n**Insights:**\n`;b.insights.forEach(i=>{md+=`> "${i.text}"${i.chapter?` _(${i.chapter})_`:''}\n\n`})}if((b.actions||[]).length){md+=`**Actions:**\n`;(b.actions||[]).forEach(a=>{md+=`- [${a.done?'x':' '}] ${a.text}\n`})}md+='\n---\n\n'})});dl(new Blob([md],{type:'text/markdown'}),`bookforge_report_${getTodayKey()}.md`);toast('Full report exported!')}
+function copyToClipboard(){navigator.clipboard.writeText(JSON.stringify(getSaveData(),null,2)).then(()=>toast('Copied to clipboard! 📋')).catch(()=>toast('Copy failed','error'))}
+function importFromClipboard(){navigator.clipboard.readText().then(text=>{try{const d=JSON.parse(text);S.books=d.books.map(b=>({...b,actions:b.actions||[],sessions:b.sessions||[],leverageScore:b.leverageScore||1}));S.dailyGoal=d.dailyGoal||30;S.readingLog=d.readingLog||[];save();render();toast('Imported from clipboard!')}catch(e){toast('Invalid JSON in clipboard','error')}}).catch(()=>toast('Cannot read clipboard. Try file import.','error'))}
+function importJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(ev){try{const d=JSON.parse(ev.target.result);S.books=(d.books||d).map(b=>({...b,actions:b.actions||[],sessions:b.sessions||[],leverageScore:b.leverageScore||1}));S.dailyGoal=d.dailyGoal||30;S.readingLog=d.readingLog||[];save();render();toast('Data imported! 📥')}catch(err){toast('Invalid file','error')}};r.readAsText(f)}
+function forceBackup(){save();toast('Backed up to localStorage + IndexedDB ✅')}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click()}
+
+// ==================== UTILS ====================
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;').replace(/`/g,'&#96;')}
+function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('Copied!')).catch(()=>{})}
+function nav(v){S.view=v;render()}
+function sf(t,v){S.filter[t]=v;renderLibrary()}
+function openModal(h){document.getElementById('modal').innerHTML=h;document.getElementById('mo').classList.add('active')}
+function closeModal(){document.getElementById('mo').classList.remove('active')}
+
+// ==================== KEYBOARD ====================
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  const tag=document.activeElement.tagName;
+  if(e.ctrlKey&&e.key==='n'){e.preventDefault();openAddBook()}
+  if(e.ctrlKey&&e.key==='e'){e.preventDefault();exportJSON()}
+  if(e.ctrlKey&&e.key==='s'){e.preventDefault();save();toast('Saved!')}
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')return;
+  const views=['dashboard','library','plan','timer','insights','flashcards','sessions','compare','settings'];
+  const n=parseInt(e.key);if(n>=1&&n<=9&&views[n-1])nav(views[n-1]);
+});
+document.getElementById('mo').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
+
+// ==================== AUTO-SAVE INTERVAL ====================
+setInterval(()=>{save()},60000);
+
+// ==================== INIT ====================
+(async()=>{try{await openDB()}catch(e){}await load();render()})();
+</script>
+<!-- FIREBASE DROP-IN SYNC FOR BOOKFORGE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+  // Your exact Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBNhpnU9EXqLKeiIVQvOqOew75skQxv8xU",
+  authDomain: "ibro-83f84.firebaseapp.com",
+  projectId: "ibro-83f84",
+  storageBucket: "ibro-83f84.firebasestorage.app",
+  messagingSenderId: "888130214428",
+  appId: "1:888130214428:web:9a71f9484db9f0f640ddd9",
+  measurementId: "G-XYYK8FJTYM"
+};
+
+  const fireApp = initializeApp(firebaseConfig);
+  const db = getFirestore(fireApp);
+  const auth = getAuth(fireApp);
+  const provider = new GoogleAuthProvider();
+
+  // Dynamically create a floating login widget for the sidebar
+  const syncDiv = document.createElement('div');
+  syncDiv.style.cssText = "position:absolute; bottom:20px; left:15px; width:220px; z-index:9999;";
+  syncDiv.innerHTML = `
+    <button id="login-btn" style="display:none; width: 100%; padding: 10px; background: var(--blue); color: var(--bg); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+      Sign in to Sync
+    </button>
+    <div id="user-info" style="display:none; font-size: 11px; color: var(--text2); text-align: center; background: var(--bg3); padding: 10px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.3);"></div>
+  `;
+  document.body.appendChild(syncDiv);
+
+  const loginBtn = document.getElementById('login-btn');
+  const userInfo = document.getElementById('user-info');
+  
+  // The specific storage key BookForge uses
+  const appKeys = ['bookforge_v2']; 
+
+  let currentUser = null;
+
+  // Catch redirect errors
+  getRedirectResult(auth).catch((error) => {
+    alert("Google Login Error: " + error.message);
+  });
+
+  // Intercept saves and push to the cloud
+  const originalSetItem = localStorage.setItem;
+  localStorage.setItem = function(key, value) {
+    originalSetItem.apply(this, arguments); 
+    if (appKeys.includes(key) && currentUser) {
+      setDoc(doc(db, "userData", currentUser.uid), { [key]: value }, { merge: true }).catch(e => console.error(e));
+    }
+  };
+
+  // Login handler
+  loginBtn.addEventListener('click', () => signInWithRedirect(auth, provider));
+
+  // Authentication State Observer
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      loginBtn.style.display = 'none';
+      userInfo.style.display = 'block';
+      userInfo.innerHTML = `☁️ Synced: ${user.email} <br><button id="logout-btn" style="background:transparent; border:none; color:var(--red); cursor:pointer; margin-top:6px; font-weight:bold;">(Logout)</button>`;
+      
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        signOut(auth).then(() => window.location.reload());
+      });
+
+      // Load Cloud Data
+      try {
+        const docSnap = await getDoc(doc(db, "userData", user.uid));
+        if (docSnap.exists()) {
+          const cloudData = docSnap.data();
+          if (cloudData['bookforge_v2']) {
+            originalSetItem.call(localStorage, 'bookforge_v2', cloudData['bookforge_v2']);
+            
+            // Specifically refresh BookForge's state
+            if(typeof load === 'function') {
+                await load(); // Parse new cloud data
+                save();       // Sync new data to IndexedDB
+                if(typeof render === 'function') render(); // Update screen
+                if(typeof toast === 'function') toast('☁️ Cloud data synced!', 'success');
+            }
+          }
+        } else {
+          // If empty cloud, upload local data
+          const l = localStorage.getItem('bookforge_v2');
+          if (l) localStorage.setItem('bookforge_v2', l);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      currentUser = null;
+      loginBtn.style.display = 'block';
+      userInfo.style.display = 'none';
+    }
+  });
+</script>
+</body>
+</html>
