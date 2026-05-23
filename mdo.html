@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rewire — MDO Protocol</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']},colors:{bg0:'#09090b',bg1:'#111113',bg2:'#18181b',bg3:'#1f1f23',bg4:'#27272a',bdr:'#2e2e33',bdr2:'#3f3f46',tx1:'#fafafa',tx2:'#a1a1aa',tx3:'#71717a',tx4:'#52525b',acc:'#818cf8',acc2:'#6366f1',succ:'#34d399',succ2:'#059669',fail:'#f87171',warn:'#fbbf24',sky:'#38bdf8'}}}}
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#09090b;color:#fafafa;font-family:'Inter',system-ui,sans-serif;font-size:14px;overflow:hidden}
+.view{display:none}.view.active{display:flex;flex-direction:column;height:100%}
+.sb::-webkit-scrollbar{width:5px}.sb::-webkit-scrollbar-track{background:transparent}.sb::-webkit-scrollbar-thumb{background:#27272a;border-radius:99px}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:all .15s;color:#a1a1aa;font-size:13px;font-weight:500;border:1px solid transparent}
+.ni:hover{background:#18181b;color:#d4d4d8}.ni.active{background:#18181b;color:#fafafa;border-color:#2e2e33}
+.cd{background:#111113;border:1px solid #1f1f23;border-radius:10px;padding:20px}
+.cs{background:#111113;border:1px solid #1f1f23;border-radius:8px;padding:14px}
+.bp{background:#6366f1;color:white;font-weight:600;padding:10px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;transition:all .15s}
+.bp:hover{background:#818cf8;transform:translateY(-1px)}
+.bs{background:#18181b;color:#d4d4d8;font-weight:500;padding:10px 20px;border-radius:8px;border:1px solid #2e2e33;cursor:pointer;font-size:13px;transition:all .15s}
+.bs:hover{background:#1f1f23;border-color:#3f3f46}
+.bsc{background:#059669;color:white;font-weight:600;padding:12px 20px;border-radius:8px;border:none;cursor:pointer;font-size:14px;transition:all .15s;width:100%}
+.bsc:hover{background:#34d399;color:#09090b}
+.bd{background:rgba(248,113,113,0.1);color:#f87171;font-weight:500;padding:12px 20px;border-radius:8px;border:1px solid rgba(248,113,113,0.2);cursor:pointer;font-size:14px;transition:all .15s;width:100%}
+.bd:hover{background:rgba(248,113,113,0.15)}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.tag{font-size:11px;color:#71717a;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+input[type=number],textarea{background:#18181b;border:1px solid #2e2e33;border-radius:8px;padding:8px 12px;color:#fafafa;font-size:13px;font-family:inherit;width:100%}
+input[type=number]:focus,textarea:focus{outline:none;border-color:#6366f1}
+textarea{resize:vertical;min-height:50px}
+.ab{width:32px;height:32px;border-radius:6px;border:1px solid #2e2e33;background:#18181b;color:#a1a1aa;font-weight:600;font-size:12px;cursor:pointer;transition:all .15s;flex-shrink:0}
+.ab:hover{border-color:#3f3f46;color:#fafafa}.ab.sel{background:#6366f1;color:white;border-color:#6366f1}
+.kc{background:#111113;border:1px solid #1f1f23;border-radius:10px;overflow:hidden;transition:all .15s}
+.kc:hover{border-color:#2e2e33}
+.kh{padding:14px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.kb{padding:0 18px 14px;display:none}.kb.open{display:block}
+.ka{transition:transform .2s;color:#52525b;flex-shrink:0;margin-top:2px}.ka.open{transform:rotate(180deg)}
+.ci{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid #1f1f23;cursor:pointer;transition:all .15s;user-select:none}
+.ci:hover{border-color:#2e2e33}.ci.chk{border-color:#059669;background:rgba(5,150,105,.08)}
+.cb{width:16px;height:16px;border-radius:4px;border:2px solid #3f3f46;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.ci.chk .cb{background:#059669;border-color:#059669}
+.sc{border:1px solid #1f1f23;border-radius:10px;padding:18px;background:#111113;transition:all .15s}
+.sc.sa{border-color:#6366f1;background:rgba(99,102,241,.04)}.sc.sd{border-color:#059669;background:rgba(5,150,105,.04)}
+.toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:200;transform:translateY(80px);opacity:0;transition:all .3s;background:#27272a;border:1px solid #3f3f46;color:#fafafa}
+.toast.show{transform:translateY(0);opacity:1}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.mo.show{display:flex}
+.mb{background:#111113;border:1px solid #2e2e33;border-radius:14px;padding:24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.bh{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:60;display:none;pointer-events:none}
+.bh.show{display:block}
+.bhi{background:#111113;border:1px solid #2e2e33;border-radius:14px;padding:20px 28px;text-align:center;animation:bp2 .3s ease-out}
+.bsf{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:10;display:none}
+.bsf.show{display:block;animation:fi .3s ease-out}
+.dq{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;border:1px solid #1f1f23;cursor:pointer;transition:all .15s;user-select:none;font-size:12px;color:#a1a1aa}
+.dq:hover{border-color:#2e2e33}.dq.sel{border-color:#f87171;background:rgba(248,113,113,.08);color:#f87171}
+.wkd{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
+@keyframes bp2{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes fi{from{opacity:0;transform:translateX(-50%) translateY(6px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@media(max-width:768px){.dsk{display:none!important}.mbb{display:flex!important}.mg{grid-template-columns:1fr!important}.mc3{grid-template-columns:1fr!important}}
+</style>
+</head>
+<body>
+<div class="h-screen w-screen flex">
+
+<aside class="dsk w-[220px] h-full flex-shrink-0 bg-bg1 border-r border-bdr flex flex-col">
+<div class="p-4 flex-1 overflow-y-auto sb">
+<div class="mb-6"><h1 class="text-base font-bold text-tx1">Rewire</h1><p class="text-[11px] text-tx3 mt-0.5">MDO Protocol v2</p></div>
+<nav class="space-y-1" id="sn">
+<div class="ni active" data-v="ov">◻ Overview</div>
+<div class="ni" data-v="se">⏱ Session</div>
+<div class="ni" data-v="st">△ Stages</div>
+<div class="ni" data-v="kn">◎ Knowledge</div>
+<div class="ni" data-v="hi">☰ History</div>
+<div class="ni" data-v="cf">⚙ Settings</div>
+</nav>
+</div>
+<div class="p-4 border-t border-bdr">
+<div class="text-[11px] text-tx3 mb-2">Progress</div>
+<div class="h-1.5 bg-bg3 rounded-full mb-2"><div id="sp" class="h-1.5 bg-acc2 rounded-full transition-all" style="width:12.5%"></div></div>
+<div class="flex justify-between text-[11px]"><span class="text-tx3" id="ssl">Stage 0</span><span class="text-tx2 font-semibold" id="sul">1/8</span></div>
+</div>
+</aside>
+
+<main class="flex-1 h-full flex flex-col min-w-0 overflow-hidden">
+<div class="mbb hidden fixed bottom-0 left-0 right-0 bg-bg1 border-t border-bdr z-30 items-center justify-around py-1.5">
+<button class="flex flex-col items-center gap-0.5 p-1.5 text-tx3 text-[9px]" data-m="ov">◻<span>Home</span></button>
+<button class="flex flex-col items-center gap-0.5 p-1.5 text-tx3 text-[9px]" data-m="se">⏱<span>Train</span></button>
+<button class="flex flex-col items-center gap-0.5 p-1.5 text-tx3 text-[9px]" data-m="st">△<span>Stages</span></button>
+<button class="flex flex-col items-center gap-0.5 p-1.5 text-tx3 text-[9px]" data-m="kn">◎<span>Learn</span></button>
+<button class="flex flex-col items-center gap-0.5 p-1.5 text-tx3 text-[9px]" data-m="cf">⚙<span>More</span></button>
+</div>
+
+<div class="flex items-center justify-between px-5 py-3 border-b border-bdr bg-bg0 flex-shrink-0">
+<div><span class="tag" id="vl">Overview</span><h2 class="text-base font-semibold text-tx1 mt-0.5" id="vt">Dashboard</h2></div>
+<div class="flex items-center gap-2.5 text-right">
+<div><div class="text-[9px] text-tx4 uppercase tracking-wider">Sessions</div><div class="text-sm font-semibold" id="ts">0</div></div>
+<div class="w-px h-7 bg-bdr"></div>
+<div><div class="text-[9px] text-tx4 uppercase tracking-wider">Success</div><div class="text-sm font-semibold text-succ" id="tr">0%</div></div>
+<div class="w-px h-7 bg-bdr"></div>
+<div><div class="text-[9px] text-tx4 uppercase tracking-wider">Streak</div><div class="text-sm font-semibold text-warn" id="tk">0</div></div>
+</div>
+</div>
+
+<div class="flex-1 overflow-hidden relative p-5">
+
+<!-- ===== OVERVIEW ===== -->
+<div id="ovView" class="view active overflow-y-auto sb h-full fade-in pb-16 pr-1">
+<!-- Warnings -->
+<div id="ovWarnings" class="mb-4 space-y-2"></div>
+<!-- Stats -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+<div class="cs"><div class="text-[10px] text-tx4 uppercase tracking-wider mb-1">Sessions</div><div class="text-xl font-bold" id="os">0</div></div>
+<div class="cs"><div class="text-[10px] text-tx4 uppercase tracking-wider mb-1">Success Rate</div><div class="text-xl font-bold text-succ" id="or">0%</div></div>
+<div class="cs"><div class="text-[10px] text-tx4 uppercase tracking-wider mb-1">Avg Duration</div><div class="text-xl font-bold" id="od">0m</div></div>
+<div class="cs"><div class="text-[10px] text-tx4 uppercase tracking-wider mb-1">Days Active</div><div class="text-xl font-bold" id="oda">0</div></div>
+</div>
+<!-- Weekly View -->
+<div class="cd mb-5">
+<div class="flex items-center justify-between mb-3"><div class="tag">This Week</div><div class="text-xs text-tx3"><span id="weekCount">0</span>/4 sessions (recommended)</div></div>
+<div class="flex gap-2" id="weekDots"></div>
+</div>
+<!-- Main Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mc3 mb-5">
+<div class="cd md:col-span-2">
+<div class="tag mb-3">Current Focus</div>
+<h3 class="text-base font-semibold text-tx1 mb-1" id="ovStg"></h3>
+<p class="text-sm text-tx3 leading-relaxed mb-3" id="ovObj"></p>
+<div class="flex items-center gap-3 flex-wrap">
+<button class="bp text-sm" onclick="go('se')">Start Training →</button>
+<div class="flex-1 min-w-[120px]"><div class="text-[10px] text-tx4 mb-1">Stage Progress</div><div class="h-1.5 bg-bg3 rounded-full"><div id="ovProg" class="h-1.5 bg-acc2 rounded-full transition-all" style="width:12.5%"></div></div></div>
+</div>
+</div>
+<div class="cd">
+<div class="tag mb-3">Breathing Protocol</div>
+<div class="space-y-2.5 text-sm">
+<div class="flex items-start gap-2"><span class="text-[10px] font-bold text-succ bg-succ/10 px-1.5 py-0.5 rounded mt-0.5">95%</span><div><div class="font-medium text-tx1 text-xs">Normal breathing</div><div class="text-[11px] text-tx3">Just breathe naturally.</div></div></div>
+<div class="flex items-start gap-2"><span class="text-[10px] font-bold text-acc bg-acc/10 px-1.5 py-0.5 rounded mt-0.5">60s</span><div><div class="font-medium text-tx1 text-xs">Check-in breath</div><div class="text-[11px] text-tx3">One cycle: 4s in → hold → 6s out.</div></div></div>
+<div class="flex items-start gap-2"><span class="text-[10px] font-bold text-warn bg-warn/10 px-1.5 py-0.5 rounded mt-0.5">7+</span><div><div class="font-medium text-tx1 text-xs">Tactical breaths</div><div class="text-[11px] text-tx3">2-3 breaths + RK when urgency rises.</div></div></div>
+</div>
+</div>
+</div>
+<!-- Failure Pattern Insights -->
+<div class="cd mb-5" id="patternPanel" style="display:none">
+<div class="tag mb-3">Failure Pattern Analysis</div>
+<div id="patternContent" class="space-y-2"></div>
+</div>
+<!-- Recent -->
+<div class="cd">
+<div class="flex items-center justify-between mb-3"><div class="tag">Recent Sessions</div><button class="text-xs text-acc font-medium cursor-pointer" onclick="go('hi')">View All →</button></div>
+<div id="recentList" class="space-y-2"><div class="text-sm text-tx4 py-3 text-center">No sessions yet.</div></div>
+</div>
+</div>
+
+<!-- ===== SESSION ===== -->
+<div id="seView" class="view h-full fade-in">
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-4 h-full mg" style="min-height:0">
+<div class="lg:col-span-3 flex flex-col items-center justify-center relative cd overflow-hidden">
+<div class="mb-3">
+<svg width="180" height="180" viewBox="0 0 180 180">
+<circle cx="90" cy="90" r="80" fill="none" stroke="#1f1f23" stroke-width="2"/>
+<circle id="bRing" cx="90" cy="90" r="80" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-dasharray="503" stroke-dashoffset="503" transform="rotate(-90 90 90)" stroke-linecap="round" style="transition:stroke-dashoffset .08s linear"/>
+<text x="90" y="80" text-anchor="middle" fill="#52525b" font-size="10" font-weight="600" letter-spacing=".08em" id="bLbl">READY</text>
+<text x="90" y="108" text-anchor="middle" fill="#fafafa" font-size="34" font-weight="700" id="bNum"></text>
+</svg>
+</div>
+<div class="text-4xl font-bold tracking-tight mb-0.5" id="tDisp" style="font-variant-numeric:tabular-nums">00:00</div>
+<div class="text-xs text-tx3 mb-0.5" id="sState">Ready to begin</div>
+<div class="text-[11px] text-tx4 mb-5" id="bMode">Breathing: Normal</div>
+<div class="flex items-center gap-2.5 flex-wrap justify-center">
+<button class="bp" id="btnStart">Start</button>
+<button class="bs hidden" id="btnPause">Pause</button>
+<button class="bs hidden" id="btnResume">Resume</button>
+<button class="bs" id="btnStop">Stop & Log</button>
+</div>
+<!-- Arousal prompt -->
+<div id="arousalPrompt" class="absolute top-4 left-0 right-0 text-center hidden"><div class="inline-block bg-acc2/20 border border-acc/30 rounded-lg px-4 py-2 text-sm font-medium text-acc">Rate your arousal level (1-10)</div></div>
+<!-- Body scan -->
+<div id="bsCue" class="bsf"><div class="bg-bg3 border border-bdr2 rounded-lg px-4 py-2 text-sm font-medium text-warn" id="bsTxt"></div></div>
+</div>
+<div class="lg:col-span-2 flex flex-col gap-3 overflow-y-auto sb pb-16" style="min-height:0">
+<div class="cs"><div class="tag mb-2">Pre-Session Checklist</div><div class="space-y-1.5" id="chkList"></div></div>
+<div class="cs flex-1">
+<div class="tag mb-2">Stage Guidance — <span id="sgTitle" class="text-acc"></span></div>
+<div id="sgContent" class="space-y-2 text-sm"></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ===== STAGES ===== -->
+<div id="stView" class="view overflow-y-auto sb h-full fade-in pb-16 pr-1">
+<div class="flex items-center justify-between mb-5"><div><div class="tag">Progressive Overload</div><h3 class="text-base font-semibold text-tx1 mt-1">8 Stages of Mastery</h3></div><div class="text-right"><div class="text-[10px] text-tx4 uppercase tracking-wider">Completed</div><div class="text-sm font-semibold" id="stCount">0/8</div></div></div>
+<div class="space-y-3" id="stCont"></div>
+</div>
+
+<!-- ===== KNOWLEDGE ===== -->
+<div id="knView" class="view overflow-y-auto sb h-full fade-in pb-16 pr-1">
+<div class="mb-5"><div class="tag">Mental Model</div><h3 class="text-base font-semibold text-tx1 mt-1">15 Paradigm Shifts</h3><p class="text-sm text-tx3 mt-1">Read all before training. Each corrects a critical misconception.</p></div>
+<div class="space-y-2" id="knCont"></div>
+</div>
+
+<!-- ===== HISTORY ===== -->
+<div id="hiView" class="view overflow-y-auto sb h-full fade-in pb-16 pr-1">
+<div class="flex items-center justify-between mb-5">
+<div><div class="tag">Training Log</div><h3 class="text-base font-semibold text-tx1 mt-1">Session History</h3></div>
+<div class="flex gap-2"><button class="bs text-xs" id="expBtn">Export</button><button class="text-xs text-fail font-medium cursor-pointer" id="clrBtn">Clear All</button></div>
+</div>
+<div id="hiCont" class="space-y-2"></div>
+</div>
+
+<!-- ===== SETTINGS ===== -->
+<div id="cfView" class="view overflow-y-auto sb h-full fade-in pb-16 pr-1">
+<div class="mb-5"><div class="tag">Configuration</div><h3 class="text-base font-semibold text-tx1 mt-1">Settings</h3></div>
+<div class="space-y-4 max-w-lg">
+<div class="cd"><div class="text-sm font-semibold mb-3">Data</div><div class="space-y-2"><button class="bs w-full text-left text-sm" id="expAll">Export All Data</button><button class="bs w-full text-left text-sm" id="impBtn">Import Data</button><input type="file" id="fIn" class="hidden" accept=".json"></div></div>
+<div class="cd"><div class="text-sm font-semibold mb-3">Timers</div><div class="space-y-3">
+<div><label class="text-xs text-tx3 mb-1 block">Check-in breath interval (seconds)</label><input type="number" id="cfBI" min="30" max="300" value="60"></div>
+<div><label class="text-xs text-tx3 mb-1 block">Body scan interval (seconds)</label><input type="number" id="cfBS" min="60" max="600" value="120"></div>
+<div><label class="text-xs text-tx3 mb-1 block">Arousal awareness prompt interval (seconds)</label><input type="number" id="cfAP" min="20" max="120" value="45"></div>
+<button class="bp text-sm" id="cfSave">Save</button></div></div>
+<div class="cd"><div class="text-sm font-semibold mb-3">Lifetime Stats</div><div class="grid grid-cols-2 gap-3">
+<div class="cs"><div class="text-[10px] text-tx4 uppercase">Total Time</div><div class="text-lg font-bold mt-1" id="cfTT">0h 0m</div></div>
+<div class="cs"><div class="text-[10px] text-tx4 uppercase">Best Streak</div><div class="text-lg font-bold text-warn mt-1" id="cfBS2">0</div></div>
+<div class="cs"><div class="text-[10px] text-tx4 uppercase">Avg Arousal</div><div class="text-lg font-bold text-acc mt-1" id="cfAA">—</div></div>
+<div class="cs"><div class="text-[10px] text-tx4 uppercase">Sessions/Wk</div><div class="text-lg font-bold mt-1" id="cfPW">0</div></div>
+</div></div>
+<div class="cd" style="border-color:rgba(248,113,113,.15)"><div class="text-sm font-semibold text-fail mb-3">Danger Zone</div><button class="bd" id="cfReset">Reset All Progress</button><p class="text-xs text-tx4 mt-2">Permanently deletes all data.</p></div>
+</div>
+</div>
+
+</div>
+</main>
+</div>
+
+<!-- ===== DEBRIEF MODAL ===== -->
+<div id="debriefMo" class="mo">
+<div class="mb fade-in sb">
+<div class="text-center mb-5"><h3 class="text-lg font-bold">Session Complete</h3><p class="text-sm text-tx3 mt-1">Log your results</p></div>
+<div class="text-center mb-5"><div class="text-[10px] text-tx4 uppercase tracking-wider mb-1">Duration</div><div class="text-3xl font-bold" id="dbDur" style="font-variant-numeric:tabular-nums">00:00</div></div>
+<div class="mb-4"><div class="text-xs text-tx3 mb-2 font-semibold">Peak Arousal</div><div class="flex gap-1 flex-wrap" id="dbAro"></div></div>
+<div class="mb-4"><div class="text-xs text-tx3 mb-2 font-semibold">Notes</div><textarea id="dbNotes" placeholder="What worked? What was hard?" class="text-sm"></textarea></div>
+<!-- Failure diagnosis section (hidden by default) -->
+<div id="diagPanel" class="mb-4 hidden">
+<div class="text-xs font-semibold text-fail mb-3 uppercase tracking-wider">Failure Diagnosis</div>
+<div class="mb-3"><div class="text-xs text-tx3 mb-2">Where was tension when you lost control?</div><div class="flex flex-wrap gap-1.5" id="diagTension"></div></div>
+<div class="mb-3"><div class="text-xs text-tx3 mb-2">Were you breathing properly?</div><div class="flex gap-1.5" id="diagBreath"></div></div>
+<div class="mb-3"><div class="text-xs text-tx3 mb-2">Did you detect the involuntary clench?</div><div class="flex gap-1.5" id="diagDetect"></div></div>
+<div class="mb-3"><div class="text-xs text-tx3 mb-2">What caused the failure?</div><div class="flex flex-wrap gap-1.5" id="diagCause"></div></div>
+</div>
+<div class="space-y-2 mb-3">
+<button class="bsc" id="dbSucc" style="display:block">✓ Success — maintained control</button>
+<button class="bd" id="dbFail" style="display:block">✗ Ejaculated</button>
+<button class="bsc hidden" id="dbSubmitFail" style="display:none;background:#dc2626">Submit Failure Report</button>
+</div>
+<button class="text-xs text-tx4 hover:text-tx3 cursor-pointer w-full text-center mt-2" id="dbCancel">Cancel (discard)</button>
+</div>
+</div>
+
+<!-- Breath hint -->
+<div id="brHint" class="bh"><div class="bhi"><div class="text-base font-bold mb-1">Check-In Breath</div><div class="text-sm text-tx3">Deep belly inhale now</div></div></div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+const K='rewire_v5';
+const STG=[
+{id:0,t:'Stage 0: Proprioception',o:'Feel and identify your pelvic floor as a distinct muscle group.',x:'Contract and release the pelvic floor independently from abs, glutes, and thighs. Feel its resting tension state.',d:'Most men have never consciously felt this muscle. You cannot control what you cannot feel. Find it via contraction first (stop urine mid-stream), then learn to release. Practice distinguishing pelvic floor from abs, glutes, and thighs — fire each independently.',g:[
+'Sit on firm surface. Contract like stopping urine. THAT is your pelvic floor.',
+'Release the contraction. The release feeling = what RK feels like.',
+'Clench ONLY pelvic floor (abs soft). Then ONLY abs (PF soft). Then ONLY glutes.',
+'Feel the resting state — is it tight? Clench hard 5s, release. That release = target baseline.',
+'No arousal needed. This is pure muscle awareness training.']},
+{id:1,t:'Stage 1: The Tools',o:'Master diaphragmatic breathing, reverse kegel, and the combination as a single fluid action.',x:'60-second RK hold with proper diaphragmatic breathing. Zero abs/glutes/thigh engagement. Breath + RK combination feels like one smooth motion. Repeat 3 times.',d:'Three sub-skills trained separately then combined. Breathing: belly rises on inhale, chest stays still. RK: push pelvic floor DOWN and OUT gently. Combination: on the EXHALE, push the RK — the exhale naturally assists the downward push. This combo is your primary weapon.',g:[
+'SUB-SKILL 1: Lie on back. Hand on belly, hand on chest. Inhale: belly rises, chest stays still.',
+'4 seconds in → 1 second hold → 6 seconds out. Practice until natural.',
+'SUB-SKILL 2: Reverse Kegel — push pelvic floor DOWN. Like gently starting to urinate.',
+'NOT bearing down with abs (common mistake). Hold 10s → 20s → 30s → 60s.',
+'SUB-SKILL 3: THE COMBO — deep breath in, on exhale push the RK. One fluid motion.',
+'This is your primary weapon for all future stages.']},
+{id:2,t:'Stage 2: Arousal Mapping',o:'Develop accurate real-time arousal awareness on a 1-10 scale with distinct physical markers.',x:'Narrate arousal level in real-time. Accurately predict hitting 8 and 9 with at least 15 seconds warning. Distinguish 6 from 8 by physical sensation.',d:'Every later stage requires accurate self-rating. Most men have two states: "fine" and "too late." Begin slow, light stimulation with lube. Every 30 seconds, SAY your number out loud. Map physical markers: 5 = full erection, zero urgency. 7 = first whisper of tension. 8 = involuntary tightening starts. 9 = strong urgency.',g:[
+'Slow, light stimulation with lube. Lie on back.',
+'Every 30-45 seconds: say your arousal number OUT LOUD.',
+'Map your physical markers at each level — what does 5 feel like vs 7?',
+'5: Full erection, pleasure present, zero urgency.',
+'7: Momentum building, first whisper of tension somewhere.',
+'8: Pleasure demanding, pelvic floor may start tightening on its own.',
+'9: Near edge, strong involuntary tension, "I need to cum" is loud.',
+'Goal: 15 seconds of warning before hitting 9.']},
+{id:3,t:'Stage 3: Integration at 6-7',o:'Deploy breath + RK under moderate arousal without stopping stimulation.',x:'Hit 7/10 arousal. Deploy breath + RK without stopping stimulation. Drop to 4-5 within 15 seconds. Repeat 5 times in one session.',d:'6-7 is below the involuntary clench zone. You train the HABIT of using tools under arousal before facing involuntary resistance. Like practicing emergency stops in a parking lot before driving on a highway. Do NOT stop stimulation — slow down, breathe, RK, feel the wave recede.',g:[
+'Build arousal to 6-7/10 (you can gauge this accurately now).',
+'At 7: ONE deep belly breath + RK on exhale.',
+'Do NOT stop stimulation. Slow down slightly.',
+'Feel arousal drop from 7 to 4-5. Erection STAYS. Urgency drops.',
+'Resume normal pace. Repeat when you hit 7 again.',
+'You are training: "rising arousal → deploy tool" not "rising arousal → panic."']},
+{id:4,t:'Stage 4: The Clench Zone (8/10)',o:'Detect and override the first involuntary pelvic floor tension at 8/10 arousal.',x:'Sustain 8/10 arousal for 2 minutes. RK successfully overrides every involuntary clench attempt. Pelvic floor stays relaxed despite internal pressure.',d:'THIS IS THE MOST IMPORTANT STAGE. At 8/10 the involuntary pattern FIRST appears — a tightening you did NOT initiate. The clench is mild here, easy to overpower with RK. This builds the DETECTION SKILL that makes Stage 5 possible. If you skip this and go straight to 9, you face the full spasm with no experience handling its precursor.',g:[
+'Build to 8/10. You will feel something NEW: involuntary tightening.',
+'THIS is the enemy. Notice it. Don\'t panic. It\'s just a muscle habit.',
+'Deploy: STRONG breath + STRONG RK. Push DOWN hard.',
+'At 8, the clench is mild. Easy to overpower. Build confidence.',
+'CRITICAL SKILL: detect the clench THE MOMENT it starts.',
+'Scan: toes, thighs, glutes, abs, jaw — release everything.']},
+{id:5,t:'Stage 5: PONR Override (9/10)',o:'Face the full ejaculatory spasm trigger at 9/10 and defeat it with a strong RK.',x:'Hit 9/10. Feel the spasm trigger. Override with RK. Arousal drops to 7-8, erection maintained. Successfully override 3 times in one session.',d:'The 9/10 spasm is the same mechanism as the 8/10 clench, just stronger. Your detection skill from Stage 4 gives early warning. EXPECT FAILURES — each one teaches you something specific. After each failure, run the diagnostic questions.',g:[
+'Build to 9/10. The spasm will fire.',
+'You already know what it feels like from Stage 4 (milder version).',
+'STRONG belly breath + MAXIMUM RK. Push like starting to urinate.',
+'The spasm fires into a stretched muscle. It fizzles.',
+'Arousal drops to 7-8. Build back up. Repeat.',
+'EXPECT FAILURES. Run failure diagnosis after each one.']},
+{id:6,t:'Stage 6: Edge Endurance',o:'Sustain arousal between 8.5-9.5 for extended periods with semi-automatic control.',x:'Maintain 8.5-9.5 for 5 continuous minutes. Overrides feel mostly automatic. No emergency stops needed.',d:'Overriding once is conscious effort. Sustaining for minutes requires the pattern to become semi-automatic. This is the neuroplasticity consolidation stage. Each wave cycle strengthens the new pathway. You teach your nervous system: high arousal is the new normal.',g:[
+'Surf between 8.5 and 9.5 continuously.',
+'Up to 9 → breath + RK → drops to 8 → build → 9 again → repeat.',
+'The technique should start feeling more natural. Less effort.',
+'Each cycle strengthens the new neural pathway.',
+'Goal: 5+ minutes at the edge with relaxed pelvic floor.']},
+{id:7,t:'Stage 7: MDO',o:'Experience full orgasm while body stays relaxed. No emission. Repeat.',x:'Push to 10/10. Full orgasm cascade. RK prevents all spasms. Arousal drops to 7/10. Build back up and orgasm again in same session.',d:'The final frontier. Let arousal rise to 9.8... 9.9... 10. Maintain strong RK. Brain fires the full orgasm. But the plumbing is locked open. Nothing spasms. Nothing releases. Arousal drops partially. No prolactin. No refractory. Build back up. Do it again. The paradox: you must RELAX INTO the orgasm, not clench through it.',g:[
+'From your 8.5-9.5 surfing, ALLOW arousal to rise to 10.',
+'Maintain STRONG RK. Breathe.',
+'Brain fires: dopamine flood, full orgasm response.',
+'Pelvic floor pushed outward by RK. Spasm fizzles.',
+'You feel: intense pleasure wave, possibly shaking.',
+'You don\'t feel: rhythmic contractions or fluid release.',
+'Arousal drops to 7/10. Erection stays. Build back up.',
+'THAT is MDO. Repeat as desired.']}
+];
+
+const PDG=[
+{c:'Foundation',t:'Orgasm ≠ Ejaculation',b:'They are the same thing.',tr:'Orgasm is neurological (dopamine/endorphin cascade). Ejaculation is mechanical (muscular spasm expelling fluid). Different pathways. Correlated by default, not causally linked.',m:'Brain orgasm travels through dopaminergic pathways. Ejaculation is a two-phase spinal reflex: emission via sympathetic NS, then expulsion via BC muscle contraction.',a:'Train your body to fire the brain event while suppressing the mechanical event.'},
+{c:'Foundation',t:'Deep Breathing Makes Erections HARDER',b:'Relaxation kills erections.',tr:'Erections = parasympathetic NS. Deep breathing activates parasympathetic. Therefore breathing SUPPORTS erections. Ejaculation = sympathetic NS — the opposite system.',m:'Diaphragmatic breathing → vagus nerve → parasympathetic → vasodilation → blood flows IN → harder erection. Sympathetic activation (tension) constricts blood AND triggers ejaculation.',a:'Breathe deeply during arousal. Erection stays or gets harder. Only urgency decreases.'},
+{c:'Foundation',t:'No Refractory Without Ejaculation',b:'Men need recovery time after orgasm.',tr:'Refractory is triggered by EJACULATION specifically. Prolactin (released by ejecting fluid) kills arousal. No ejaculation = no prolactin = erection stays = go again.',m:'Post-ejaculation: prolactin → dopamine suppressed → 15-60 min recovery. Post-dry-orgasm: no prolactin → arousal drops to 7/10 → recovers in seconds → repeat.',a:'Dry orgasm = no refractory. Build back up immediately.'},
+{c:'Mistakes',t:'Kegels Make You Finish FASTER',b:'Strengthen pelvic floor with kegels to last longer.',tr:'Kegels train BC muscle to CONTRACT powerfully. BC contraction IS the ejaculatory spasm. You\'re strengthening the muscle that causes ejaculation.',m:'Stronger BC = more powerful, easier-to-trigger reflex. Like training your trigger finger to be faster.',a:'Do REVERSE kegels. Train relaxation under arousal, not contraction.'},
+{c:'Mistakes',t:'Trying Not To Cum Makes You Cum Faster',b:'Willpower prevents ejaculation.',tr:'"Don\'t cum" = anxiety = sympathetic = ejaculation trigger. It\'s a physiological feedback loop.',m:'Mental resistance → cortisol → sympathetic → pelvic tightening → ejaculation. Not willpower — nervous system.',a:'Replace "don\'t cum" with "stay relaxed." Different nervous system response.'},
+{c:'Mistakes',t:'Distraction Guarantees Failure',b:'Think about something boring.',tr:'Body stays tense regardless of thoughts. You miss PONR signals. Effort itself creates sympathetic activation.',m:'Ejaculation is a SPINAL reflex. Thoughts don\'t reach the spinal cord in time. Need body awareness, not mental escape.',a:'Pay MORE attention. Feel where tension builds. Release it consciously.'},
+{c:'Mistakes',t:'You\'re Not Too Sensitive — You\'re Too TENSE',b:'I cum fast because of sensitivity.',tr:'Sensitivity = how good it feels. Pelvic tension = how fast you ejaculate. Independent variables.',m:'Numbing cream → less sensation → thrust harder → more tension → still fast. Death grip makes it worse.',a:'Stop reducing sensitivity. Start reducing tension.'},
+{c:'Technique',t:'Stopping At Edge Is The WORST Strategy',b:'Stop, wait, resume.',tr:'Stopping doesn\'t release the clench. Sometimes creates a tension spike. Trains "high arousal = panic."',m:'No active relaxation occurs. You train an emergency brake, not control.',a:'SLOW DOWN + breath + RK. Ride through the wave. Don\'t flee.'},
+{c:'Technique',t:'Squeeze Technique Is A Band-Aid',b:'Squeeze the glans to stop ejaculation.',tr:'Adds MORE tension. Works via pain override. Never addresses root cause.',m:'Competing pain signal briefly suppresses reflex. Tension remains underneath.',a:'Root cause = involuntary pelvic clenching. Solution = trained relaxation.'},
+{c:'Technique',t:'Fast Thrusting Activates Ejaculation',b:'Faster = better.',tr:'Fast movement = tense hip flexors + core + glutes + shallow breathing = all sympathetic activation.',m:'Physical exertion → sympathetic → pelvic tension → ejaculatory threshold drops.',a:'Slow, deep, deliberate. Parasympathetic. More pleasure. More control.'},
+{c:'Body',t:'Position Determines Baseline Tension',b:'Position doesn\'t matter.',tr:'Standing = maximum tension. On back = minimum. Baseline tension directly affects threshold.',m:'Muscle engagement is additive. Supine: zero weight support, gravity assists blood flow, all muscles relax.',a:'Train lying on back. Graduate to other positions after mastering control.'},
+{c:'Body',t:'ANY Lower Body Tension Feeds The Chain',b:'Only pelvic floor matters.',tr:'Curled toes → calves → thighs → glutes → pelvic floor. Even jaw clenching reaches pelvis through fascia.',m:'Myofascial continuity propagates tension. Adductors and hip flexors share fascia with pelvic floor.',a:'Scan everything during sessions: toes, thighs, glutes, abs, hands, jaw. Release all.'},
+{c:'Body',t:'Arousal Is A Wave, Not A Line',b:'Arousal climbs steadily until inevitable.',tr:'Arousal oscillates naturally. Ejaculation happens when a wave peaks above threshold.',m:'Dopamine cycling has natural peaks and troughs. You\'re never inevitably climbing.',a:'Don\'t force arousal down. Smooth the peaks. Troughs happen naturally. Surf.'},
+{c:'Lifestyle',t:'Porn Trains The Wrong Pattern',b:'Porn is neutral.',tr:'Death grip + no lube + shallow breathing + racing to finish = highway for "arousal → tense → ejaculate fast."',m:'Each wrong-pattern session reinforces via neuroplasticity. Dopamine downregulation causes escalation.',a:'Apply all protocol rules during any stimulation. Ideally use sensation alone.'},
+{c:'Lifestyle',t:'NoFap Misses The Point Entirely',b:'Abstinence fixes the problem.',tr:'No practice = no conditioning = no new pathway. Same old pattern fires when you finally engage.',m:'Neural pathways require ACTIVE PRACTICE with correct technique.',a:'Practice 3-4x/week WITH technique. Can\'t learn to swim out of the pool.'}
+];
+
+const BSC=['Uncurl your toes','Soften your thighs','Relax your glutes','Drop your jaw','Open your hands','Relax your abdomen','Drop your shoulders','Soften behind your eyes'];
+const TENSION_AREAS=['Jaw','Toes','Thighs','Glutes','Abs','Hands','Shoulders','Pelvic floor'];
+const BREATH_OPTS=['Yes — breathing was fine','No — breathing went shallow','Forgot to breathe'];
+const DETECT_OPTS=['Yes — felt it early','Felt it too late','Didn\'t feel it at all'];
+const CAUSE_OPTS=['Rushed stimulation','Lost focus','Involuntary spasm too strong','Body position tensed up','Skipped breath check-in','Was not doing RK'];
+const VM={ov:{l:'Overview',t:'Dashboard'},se:{l:'Training',t:'Live Session'},st:{l:'Progress',t:'8 Stages'},kn:{l:'Mental Model',t:'Paradigm Shifts'},hi:{l:'Records',t:'History'},cf:{l:'Config',t:'Settings'}};
+const CHK=['Lube applied','Lying on back','No time pressure','Body scan — everything relaxed'];
+
+const DF={stats:{total:0,successful:0,totalDur:0,bestStreak:0},levels:{completed:[],active:0},history:[],settings:{breathInt:60,bodyScanInt:120,arousalPromptInt:45}};
+let S=ld();
+let tmr,brA,brR,bsT,apT,elapsed=0,running=false,paused=false,selA=0,bsI=0;
+let diagData={tension:[],breath:'',detect:'',cause:[]};
+
+function ld(){try{const r=localStorage.getItem(K);if(!r)return JSON.parse(JSON.stringify(DF));const p=JSON.parse(r);return{stats:{total:p?.stats?.total||0,successful:p?.stats?.successful||0,totalDur:p?.stats?.totalDur||0,bestStreak:p?.stats?.bestStreak||0},levels:{completed:Array.isArray(p?.levels?.completed)?p.levels.completed:[],active:p?.levels?.active??0},history:Array.isArray(p?.history)?p.history:[],settings:{breathInt:p?.settings?.breathInt||60,bodyScanInt:p?.settings?.bodyScanInt||120,arousalPromptInt:p?.settings?.arousalPromptInt||45}}}catch(e){return JSON.parse(JSON.stringify(DF))}}
+function sv(){localStorage.setItem(K,JSON.stringify(S))}
+function $(id){return document.getElementById(id)}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function fmt(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return h>0?`${h}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`:`${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`}
+function rate(){return S.stats.total?Math.round(S.stats.successful/S.stats.total*100):0}
+function streak(){if(!S.history.length)return 0;let s=0;for(let i=S.history.length-1;i>=0;i--){if(S.history[i].success)s++;else break}return s}
+function unl(){return Math.min(S.levels.completed.length+1,8)}
+function days(){if(!S.history.length)return 0;return Math.max(1,Math.floor((Date.now()-new Date(S.history[0].date).getTime())/864e5))}
+function avgD(){return S.stats.total?Math.round(S.stats.totalDur/S.stats.total):0}
+function avgA(){const a=S.history.filter(h=>h.arousal>0);return a.length?(a.reduce((s,h)=>s+h.arousal,0)/a.length).toFixed(1):0}
+function pw(){const d=days();return d>0?(S.stats.total/(d/7)).toFixed(1):'0'}
+
+function sessionsThisWeek(){
+const now=new Date(),dow=now.getDay(),mon=new Date(now);
+mon.setDate(now.getDate()-(dow===0?6:dow-1));mon.setHours(0,0,0,0);
+return S.history.filter(h=>new Date(h.date)>=mon);
+}
+
+function trainedYesterday(){
+const y=new Date();y.setDate(y.getDate()-1);y.setHours(0,0,0,0);
+const ye=new Date(y);ye.setHours(23,59,59,999);
+return S.history.some(h=>{const d=new Date(h.date);return d>=y&&d<=ye});
+}
+
+function consecutiveDays(){
+let count=0;const today=new Date();today.setHours(0,0,0,0);
+for(let i=0;i<7;i++){
+const d=new Date(today);d.setDate(today.getDate()-i);
+const de=new Date(d);de.setHours(23,59,59,999);
+if(S.history.some(h=>{const hd=new Date(h.date);return hd>=d&&hd<=de}))count++;
+else break;
+}return count;
+}
+
+function getFailurePatterns(){
+const fails=S.history.filter(h=>!h.success&&h.diagnosis);
+if(fails.length<3)return null;
+const tensionCount={},causeCount={},breathCount={},detectCount={};
+fails.forEach(f=>{
+const d=f.diagnosis;
+(d.tension||[]).forEach(t=>{tensionCount[t]=(tensionCount[t]||0)+1});
+(d.cause||[]).forEach(c=>{causeCount[c]=(causeCount[c]||0)+1});
+if(d.breath)breathCount[d.breath]=(breathCount[d.breath]||0)+1;
+if(d.detect)detectCount[d.detect]=(detectCount[d.detect]||0)+1;
+});
+const topTension=Object.entries(tensionCount).sort((a,b)=>b[1]-a[1]).slice(0,3);
+const topCause=Object.entries(causeCount).sort((a,b)=>b[1]-a[1]).slice(0,3);
+return{tensionCount,causeCount,breathCount,detectCount,topTension,topCause,total:fails.length};
+}
+
+// ===== RENDER =====
+function renderAll(){
+const r=rate(),sk=streak(),u=unl(),stg=STG.find(l=>l.id===S.levels.active)||STG[0],p=u/8*100;
+$('ts').textContent=S.stats.total;$('tr').textContent=r+'%';$('tk').textContent=sk;
+$('sp').style.width=p+'%';$('ssl').textContent='Stage '+S.levels.active;$('sul').textContent=u+'/8';
+$('os').textContent=S.stats.total;$('or').textContent=r+'%';
+$('od').textContent=Math.floor(avgD()/60)+'m';$('oda').textContent=days();
+$('ovStg').textContent=stg.t;$('ovObj').textContent=stg.o;$('ovProg').style.width=p+'%';
+$('stCount').textContent=S.levels.completed.length+'/8';
+const th=Math.floor(S.stats.totalDur/3600),tm=Math.floor((S.stats.totalDur%3600)/60);
+$('cfTT').textContent=th+'h '+tm+'m';$('cfBS2').textContent=S.stats.bestStreak;
+const aa=avgA();$('cfAA').textContent=aa>0?aa:'—';$('cfPW').textContent=pw();
+renderWarnings();renderWeek();renderRecent();renderHistory();renderStages();renderGuidance();renderPatterns();
+}
+
+function renderWarnings(){
+const w=$('ovWarnings');w.innerHTML='';
+const stw=sessionsThisWeek(),cd=consecutiveDays(),ty=trainedYesterday();
+if(stw.length>=4)w.innerHTML+=`<div class="cs" style="border-color:rgba(251,191,36,.2);background:rgba(251,191,36,.05)"><div class="text-sm text-warn font-medium">⚠ ${stw.length} sessions this week — consider resting. Max recommended: 4.</div></div>`;
+if(cd>=2)w.innerHTML+=`<div class="cs" style="border-color:rgba(251,191,36,.2);background:rgba(251,191,36,.05)"><div class="text-sm text-warn font-medium">⚠ ${cd} consecutive training days. CNS needs recovery. Take a rest day.</div></div>`;
+else if(ty)w.innerHTML+=`<div class="cs" style="border-color:rgba(56,189,248,.15);background:rgba(56,189,248,.03)"><div class="text-sm text-sky font-medium">ℹ You trained yesterday. A rest day today would aid consolidation.</div></div>`;
+}
+
+function renderWeek(){
+const now=new Date(),dow=now.getDay(),mon=new Date(now);
+mon.setDate(now.getDate()-(dow===0?6:dow-1));mon.setHours(0,0,0,0);
+const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const c=$('weekDots');c.innerHTML='';let count=0;
+for(let i=0;i<7;i++){
+const d=new Date(mon);d.setDate(mon.getDate()+i);d.setHours(0,0,0,0);
+const de=new Date(d);de.setHours(23,59,59,999);
+const trained=S.history.some(h=>{const hd=new Date(h.date);return hd>=d&&hd<=de});
+const isToday=d.toDateString()===now.toDateString();
+const isFuture=d>now;
+if(trained)count++;
+c.innerHTML+=`<div class="flex flex-col items-center gap-1"><div class="wkd ${trained?'bg-succ/20 text-succ border border-succ/30':isToday?'bg-acc/10 text-acc border border-acc/30':isFuture?'bg-bg3 text-tx4 border border-transparent':'bg-bg3 text-tx4 border border-transparent'}">${days[i][0]}</div><div class="text-[9px] ${isToday?'text-acc':'text-tx4'}">${isToday?'Today':days[i]}</div></div>`;
+}
+$('weekCount').textContent=count;
+}
+
+function renderRecent(){
+const c=$('recentList');
+if(!S.history.length){c.innerHTML='<div class="text-sm text-tx4 py-3 text-center">No sessions yet.</div>';return}
+c.innerHTML=S.history.slice(-5).reverse().map(h=>{const d=new Date(h.date);
+return`<div class="flex items-center justify-between py-2 px-3 rounded-lg border ${h.success?'border-bdr':'border-fail/20'}"><div class="flex items-center gap-2.5"><div class="w-2 h-2 rounded-full ${h.success?'bg-succ':'bg-fail'}"></div><div><div class="text-sm text-tx1">${d.toLocaleDateString('en',{month:'short',day:'numeric'})}</div><div class="text-[10px] text-tx4">Stg ${h.stage}${h.arousal?' · Peak '+h.arousal:''}</div></div></div><div class="text-sm font-medium ${h.success?'text-succ':'text-fail'}">${fmt(h.duration)}</div></div>`}).join('')}
+
+function renderHistory(){
+const c=$('hiCont');
+if(!S.history.length){c.innerHTML='<div class="cd text-center text-tx4 py-6">No sessions yet.</div>';return}
+c.innerHTML=S.history.slice().reverse().map(h=>{const d=new Date(h.date);
+let diagInfo='';
+if(!h.success&&h.diagnosis){const dg=h.diagnosis;
+if(dg.tension?.length)diagInfo+=`<br>Tension: ${dg.tension.join(', ')}`;
+if(dg.cause?.length)diagInfo+=`<br>Cause: ${dg.cause.join(', ')}`;
+if(dg.breath)diagInfo+=`<br>Breathing: ${dg.breath}`;
+if(dg.detect)diagInfo+=`<br>Detection: ${dg.detect}`;}
+return`<div class="cs flex items-start justify-between gap-3"><div class="flex items-start gap-2.5"><div class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${h.success?'bg-succ':'bg-fail'}"></div><div><div class="text-sm font-medium text-tx1">${d.toLocaleDateString('en',{weekday:'short',month:'short',day:'numeric'})} <span class="text-tx4 font-normal text-xs">${d.toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'})}</span></div><div class="text-xs text-tx3 mt-0.5">Stage ${h.stage}${h.arousal?' · Peak: '+h.arousal+'/10':''}${h.notes?' · '+h.notes:''}${diagInfo}</div></div></div><div class="text-right flex-shrink-0"><div class="text-sm font-semibold ${h.success?'text-succ':'text-fail'}">${h.success?'Success':'Failed'}</div><div class="text-xs text-tx4">${fmt(h.duration)}</div></div></div>`}).join('')}
+
+function renderStages(){
+const c=$('stCont');c.innerHTML='';
+STG.forEach(s=>{
+const done=S.levels.completed.includes(s.id),act=S.levels.active===s.id,op=s.id<=unl()-1||act;
+const d=document.createElement('div');d.className=`sc ${act?'sa':done?'sd':''}${!op&&!act?' opacity-40':''}`;
+d.innerHTML=`<div class="flex items-center justify-between mb-2"><div class="flex items-center gap-2"><span class="text-base font-bold ${act?'text-acc':done?'text-succ':'text-tx4'}">${s.id}</span><h4 class="text-sm font-semibold text-tx1">${s.t}</h4></div><span class="badge ${done?'bg-succ/10 text-succ':act?'bg-acc/10 text-acc':op?'bg-bg3 text-tx3':'bg-bg3 text-tx4'}">${done?'Passed':act?'Active':op?'Open':'Locked'}</span></div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2"><div><div class="text-[10px] text-tx4 uppercase tracking-wider mb-0.5">Objective</div><p class="text-xs text-tx2 leading-relaxed">${s.o}</p></div><div><div class="text-[10px] text-tx4 uppercase tracking-wider mb-0.5">Pass Criteria</div><p class="text-xs text-tx2 leading-relaxed">${s.x}</p></div></div>
+<p class="text-xs text-tx3 leading-relaxed mb-3">${s.d}</p>
+${act?`<button class="bp text-sm" onclick="compStg(${s.id})">I Have Met This Criteria</button>`:done?'<div class="text-xs text-succ font-medium">✓ Completed</div>':''}`;
+c.appendChild(d);})}
+
+function renderKnowledge(){
+const c=$('knCont');c.innerHTML='';let cc='';
+PDG.forEach((p,i)=>{
+if(p.c!==cc){cc=p.c;const h=document.createElement('div');h.className=`tag ${i?'mt-4':''} mb-1`;h.textContent=cc;c.appendChild(h)}
+const d=document.createElement('div');d.className='kc';
+d.innerHTML=`<div class="kh" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.ka').classList.toggle('open')"><div><div class="text-sm font-semibold text-tx1">${i+1}. ${p.t}</div><div class="text-xs text-tx3 mt-0.5">"${p.b}"</div></div><svg class="ka" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+<div class="kb"><div class="space-y-2"><div><div class="text-[10px] text-succ uppercase tracking-wider font-semibold mb-0.5">Truth</div><p class="text-xs text-tx2 leading-relaxed">${p.tr}</p></div><div><div class="text-[10px] text-acc uppercase tracking-wider font-semibold mb-0.5">Mechanism</div><p class="text-xs text-tx2 leading-relaxed">${p.m}</p></div><div class="bg-bg2 rounded-lg p-2.5 border border-bdr"><div class="text-[10px] text-warn uppercase tracking-wider font-semibold mb-0.5">Action</div><p class="text-xs text-tx1 font-medium">${p.a}</p></div></div></div>`;
+c.appendChild(d)})}
+
+function renderGuidance(){
+const stg=STG.find(s=>s.id===S.levels.active)||STG[0];
+$('sgTitle').textContent=stg.t;
+$('sgContent').innerHTML=stg.g.map(g=>`<div class="text-xs text-tx2 leading-relaxed pl-3 border-l-2 border-bdr">${g}</div>`).join('');
+}
+
+function renderChecklist(){
+$('chkList').innerHTML=CHK.map((c,i)=>`<div class="ci" data-ci="${i}"><div class="cb"><svg width="10" height="10" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24" class="csvg" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-xs text-tx2">${c}</span></div>`).join('');
+document.querySelectorAll('.ci').forEach(ci=>ci.addEventListener('click',()=>{ci.classList.toggle('chk');ci.querySelector('.csvg').style.display=ci.classList.contains('chk')?'block':'none'}));
+}
+
+function renderPatterns(){
+const pp=getFailurePatterns();
+const panel=$('patternPanel'),cont=$('patternContent');
+if(!pp){panel.style.display='none';return}
+panel.style.display='block';
+let html='<div class="text-xs text-tx3 mb-2">Based on '+pp.total+' failed sessions:</div>';
+if(pp.topTension.length)html+=`<div class="cs"><div class="text-[10px] text-fail uppercase tracking-wider font-semibold mb-1">Most Common Tension Areas</div>${pp.topTension.map(([k,v])=>`<div class="text-xs text-tx2">${k}: ${v} times (${Math.round(v/pp.total*100)}%)</div>`).join('')}</div>`;
+if(pp.topCause.length)html+=`<div class="cs mt-2"><div class="text-[10px] text-warn uppercase tracking-wider font-semibold mb-1">Most Common Causes</div>${pp.topCause.map(([k,v])=>`<div class="text-xs text-tx2">${k}: ${v} times (${Math.round(v/pp.total*100)}%)</div>`).join('')}</div>`;
+cont.innerHTML=html;
+}
+
+// ===== TIMER =====
+function start(){
+if(running&&!paused)return;running=true;paused=false;
+$('btnStart').classList.add('hidden');$('btnPause').classList.remove('hidden');$('btnResume').classList.add('hidden');
+$('sState').textContent='Session active';$('bMode').textContent='Breathing: Normal';
+tmr=setInterval(()=>{elapsed++;$('tDisp').textContent=fmt(elapsed);
+if(elapsed>0&&elapsed%S.settings.breathInt===0)checkIn();
+},1000);
+startBS();startAP();
+}
+function pause(){if(!running)return;running=false;paused=true;clearInterval(tmr);cancelAnimationFrame(brA);clearInterval(bsT);clearInterval(apT);
+$('btnPause').classList.add('hidden');$('btnResume').classList.remove('hidden');$('sState').textContent='Paused';$('bLbl').textContent='PAUSED';$('bNum').textContent=''}
+function resume(){if(running)return;running=true;paused=false;$('btnResume').classList.add('hidden');$('btnPause').classList.remove('hidden');$('sState').textContent='Session active';
+tmr=setInterval(()=>{elapsed++;$('tDisp').textContent=fmt(elapsed);if(elapsed>0&&elapsed%S.settings.breathInt===0)checkIn()},1000);startBS();startAP();}
+function stop(){clearInterval(tmr);cancelAnimationFrame(brA);clearInterval(bsT);clearInterval(apT);running=false;paused=false;
+$('btnPause').classList.add('hidden');$('btnResume').classList.add('hidden');$('btnStart').classList.remove('hidden');
+$('bsCue').classList.remove('show');$('arousalPrompt').classList.add('hidden');
+$('bLbl').textContent='DONE';$('bNum').textContent='';$('bRing').style.strokeDashoffset='503';
+if(elapsed>0)showDebrief();}
+function reset(){clearInterval(tmr);cancelAnimationFrame(brA);clearInterval(bsT);clearInterval(apT);running=false;paused=false;elapsed=0;selA=0;
+$('tDisp').textContent='00:00';$('sState').textContent='Ready to begin';$('bMode').textContent='Breathing: Normal';
+$('bLbl').textContent='READY';$('bNum').textContent='';$('bRing').style.strokeDashoffset='503';$('bRing').setAttribute('stroke','#6366f1');
+$('btnStart').classList.remove('hidden');$('btnPause').classList.add('hidden');$('btnResume').classList.add('hidden');
+$('bsCue').classList.remove('show');$('arousalPrompt').classList.add('hidden');$('dbNotes').value='';
+$('diagPanel').classList.add('hidden');$('dbSucc').style.display='block';$('dbFail').style.display='block';$('dbSubmitFail').style.display='none';
+diagData={tension:[],breath:'',detect:'',cause:[]};
+renderChecklist();}
+
+function checkIn(){
+$('bMode').textContent='CHECK-IN — follow the pacer';
+const h=$('brHint');h.classList.add('show');if(navigator.vibrate)navigator.vibrate([150,80,150]);
+setTimeout(()=>h.classList.remove('show'),2000);
+const st=performance.now(),ci=503;
+cancelAnimationFrame(brA);
+function anim(now){if(!running)return;const el=now-st;const ring=$('bRing'),lbl=$('bLbl'),num=$('bNum');
+if(el<4000){ring.style.strokeDashoffset=ci*(1-el/4000);ring.setAttribute('stroke','#34d399');lbl.textContent='INHALE';num.textContent=Math.ceil((4000-el)/1000)}
+else if(el<5500){ring.style.strokeDashoffset='0';ring.setAttribute('stroke','#818cf8');lbl.textContent='HOLD';num.textContent=''}
+else if(el<11500){ring.style.strokeDashoffset=ci*((el-5500)/6000);ring.setAttribute('stroke','#6366f1');lbl.textContent='EXHALE';num.textContent=Math.ceil((11500-el)/1000)}
+else{ring.style.strokeDashoffset='503';ring.setAttribute('stroke','#6366f1');lbl.textContent='';num.textContent='';$('bMode').textContent='Breathing: Normal';return}
+brA=requestAnimationFrame(anim)}brA=requestAnimationFrame(anim);
+}
+
+function startBS(){clearInterval(bsT);bsI=0;bsT=setInterval(()=>{$('bsTxt').textContent='↓ '+BSC[bsI%BSC.length];$('bsCue').classList.add('show');bsI++;setTimeout(()=>$('bsCue').classList.remove('show'),3000)},S.settings.bodyScanInt*1000)}
+function startAP(){clearInterval(apT);apT=setInterval(()=>{$('arousalPrompt').classList.remove('hidden');setTimeout(()=>$('arousalPrompt').classList.add('hidden'),3000)},S.settings.arousalPromptInt*1000)}
+
+// ===== DEBRIEF =====
+function showDebrief(){
+$('dbDur').textContent=fmt(elapsed);buildAro();buildDiag();$('debriefMo').classList.add('show');
+}
+function hideDebrief(){$('debriefMo').classList.remove('show')}
+
+function buildAro(){
+const c=$('dbAro');c.innerHTML='';selA=0;
+for(let i=1;i<=10;i++){const b=document.createElement('button');b.className='ab';b.textContent=i;
+b.onclick=()=>{selA=i;c.querySelectorAll('.ab').forEach((btn,idx)=>btn.classList.toggle('sel',idx<i))};c.appendChild(b)}
+}
+
+function buildDiag(){
+const dp=$('diagPanel');
+$('diagTension').innerHTML=TENSION_AREAS.map(t=>`<div class="dq" data-dt="${t}">${t}</div>`).join('');
+$('diagBreath').innerHTML=BREATH_OPTS.map(o=>`<div class="dq" data-db="${o}">${o}</div>`).join('');
+$('diagDetect').innerHTML=DETECT_OPTS.map(o=>`<div class="dq" data-dd="${o}">${o}</div>`).join('');
+$('diagCause').innerHTML=CAUSE_OPTS.map(o=>`<div class="dq" data-dc="${o}">${o}</div>`).join('');
+
+document.querySelectorAll('[data-dt]').forEach(el=>el.addEventListener('click',()=>{el.classList.toggle('sel');const v=el.dataset.dt;if(diagData.tension.includes(v))diagData.tension=diagData.tension.filter(t=>t!==v);else diagData.tension.push(v)}));
+document.querySelectorAll('[data-db]').forEach(el=>el.addEventListener('click',()=>{document.querySelectorAll('[data-db]').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');diagData.breath=el.dataset.db}));
+document.querySelectorAll('[data-dd]').forEach(el=>el.addEventListener('click',()=>{document.querySelectorAll('[data-dd]').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');diagData.detect=el.dataset.dd}));
+document.querySelectorAll('[data-dc]').forEach(el=>el.addEventListener('click',()=>{el.classList.toggle('sel');const v=el.dataset.dc;if(diagData.cause.includes(v))diagData.cause=diagData.cause.filter(c=>c!==v);else diagData.cause.push(v)}));
+}
+
+function logS(success){
+if(elapsed<=0)return;
+S.stats.total++;S.stats.totalDur+=elapsed;
+if(success)S.stats.successful++;
+const cs=success?streak()+1:0;if(cs>S.stats.bestStreak)S.stats.bestStreak=cs;
+const entry={date:new Date().toISOString(),duration:elapsed,success,stage:S.levels.active,arousal:selA,notes:$('dbNotes').value.trim()};
+if(!success)entry.diagnosis={...diagData};
+S.history.push(entry);sv();hideDebrief();reset();renderAll();go('ov');
+toast(success?'Session logged — success':'Session logged — review failure patterns');}
+
+function compStg(id){if(id!==S.levels.active)return;if(!confirm('Strict evaluation: Did you objectively meet the pass criteria?'))return;
+if(!S.levels.completed.includes(id))S.levels.completed.push(id);if(id<7)S.levels.active=id+1;
+sv();renderAll();toast('Advanced to Stage '+S.levels.active);}
+
+// ===== NAV =====
+function go(id){
+document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(id+'View').classList.add('active');
+document.querySelectorAll('.ni').forEach(n=>n.classList.toggle('active',n.dataset.v===id));
+document.querySelectorAll('[data-m]').forEach(b=>{b.classList.toggle('text-acc',b.dataset.m===id);b.classList.toggle('text-tx3',b.dataset.m!==id)});
+const m=VM[id]||{};$('vl').textContent=m.l||'';$('vt').textContent=m.t||'';
+}
+
+function expData(){const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='rewire-'+new Date().toISOString().split('T')[0]+'.json';a.click();URL.revokeObjectURL(a.href);toast('Exported')}
+function impData(f){const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);S={stats:{...DF.stats,...d.stats},levels:{...DF.levels,...d.levels,completed:d.levels?.completed||[]},history:d.history||[],settings:{...DF.settings,...d.settings}};sv();renderAll();toast('Imported')}catch(er){toast('Invalid file')}};r.readAsText(f)}
+
+// ===== EVENTS =====
+document.querySelectorAll('#sn .ni').forEach(n=>n.addEventListener('click',()=>go(n.dataset.v)));
+document.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.m)));
+$('btnStart').addEventListener('click',start);
+$('btnPause').addEventListener('click',pause);
+$('btnResume').addEventListener('click',resume);
+$('btnStop').addEventListener('click',stop);
+$('dbSucc').addEventListener('click',()=>logS(true));
+$('dbFail').addEventListener('click',()=>{
+$('diagPanel').classList.remove('hidden');$('dbSucc').style.display='none';$('dbFail').style.display='none';$('dbSubmitFail').style.display='block';
+diagData={tension:[],breath:'',detect:'',cause:[]};});
+$('dbSubmitFail').addEventListener('click',()=>logS(false));
+$('dbCancel').addEventListener('click',()=>{hideDebrief();reset()});
+$('expBtn')?.addEventListener('click',expData);
+$('expAll')?.addEventListener('click',expData);
+$('impBtn')?.addEventListener('click',()=>$('fIn').click());
+$('fIn')?.addEventListener('change',e=>{if(e.target.files[0])impData(e.target.files[0])});
+$('clrBtn')?.addEventListener('click',()=>{if(!confirm('Clear all history?'))return;S.history=[];S.stats={...DF.stats};sv();renderAll();toast('Cleared')});
+$('cfReset')?.addEventListener('click',()=>{if(!confirm('Delete ALL data?'))return;const c=prompt('Type RESET:');if(c!=='RESET')return;localStorage.removeItem(K);S=JSON.parse(JSON.stringify(DF));sv();renderAll();go('ov');toast('Reset')});
+$('cfSave')?.addEventListener('click',()=>{
+const bi=parseInt($('cfBI').value),bs=parseInt($('cfBS').value),ap=parseInt($('cfAP').value);
+if(bi>=30&&bi<=300)S.settings.breathInt=bi;if(bs>=60&&bs<=600)S.settings.bodyScanInt=bs;if(ap>=20&&ap<=120)S.settings.arousalPromptInt=ap;
+sv();toast('Saved')});
+
+$('cfBI').value=S.settings.breathInt;$('cfBS').value=S.settings.bodyScanInt;$('cfAP').value=S.settings.arousalPromptInt;
+renderChecklist();renderAll();renderKnowledge();
+</script>
+<!-- FIREBASE DROP-IN SYNC FOR REWIRE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+ const firebaseConfig = {
+  apiKey: "AIzaSyBNhpnU9EXqLKeiIVQvOqOew75skQxv8xU",
+  authDomain: "ibro-83f84.firebaseapp.com",
+  projectId: "ibro-83f84",
+  storageBucket: "ibro-83f84.firebasestorage.app",
+  messagingSenderId: "888130214428",
+  appId: "1:888130214428:web:9a71f9484db9f0f640ddd9",
+  measurementId: "G-XYYK8FJTYM"
+};
+
+  const fireApp = initializeApp(firebaseConfig);
+  const db = getFirestore(fireApp);
+  const auth = getAuth(fireApp);
+  const provider = new GoogleAuthProvider();
+
+  // Create a floating login widget matched to Rewire's dark theme
+  const syncDiv = document.createElement('div');
+  syncDiv.style.cssText = "position:fixed; bottom:20px; left:20px; width:200px; z-index:99999;";
+  syncDiv.innerHTML = `
+    <button id="fb-login-btn" style="display:none; width: 100%; padding: 12px; background: #6366f1; color: #fafafa; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5); font-family: inherit; transition: all 0.15s;">
+      Sign in to Sync
+    </button>
+    <div id="fb-user-info" style="display:none; font-size: 11px; color: #a1a1aa; text-align: center; background: #111113; padding: 10px; border-radius: 8px; border: 1px solid #1f1f23; box-shadow: 0 4px 12px rgba(0,0,0,0.5);"></div>
+  `;
+  document.body.appendChild(syncDiv);
+
+  const loginBtn = document.getElementById('fb-login-btn');
+  const userInfo = document.getElementById('fb-user-info');
+  
+  // The exact key from Rewire
+  const appKeys = ['rewire_v5']; 
+
+  let currentUser = null;
+
+  getRedirectResult(auth).catch((error) => {
+    console.error("Google Login Error: " + error.message);
+  });
+
+  // Intercept saves to localStorage and mirror to Firebase
+  const originalSetItem = localStorage.setItem;
+  localStorage.setItem = function(key, value) {
+    originalSetItem.apply(this, arguments); 
+    if (appKeys.includes(key) && currentUser) {
+      setDoc(doc(db, "userData", currentUser.uid), { [key]: value }, { merge: true }).catch(e => console.error(e));
+    }
+  };
+
+  loginBtn.addEventListener('click', () => signInWithRedirect(auth, provider));
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      loginBtn.style.display = 'none';
+      userInfo.style.display = 'block';
+      userInfo.innerHTML = `☁️ Synced: ${user.email} <br><button id="fb-logout-btn" style="background:transparent; border:none; color:#f87171; cursor:pointer; margin-top:6px; font-weight:bold;">(Logout)</button>`;
+      
+      document.getElementById('fb-logout-btn').addEventListener('click', () => {
+        signOut(auth).then(() => window.location.reload());
+      });
+
+      // Fetch cloud data
+      try {
+        const docSnap = await getDoc(doc(db, "userData", user.uid));
+        if (docSnap.exists()) {
+          const cloudData = docSnap.data();
+          let needsRefresh = false;
+          appKeys.forEach(k => {
+            if (cloudData[k] && cloudData[k] !== localStorage.getItem(k)) {
+                originalSetItem.call(localStorage, k, cloudData[k]);
+                needsRefresh = true;
+            }
+          });
+          
+          // If we pulled new data from the cloud, reload the page to update the screen
+          if(needsRefresh) {
+              window.location.reload(); 
+          }
+        } else {
+          // If cloud is empty, upload local data
+          appKeys.forEach(k => {
+              const l = localStorage.getItem(k);
+              if (l) localStorage.setItem(k, l);
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      currentUser = null;
+      loginBtn.style.display = 'block';
+      userInfo.style.display = 'none';
+    }
+  });
+</script>
+</body>
+</html>
