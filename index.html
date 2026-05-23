@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Black Swan</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="sb">
+  <div class="sb-h"><h1><em>◆</em> BLACK SWAN</h1><p>Probability Engine</p></div>
+  <div class="ub" id="urgBox">
+    <div class="ub-row"><span class="ub-k">Days left</span><span class="ub-v r" id="uDays">60</span></div>
+    <div class="ub-row"><span class="ub-k">Hours left today</span><span class="ub-v y" id="uHrsToday">—</span></div>
+    <div class="ub-row"><span class="ub-k">P(success)</span><span class="ub-v a" id="uProb">—</span></div>
+    <div class="ub-row"><span class="ub-k">Streak</span><span class="ub-v a" id="uStrk">0</span></div>
+  </div>
+  <div class="vb">
+    <div class="vb-label">Velocity (7d avg)</div>
+    <div class="vb-bar"><div class="vb-fill" id="vFill" style="width:0%;background:var(--r)"></div></div>
+    <div class="vb-txt"><span id="vCur">0.0</span><span>/ 6.5 needed</span></div>
+  </div>
+  <div class="cb" id="contrarianBet">90% of people who start something like this quit by Day 14. The market has priced you as a quitter. Prove it wrong.</div>
+  
+  <nav class="nv">
+    <div class="ns">Execute</div>
+    <div class="ni a" data-p="cmd"><i>◉</i>Command</div>
+    <div class="ni" data-p="gt"><i>△</i>Game Theory</div>
+    <div class="ni" data-p="bb"><i>◇</i>Bug Bounty</div>
+    <div class="ni" data-p="yt"><i>▷</i>YouTube</div>
+    <div class="ns">Weapons</div>
+    <div class="ni" data-p="vault"><i>🔒</i>Quarantine</div>
+    <div class="ni" data-p="grave"><i>☠</i>Graveyard</div>
+    <div class="ns">Systems</div>
+    <div class="ni" data-p="urg"><i>⬡</i>Urgency Engine</div>
+    <div class="ni" data-p="sys"><i>⬢</i>Anti-Quit</div>
+    <div class="ni" data-p="dat"><i>▤</i>Data</div>
+    <div class="ni" data-p="rev"><i>◫</i>Review</div>
+  </nav>
+
+  <div class="quit-sb">
+    <div class="qs-count"><span id="qrCount">0</span> times you chose to stay</div>
+    <button class="qs-btn" onclick="showQuitModal()">I Quit</button>
+  </div>
+</div>
+
+<div class="mn">
+<!-- ===== COMMAND ===== -->
+<div class="pg a" id="pg-cmd">
+<div class="mh"><h2>Command</h2><p id="hDate"></p></div>
+<div class="ct">
+
+<!-- THREAT WARNING -->
+<div class="aqd hide" id="aqdBox">
+  <div class="aqd-h">⚠ Pattern Detected</div>
+  <div class="aqd-t" id="aqdTxt"></div>
+  <div class="aqd-action" id="aqdAct"></div>
+</div>
+
+<!-- SPITE ENGINE -->
+<div class="spite-panel" id="spitePanel">
+  <div class="sp-header">⚔ Spite Engine — Contrarian Target</div>
+  <div id="spiteDisplay" class="hide">
+    <div class="spite-score">
+      <div class="ss-you"><div class="ss-val" id="spiteYou" style="color:var(--g)">0</div><div class="ss-label">You (days executed)</div></div>
+      <div class="ss-vs">VS</div>
+      <div class="ss-them"><div class="ss-val" id="spiteThem" style="color:var(--r)">0</div><div class="ss-label" id="spiteTargetLabel">They win</div></div>
+    </div>
+    <div class="spite-quote" id="spiteQuote"></div>
+  </div>
+  <div class="spite-setup" id="spiteSetup">
+    <p style="font-size:9px;color:var(--w3);margin-bottom:6px;line-height:1.6">Who or what expects you to fail? A person, a statistic, society, your past self? Low agreeableness thrives on opposition. Give it a target.</p>
+    <input id="spiteTarget" placeholder="Everyone who thinks I'm all talk and no execution">
+    <input id="spiteReason" placeholder="They think I am a 'shiny object' chaser. Every hour proves them wrong.">
+    <button class="bt p" onclick="saveSpite()">Lock Target</button>
+  </div>
+</div>
+
+<div class="prob-panel" id="probPanel">
+  <div class="prob-header">
+    <span class="prob-title">⬡ Probability Engine</span>
+    <span class="prob-model">Beta-Bayesian · Logistic · Big Five · Weapons</span>
+  </div>
+  <div class="prob-main">
+    <div class="prob-val" id="probVal">—</div>
+    <div class="prob-label">P(meaningful income by Day 60)</div>
+    <div class="prob-ci" id="probCI">95% CI: — to —</div>
+  </div>
+  <div class="prob-sub">
+    <div class="prob-card"><div class="pc-val" id="probBB" style="color:var(--a)">—</div><div class="pc-label">P(first valid bug)</div><div class="pc-trend" id="probBBt"></div></div>
+    <div class="prob-card"><div class="pc-val" id="probYT" style="color:var(--y)">—</div><div class="pc-label">P(YT traction ≥1 viral)</div><div class="pc-trend" id="probYTt"></div></div>
+  </div>
+  <div class="prob-factors">
+    <div style="font-size:8px;color:var(--w3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600">Factor Decomposition</div>
+    <div id="probFactors"></div>
+  </div>
+  <div class="prob-action" id="probAction">
+    <div class="pa-title">⚡ Highest-Impact Action Right Now</div>
+    <div class="pa-text" id="probActionTxt">Loading...</div>
+  </div>
+</div>
+
+<div class="radar-box">
+  <div class="rb-title">🧠 Personality Risk Radar</div>
+  <div id="radarRows"></div>
+  <div class="radar-active" id="radarActive"></div>
+</div>
+
+<div style="font-size:8px;color:var(--w3);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px;font-weight:600">Scenario Projection (Day 60)</div>
+<div class="scenario-grid" id="scenarioGrid"></div>
+
+<!-- SHADOW SELF -->
+<div class="shadow-panel mt10" id="shadowPanel">
+  <div class="shd-title">👤 Shadow Self — Optimal You</div>
+  <p style="font-size:9px;color:var(--w3);margin-bottom:8px;line-height:1.5">This is you if you followed the schedule perfectly every day. The gap is either growing or shrinking. Which direction are you pulling?</p>
+  <div class="shadow-header"><span class="shr-label">Metric</span><span class="shr-you">You</span><span class="shr-shadow">Shadow</span><span class="shr-gap">Gap</span></div>
+  <div id="shadowRows"></div>
+  <div style="margin-top:8px;padding:8px;background:var(--b3);border-radius:5px;text-align:center">
+    <span style="font-size:9px;color:var(--w3)">Overall alignment: </span>
+    <span style="font-size:14px;font-weight:800;font-family:monospace" id="shadowPct">—</span>
+  </div>
+</div>
+
+<!-- START BOX -->
+<div class="start-box mt10" id="startBox">
+  <div class="sb-title">The 5-Minute Rule</div>
+  <div class="sb-main">Just start. 5 minutes. That's it.</div>
+  <div class="sb-sub">Research (Zeigarnik Effect): once you start, your brain hates leaving it unfinished. 80% continue past 5 min.<br>Pick the easiest thing. Press the button. 5 minutes.</div>
+  <div class="sb-btns">
+    <button class="five-btn" onclick="start5('yt')">▷ Upload a Short (5 min)</button>
+    <button class="five-btn sm" onclick="start5('gt')">△ Read 1 page (5 min)</button>
+    <button class="five-btn sm" onclick="start5('bb')">◇ Open 1 lab (5 min)</button>
+  </div>
+</div>
+
+<div class="decay" id="decayBox">
+  <div style="font-size:9px;color:var(--r);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px">Compound Math — Why Today > Tomorrow</div>
+  <div class="dy-row"><span class="dy-k">Today's compound value</span><span class="dy-v a" id="dToday">—</span></div>
+  <div class="dy-row"><span class="dy-k">Value lost if you skip today</span><span class="dy-v r" id="dSkip">—</span></div>
+  <div class="dy-row"><span class="dy-k">Cumulative skip cost (all missed days)</span><span class="dy-v r" id="dCum">—</span></div>
+  <div class="dy-row"><span class="dy-k">BB: hours / 200h target</span><span class="dy-v" id="dBBH">—</span></div>
+  <div class="dy-row"><span class="dy-k">BB: first bug ETA</span><span class="dy-v" id="dBug">—</span></div>
+  <div class="dy-row"><span class="dy-k">YT: uploads / 100 target</span><span class="dy-v" id="dYT2">—</span></div>
+  <div class="dy-row"><span class="dy-k">YT: monetization ETA</span><span class="dy-v" id="dMon">—</span></div>
+</div>
+
+<!-- EXECUTION DASHBOARD -->
+<div class="g g2">
+  <div class="c">
+    <h3><span class="d" style="background:var(--a)"></span>Execution</h3>
+    <div id="tasks">
+      <div class="tk" data-t="gt"><div class="ck">✓</div><div class="tn">Game Theory study</div><div class="tt">30m</div></div>
+      <div class="tk" data-t="bbt"><div class="ck">✓</div><div class="tn">BB — Theory</div><div class="tt">2h</div></div>
+      <div class="tk" data-t="bbp"><div class="ck">✓</div><div class="tn">BB — Practice/Labs</div><div class="tt">2.5h</div></div>
+      <div class="tk" data-t="ytc"><div class="ck">✓</div><div class="tn">YT — Create/edit</div><div class="tt">30m</div></div>
+      <div class="tk" data-t="yt1"><div class="ck">✓</div><div class="tn">Upload Short #1</div><div class="tt">10m</div></div>
+      <div class="tk" data-t="yt2"><div class="ck">✓</div><div class="tn">Upload Short #2</div><div class="tt">10m</div></div>
+      <div class="tk" data-t="lrn"><div class="ck">✓</div><div class="tn">Read 1 disclosed report</div><div class="tt">15m</div></div>
+      <div class="tk" data-t="log"><div class="ck">✓</div><div class="tn">Log + pre-commit tomorrow</div><div class="tt">5m</div></div>
+    </div>
+    <div class="pb mt4"><div class="fl g" id="tkPr" style="width:0%"></div></div>
+    <div class="ts td mt4" id="tkTx">0/8</div>
+    
+    <div class="al i mt8" style="font-size:9px;padding:8px 10px">
+      <strong>Bare minimum (bad day):</strong> Open anything for 5 min. 5 minutes preserves your streak, your identity, and your compound chain. Zero days destroy all three.
+    </div>
+  </div>
+
+  <div class="c">
+    <h3><span class="d" style="background:var(--pk)"></span>Timer / Execution Trap</h3>
+    
+    <!-- BOREDOM VACCINE -->
+    <div id="boredomSection">
+      <div id="boredomPrompt" style="background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.12);border-radius:6px;padding:10px;margin-bottom:8px;text-align:center">
+        <div style="font-size:8px;color:var(--g);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">🧠 Dopamine Reset</div>
+        <p style="font-size:9px;color:var(--w3);margin-bottom:6px;line-height:1.5">Paradox: 2 min of intentional nothing BEFORE work lowers your dopamine baseline. Routine tasks feel stimulating by contrast.</p>
+        <button class="bt s" onclick="startBoredom()" id="boredomBtn">Start 2-min Reset</button>
+      </div>
+      <div id="boredomDone" class="hide" style="text-align:center;margin-bottom:8px">
+        <span class="boredom-done">✓ Dopamine baseline reset — you're sharper now</span>
+      </div>
+    </div>
+
+    <!-- BOREDOM WAGER -->
+    <div class="al e mb6" style="margin-top:8px; cursor:pointer; user-select:none; padding:8px" id="wagerToggle" onclick="toggleWager()">
+       <strong id="wgStatus" style="color:var(--w)">☐ Wager 2% Probability</strong><br>
+       <span style="font-size:8px;color:var(--w3)">If active: Leaving this tab or quitting early PERMANENTLY docks 2% from success probability. Finishing adds 0.5%.</span>
+    </div>
+
+    <div class="tm">
+      <div class="tv" id="tmV">25:00</div>
+      
+      <!-- The Market Shadow Pace -->
+      <div style="font-size:8px; color:var(--w3); text-align:left; margin-top:8px; text-transform:uppercase; font-weight:700;">The Market Pace <span style="float:right;color:var(--r)">Beating You</span></div>
+      <div class="pb mt4" style="background:var(--b4); border-radius:2px; height:4px;"><div class="fl r" id="marketBar" style="width:0%; transition: width 1s linear;"></div></div>
+
+      <div class="tc mt8" id="tmC">Bug Bounty</div>
+    </div>
+    
+    <div class="bts mb6" style="justify-content:center">
+      <button class="bt s" onclick="selTm('gt')">△ GT</button>
+      <button class="bt s" onclick="selTm('bb')">◇ BB</button>
+      <button class="bt s" onclick="selTm('yt')">▷ YT</button>
+      <span style="color:var(--w4)">|</span>
+      <button class="bt s" onclick="setM('p')">25m</button>
+      <button class="bt s" onclick="setM('l')">45m</button>
+      <button class="bt s" onclick="setM('f')">Free</button>
+    </div>
+    <div class="bts" style="justify-content:center">
+      <button class="bt p" id="tmB" onclick="togTm()">▶ Start</button>
+      <button class="bt s" onclick="manL()">+30m</button>
+    </div>
+
+    <div class="mt10">
+      <div class="fx jb ac mb4"><span class="ts td">Game Theory</span><span class="ts ta" id="lgGT">0m</span></div>
+      <div class="fx jb ac mb4"><span class="ts td">Bug Bounty</span><span class="ts ta" id="lgBB">0m</span></div>
+      <div class="fx jb ac"><span class="ts td">YouTube</span><span class="ts ta" id="lgYT">0m</span></div>
+    </div>
+    
+    <!-- PRE-COMMIT -->
+    <div class="precom mt10">
+      <h4>Pre-Commit Tomorrow</h4>
+      <p style="font-size:9px;color:var(--w3);margin-bottom:6px">Implementation intention: "At [time], I will [action]." 2-3× more likely to follow through.</p>
+      <input id="pcTime" placeholder="What time will you start tomorrow?">
+      <input id="pcFirst" placeholder="First thing you'll do?">
+      <textarea id="pcObstacle" placeholder="What might stop you? And your if-then response?"></textarea>
+      <button class="bt p" onclick="savePC()">Lock Tomorrow's Plan</button>
+      <div id="pcShow" class="hide mt6" style="font-size:10px;color:var(--a);padding:8px;background:var(--b3);border-radius:5px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="c mt10">
+  <h3><span class="d" style="background:var(--cy)"></span>Time Blocks</h3>
+  <div id="sched"></div>
+</div>
+
+<!-- CONSTRAINT IDENTIFIER (TOC) -->
+<div class="c mt10">
+  <h3><span class="d" style="background:var(--or)"></span>Daily Constraint (TOC)</h3>
+  <p style="font-size:9px;color:var(--w3);margin-bottom:6px;line-height:1.5">Theory of Constraints: At any moment, ONE thing limits throughput. Your high-openness brain sees 50 problems. Identify the ONE. Fix that, everything improves.</p>
+  <div id="constraintPattern" class="hide"></div>
+  <div style="display:flex;gap:5px;margin-bottom:6px">
+    <select id="consCat" style="width:110px;padding:5px;background:var(--b3);border:1px solid var(--bd);border-radius:5px;color:var(--w);font-size:9px;font-family:inherit">
+      <option value="starting">🛑 Starting</option>
+      <option value="focus">🧠 Focus</option>
+      <option value="energy">⚡ Energy</option>
+      <option value="knowledge">📚 Knowledge</option>
+      <option value="novelty">🌀 Novelty Pull</option>
+      <option value="environment">🏠 Environment</option>
+    </select>
+    <input id="consText" placeholder="What was THE #1 constraint today?" style="flex:1;padding:5px 8px;background:var(--b3);border:1px solid var(--bd);border-radius:5px;color:var(--w);font-size:9px;font-family:inherit">
+    <button class="bt s" onclick="logConstraint()">Log</button>
+  </div>
+  <div id="consLog"></div>
+</div>
+
+<!-- ARROGANT AUDITOR / PROOF OF WORK -->
+<div class="c mt10">
+  <h3><span class="d" style="background:var(--g)"></span>Daily Log & Proof of Work</h3>
+  <textarea class="note" id="notes" placeholder="1. What did I execute?&#10;2. What's the #1 bottleneck?&#10;3. Rate today 1-10:"></textarea>
+  <input type="text" class="note mt4" id="powLink" style="min-height:30px; margin-top:8px" placeholder="Proof of Work: Paste 1 unique thing learned or a lab URL. (Required)">
+  <button class="bt s mt4" onclick="saveN()">Submit Log</button>
+</div>
+
+</div> <!-- CLOSES .ct -->
+</div> <!-- CLOSES .pg-cmd -->
+<!-- END COMMAND -->
+
+<!-- ===== GAME THEORY ===== -->
+<div class="pg" id="pg-gt">
+<div class="mh"><h2>Game Theory</h2><p>The Art of Strategy · 30-45 min/day</p></div>
+<div class="ct">
+<div class="al i">After each concept, connect it to bug bounty AND YouTube.</div>
+<div class="c mb10"><h3>Progress</h3><div class="pb"><div class="fl a" id="gtPr" style="width:0%"></div></div><div class="ts td mt4" id="gtPrT">0/60</div></div>
+<div id="gtP"></div>
+</div>
+</div>
+
+<!-- ===== BUG BOUNTY ===== -->
+<div class="pg" id="pg-bb">
+<div class="mh"><h2>Bug Bounty</h2><p>Business Logic & Access Control · 4-5h/day</p></div>
+<div class="ct">
+<div class="al w">Go DEEP on fewer vulnerability types. Business logic + access control = high payout, no automation competition.</div>
+<div class="c mb10"><h3>Progress</h3><div class="pb"><div class="fl a" id="bbPr" style="width:0%"></div></div><div class="ts td mt4" id="bbPrT">0 topics</div></div>
+<div class="tbs" id="bTbs">
+<div class="tb a" data-t="br">Roadmap</div><div class="tb" data-t="b1">P1</div><div class="tb" data-t="b2">P2</div><div class="tb" data-t="b3">P3</div><div class="tb" data-t="b4">P4</div><div class="tb" data-t="b5">P5</div><div class="tb" data-t="bx">Resources</div><div class="tb" data-t="bm">Method</div>
+</div>
+<div class="tcc a" id="br">
+<div class="ph" style="border-left:2px solid var(--bl)"><h4>P1: Foundations (Wk 1-2)</h4><p>HTTP, Burp Suite, DevTools, OWASP Top 10</p></div>
+<div class="ph" style="border-left:2px solid var(--a)"><h4>P2: Business Logic (Wk 3-4)</h4><p>Price manipulation, workflow bypass, race conditions</p></div>
+<div class="ph" style="border-left:2px solid var(--pk)"><h4>P3: Access Control (Wk 5-6)</h4><p>IDOR, privilege escalation, JWT, RBAC</p></div>
+<div class="ph" style="border-left:2px solid var(--y)"><h4>P4: API & Advanced (Wk 7-8)</h4><p>BOLA, mass assignment, chaining, GraphQL</p></div>
+<div class="ph" style="border-left:2px solid var(--g)"><h4>P5: Real Hunting (Wk 9+)</h4><p>Choose programs, recon, hunt, report, get paid</p></div>
+</div>
+<div class="tcc" id="b1"><div class="sec">Phase 1: Foundations</div><div id="bP1"></div></div>
+<div class="tcc" id="b2"><div class="sec">Phase 2: Business Logic</div><div id="bP2"></div></div>
+<div class="tcc" id="b3"><div class="sec">Phase 3: Access Control</div><div id="bP3"></div></div>
+<div class="tcc" id="b4"><div class="sec">Phase 4: API & Advanced</div><div id="bP4"></div></div>
+<div class="tcc" id="b5"><div class="sec">Phase 5: Real Hunting</div><div id="bP5"></div></div>
+<div class="tcc" id="bx">
+<div class="sec">Free Learning</div>
+<a href="https://portswigger.net/web-security" target="_blank" class="rl">▸ PortSwigger Academy</a>
+<a href="https://tryhackme.com" target="_blank" class="rl">▸ TryHackMe</a>
+<a href="https://hackthebox.com" target="_blank" class="rl">▸ HackTheBox</a>
+<div class="sec">Platforms</div>
+<a href="https://hackerone.com" target="_blank" class="rl">▸ HackerOne</a>
+<a href="https://bugcrowd.com" target="_blank" class="rl">▸ Bugcrowd</a>
+<a href="https://intigriti.com" target="_blank" class="rl">▸ Intigriti</a>
+<div class="sec">YouTube</div>
+<a href="https://youtube.com/@NahamSec" target="_blank" class="rl">▸ NahamSec</a>
+<a href="https://youtube.com/@InsiderPhD" target="_blank" class="rl">▸ InsiderPhD</a>
+<a href="https://youtube.com/@LiveOverflow" target="_blank" class="rl">▸ LiveOverflow</a>
+<div class="sec">Tools</div>
+<a href="https://portswigger.net/burp/communitydownload" target="_blank" class="rl">▸ Burp Suite Community</a>
+<a href="#" class="rl">▸ Browser DevTools (F12)</a>
+<a href="#" class="rl">▸ ffuf, subfinder, httpx</a>
+</div>
+<div class="tcc" id="bm">
+<div class="sec">Methodology</div>
+<div class="ys"><h4>1. Recon</h4><ul><li>Map every feature + endpoint</li><li>Find APIs in JS files</li><li>Understand entire business flow</li></ul></div>
+<div class="ys"><h4>2. Business Logic</h4><ul><li>Price manipulation</li><li>Workflow bypass</li><li>Race conditions</li><li>Coupon/negative value abuse</li></ul></div>
+<div class="ys"><h4>3. Access Control</h4><ul><li>IDOR everywhere</li><li>Horizontal + vertical escalation</li><li>Missing auth, method switching</li></ul></div>
+<div class="ys"><h4>4. Report</h4><ul><li>Clear steps + screenshots</li><li>Business impact explanation</li></ul></div>
+</div>
+</div>
+</div>
+
+<!-- ===== YOUTUBE ===== -->
+<div class="pg" id="pg-yt">
+<div class="mh"><h2>YouTube Shorts</h2><p>Asymmetric bet · 30 min/day · 2+ uploads daily</p></div>
+<div class="ct">
+<div class="al i">Each upload = 15-30 min. Expected viral rate: 1-3% of videos. At 120 uploads, expected 1-3 viral hits. The ONLY losing move is not uploading.</div>
+<div class="tbs"><div class="tb a" data-t="yg">Guide</div><div class="tb" data-t="ysrc">Sources</div><div class="tb" data-t="yn">Niches</div><div class="tb" data-t="yalg">Algorithm</div><div class="tb" data-t="ytrk">Tracker</div></div>
+<div class="tcc a" id="yg">
+<div class="ys"><h4>1. Find Content (15m)</h4><ul><li><a href="https://pexels.com/search/videos/cat" target="_blank">Pexels</a> + <a href="https://pixabay.com/videos/search/cat" target="_blank">Pixabay</a> — free, no copyright</li><li>Download 3-5 clips, look for cute/funny/unexpected</li></ul></div>
+<div class="ys"><h4>2. Edit (10m)</h4><ul><li><a href="https://capcut.com" target="_blank">CapCut Desktop</a> — 9:16 ⬄ trim 15-35 sec ⬄ music from YT Audio Library</li></ul></div>
+<div class="ys"><h4>3. Upload (5m per video)</h4><ul><li>Title: emotion + curiosity ("This cat did WHAT?!")</li><li>Tags: #shorts #cat #funny #cute #viral</li></ul></div>
+</div>
+<div class="tcc" id="ysrc">
+<div class="sec">Free Video Sources</div>
+<a href="https://pexels.com/videos" target="_blank" class="rl">▸ Pexels</a>
+<a href="https://pixabay.com/videos" target="_blank" class="rl">▸ Pixabay</a>
+<a href="https://coverr.co" target="_blank" class="rl">▸ Coverr</a>
+<a href="https://mixkit.co" target="_blank" class="rl">▸ Mixkit</a>
+<div class="sec">Free Music</div>
+<a href="#" class="rl">▸ YouTube Audio Library</a>
+<a href="https://pixabay.com/music" target="_blank" class="rl">▸ Pixabay Music</a>
+<div class="sec">Tools</div>
+<a href="https://capcut.com" target="_blank" class="rl">▸ CapCut Desktop</a>
+<a href="https://canva.com" target="_blank" class="rl">▸ Canva</a>
+<div class="al w mt8" style="font-size:9px">⚠ Pexels, Pixabay, Coverr, Mixkit = safe. ⚠ Never copy from YouTube/TikTok/Spotify.</div>
+</div>
+<div class="tcc" id="yn">
+<div class="g g4 mb8">
+<div class="nc"><div class="nn">🐈</div><div class="nl">Cats</div><div class="nd">Easiest</div></div>
+<div class="nc"><div class="nn">🐕</div><div class="nl">Dogs</div><div class="nd">Easiest</div></div>
+<div class="nc"><div class="nn">🐣</div><div class="nl">Baby Animals</div><div class="nd">Easy</div></div>
+<div class="nc"><div class="nn">🧼</div><div class="nl">Satisfying</div><div class="nd">Easy</div></div>
+<div class="nc"><div class="nn">🌲</div><div class="nl">Nature</div><div class="nd">Easy</div></div>
+<div class="nc"><div class="nn">🎧</div><div class="nl">ASMR</div><div class="nd">Easy</div></div>
+<div class="nc"><div class="nn">🍔</div><div class="nl">Food</div><div class="nd">Easy</div></div>
+<div class="nc"><div class="nn">💪</div><div class="nl">Motivation</div><div class="nd">Med</div></div>
+</div>
+</div>
+<div class="tcc" id="yalg">
+<div class="ys"><h4>First 1-3 sec = everything</h4><p>No intro. Hook immediately.</p></div>
+<div class="ys"><h4>15-35 sec sweet spot</h4><p>Shorter = more replays = algorithm boost</p></div>
+<div class="ys"><h4>Volume > Quality (now)</h4><p>2-3/day. Need 50-100 before patterns emerge.</p></div>
+<div class="ys"><h4>Create loops</h4><p>End ⭢ beginning seamlessly. 2-3x watch = massive signal.</p></div>
+</div>
+<div class="tcc" id="ytrk">
+<div class="c mb10"><h3>Uploads: <span class="ta" id="tUp">0</span> / 100</h3><div class="pb mt4"><div class="fl y" id="uPr" style="width:0%"></div></div></div>
+<div class="uf"><input id="uT" placeholder="Title"><input id="uN" placeholder="Niche"><button class="bt p" onclick="addU()">Log</button></div>
+<div id="uL"></div>
+</div>
+</div>
+</div>
+
+<!-- ===== WEAPONS: QUARANTINE VAULT ===== -->
+<div class="pg" id="pg-vault">
+<div class="mh"><h2>Quarantine Vault</h2><p>Shiny Object Containment System</p></div>
+<div class="ct">
+<div class="al w">High openness creates a constant stream of new ideas. Instead of suppressing them, quarantine them. Writing an idea down closes the cognitive loop. All ideas remain locked until Day 61.</div>
+<div class="c mb10 mt10">
+<h3>Deposit New Idea</h3>
+<div class="uf"><input id="vaultIdea" placeholder="What shiny new project is tempting you?"><button class="bt p" onclick="addVault()">Quarantine</button></div>
+</div>
+<div class="vault-count">
+<span id="vCount">0</span>
+<div class="vault-count-label">Distractions Neutralized</div>
+</div>
+<div id="vaultList"></div>
+</div>
+</div>
+
+<!-- ===== WEAPONS: FAILURE GRAVEYARD ===== -->
+<div class="pg" id="pg-grave">
+<div class="mh"><h2>Failure Graveyard</h2><p>Permanent Record of Abandonment</p></div>
+<div class="ct">
+<div class="al e">Low agreeableness hates being labeled a quitter. This is your mirror. Every project you abandon goes here permanently. You cannot delete entries.</div>
+<div class="grave-avg">
+<div class="ga-val" id="gAvg">0</div>
+<div class="ga-label">Average Project Lifespan (Days)</div>
+</div>
+<div class="grave-item gi-alive">
+<div class="gi-stone">🔥</div>
+<div class="gi-info">
+<div class="gi-name">Black Swan (Current)</div>
+<div class="gi-days" id="gCurDays">Day 1</div>
+</div>
+</div>
+<div class="c mb10 mt10">
+<h3>Log Past Abandoned Project</h3>
+<div class="uf">
+<input id="gName" placeholder="Project name (e.g., Dropshipping)">
+<input id="gDays" type="number" placeholder="Days lasted" style="width:80px;min-width:80px">
+<button class="bt d" onclick="addGrave()">Bury Project</button>
+</div>
+</div>
+<div id="graveList"></div>
+</div>
+</div>
+
+<!-- ===== URGENCY ENGINE ===== -->
+<div class="pg" id="pg-urg">
+<div class="mh"><h2>Urgency Engine</h2><p>Mathematical urgency for a brain that doesn't feel fear</p></div>
+<div class="ct">
+
+<div class="c mb10">
+<h3><span class="d" style="background:var(--r)"></span>Entropy Clock</h3>
+<div class="al e mb6" style="margin-top:8px">Neural pathways decay during idle periods. Your low neuroticism hides this reality.</div>
+<div class="entropy-panel">
+<div class="entropy-val" id="entVal">100%</div>
+<div class="entropy-label">Current Skill Retention</div>
+<div class="entropy-sub" id="entLoss">-0.0% lost since last practice</div>
+<div class="entropy-rate" id="entRate">Decay rate: 0.00% / hr</div>
+</div>
+</div>
+
+<div class="c mb10">
+<h3><span class="d" style="background:var(--or)"></span>Rest Budget</h3>
+<div class="al w mb6" style="margin-top:8px">You get 3 planned rest days per 60 days. Unplanned breaks cost DOUBLE.</div>
+<div class="fx jb ac mb4 mt8"><span class="ts td">Budget Remaining</span><span class="ts ta" id="rbTotal" style="font-weight:700">3 Days</span></div>
+<div class="fx jb ac mb4"><span class="ts td">Days Burned</span><span class="ts" id="rbUsed" style="color:var(--r);font-weight:700">0 Days</span></div>
+<div class="pb mt4"><div class="fl r" id="rbPr" style="width:0%"></div></div>
+</div>
+
+<div class="al e"><strong>Your very low neuroticism means you won't naturally feel urgency.</strong> This page replaces that missing alarm system with pure math. You can't argue with numbers.</div>
+<div class="ponr">
+<div class="ponr-v" id="ponrV">—</div>
+<div class="ponr-l">Days Until Goals Become Mathematically Impossible</div>
+<div class="ponr-sub" id="ponrSub"></div>
+</div>
+<div class="c mb10">
+<h3>Compound Value of Each Day</h3>
+<p class="ts td mb6">Day 1 compounds for 59 days. Day 59 compounds for 1 day. Today is the most valuable remaining day. Every skip destroys compound value.</p>
+<div id="compoundVis"></div>
+</div>
+<div class="c mb10">
+<h3>Opportunity Cost Calculator</h3>
+<div class="decay">
+<div class="dy-row"><span class="dy-k">Expected value of 1 day of BB practice</span><span class="dy-v g" id="ocBB">—</span></div>
+<div class="dy-row"><span class="dy-k">Expected value of 2 YouTube uploads</span><span class="dy-v g" id="ocYT">—</span></div>
+<div class="dy-row"><span class="dy-k">Cost of skipping 1 day (lost compound)</span><span class="dy-v r" id="ocSkip">—</span></div>
+<div class="dy-row"><span class="dy-k">Cost of skipping 3 days</span><span class="dy-v r" id="ocSkip3">—</span></div>
+<div class="dy-row"><span class="dy-k">Cost of skipping 7 days</span><span class="dy-v r" id="ocSkip7">—</span></div>
+<div class="dy-row"><span class="dy-k">Total $ left on table from all missed days</span><span class="dy-v r" id="ocTotal">—</span></div>
+</div>
+</div>
+<div class="c mb10">
+<h3>While You're Idle</h3>
+<div class="decay">
+<div class="dy-row"><span class="dy-k">Hunters completing PortSwigger labs</span><span class="dy-v y">~2,400/hour</span></div>
+<div class="dy-row"><span class="dy-k">New YouTube Shorts uploaded globally</span><span class="dy-v y">~700/minute</span></div>
+<div class="dy-row"><span class="dy-k">Bug bounty reports submitted on HackerOne</span><span class="dy-v y">~300/day</span></div>
+<div class="dy-row"><span class="dy-k">Your friend's channel growing while yours isn't</span><span class="dy-v r">every day</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ===== ANTI-QUIT ===== -->
+<div class="pg" id="pg-sys">
+<div class="mh"><h2>Anti-Quit Architecture</h2><p>Systems that make quitting harder than continuing</p></div>
+<div class="ct">
+<div class="c mb10">
+<h3>Commitment Lock</h3>
+<div id="cnS" class="cntr hide"></div>
+<div id="cnF">
+<p class="ts td mb6">Write once. See it every day. Be specific and quantitative.</p>
+<div class="precom">
+<label style="font-size:9px;color:var(--w3)">Name</label><input id="cN" placeholder="Your name">
+<label style="font-size:9px;color:var(--w3)">What exactly will you have achieved in 60 days? (numbers)</label><textarea id="cW" placeholder="e.g., 200h BB practice, 3 valid bugs, 120 videos uploaded, Game Theory complete"></textarea>
+<label style="font-size:9px;color:var(--w3)">What stays the same if you quit?</label><textarea id="cC" placeholder="Be specific and honest"></textarea>
+<label style="font-size:9px;color:var(--w3)">Identity — who are you?</label><input id="cI" placeholder="I am a...">
+<button class="bt p mt4" onclick="saveCn()">Lock</button>
+</div>
+</div>
+</div>
+<div class="c mb10">
+<h3>The Uncomfortable Math</h3>
+<div class="ys" style="border-left-color:var(--r)"><p>Your friend started uploading cat videos with no editing skills. They now make 2-3K USD/month. The difference: they uploaded. Every day. For months.</p></div>
+<div class="ys" style="border-left-color:var(--r)"><p>Bug bounty hunters who find their first valid bug average 150-200 hours of focused practice. At 4.5h/day, that's Day 33-44. Skip 5 days? Day 38-49. Skip 10? Day 55-67. Skip 15? You've missed your deadline.</p></div>
+<div class="ys" style="border-left-color:var(--r)"><p>You have high openness. Right now, part of your brain is already thinking about the NEXT interesting thing. A new project, a new idea. That impulse has killed every previous goal. Name it, see it, refuse it.</p></div>
+<div class="ys" style="border-left-color:var(--r)"><p>You think you're being strategic by "taking a break to recharge." You're not. You're quitting in slow motion. There's no strategic break at Day 12.</p></div>
+</div>
+<div class="c mb10">
+<h3>Rules</h3>
+<div class="ys"><h4>1. The 5-Minute Rule</h4><p>On the worst possible day, do 5 minutes. The point isn't productivity — it's never having a zero day.</p></div>
+<div class="ys"><h4>2. Two-Day Rule</h4><p>Never miss two consecutive days. One miss = accident. Two misses = pattern. Patterns become identity.</p></div>
+<div class="ys"><h4>3. Upload First</h4><p>YouTube uploads = lowest friction, highest asymmetric payoff. Do them before anything else.</p></div>
+<div class="ys"><h4>4. Follow the Schedule, Not Your Mood</h4><p>Your low conscientiousness brain will argue. The schedule wins. Always.</p></div>
+<div class="ys"><h4>5. Pre-Commit Every Evening</h4><p>Before bed, write tomorrow's first task and start time. Removes the morning decision failure point.</p></div>
+</div>
+<div class="c mb10">
+<h3>If-Then Override Plans</h3>
+<div class="ys"><p><strong>If</strong> I don't feel like it ⭢ <strong>Then</strong> 5-min timer. Just 5 minutes.</p></div>
+<div class="ys"><p><strong>If</strong> I want something else ⭢ <strong>Then</strong> "Is this my high-openness brain chasing novelty?" Yes ⭢ refuse.</p></div>
+<div class="ys"><p><strong>If</strong> I missed yesterday ⭢ <strong>Then</strong> today is MANDATORY. No negotiation.</p></div>
+<div class="ys"><p><strong>If</strong> I'm "too tired" ⭢ <strong>Then</strong> upload 1 pre-made video (5 min). Chain alive.</p></div>
+<div class="ys"><p><strong>If</strong> no progress feeling ⭢ <strong>Then</strong> check compound decay numbers. Progress is invisible until it isn't.</p></div>
+<div class="ys"><p><strong>If</strong> I want to "research more" ⭢ <strong>Then</strong> that's procrastination disguised as productivity. Open a lab.</p></div>
+<div class="ys"><p><strong>If</strong> 2 weeks and zero YT traction ⭢ <strong>Then</strong> NORMAL. Takes 50-100 uploads. Keep uploading.</p></div>
+<div class="ys"><p><strong>If</strong> new vulnerability type tempting ⭢ <strong>Then</strong> NO. Business logic + access control until first real bug.</p></div>
+</div>
+</div>
+</div>
+
+<!-- ===== DATA ===== -->
+<div class="pg" id="pg-dat">
+<div class="mh"><h2>Data</h2><p>Numbers don't lie or negotiate</p></div>
+<div class="ct">
+<div class="c mb10"><h3>60-Day Heatmap</h3><div class="hm" id="hm"></div><div class="fx jb" style="font-size:8px;color:var(--w4)"><span>Day 1</span><span>Day 60</span></div></div>
+<div class="g g3 mb10">
+<div class="c"><h3>Game Theory</h3><div style="font-size:24px;font-weight:800;color:var(--a)" id="dGT">0</div><div class="ts td">/ 60 days</div><div class="pb mt4"><div class="fl a" id="dGTb" style="width:0%"></div></div></div>
+<div class="c"><h3>Bug Bounty</h3><div style="font-size:24px;font-weight:800;color:var(--a)" id="dBB">0</div><div class="ts td">topics</div><div class="pb mt4"><div class="fl a" id="dBBb" style="width:0%"></div></div></div>
+<div class="c"><h3>YouTube</h3><div style="font-size:24px;font-weight:800;color:var(--a)" id="dYTc">0</div><div class="ts td">/ 100 uploads</div><div class="pb mt4"><div class="fl y" id="dYTb" style="width:0%"></div></div></div>
+</div>
+<div class="g g2 mb10">
+<div class="c">
+<h3>Time Invested</h3>
+<div class="fx jb ac mb4"><span class="ts td">GT</span><span class="ts ta" id="aGT">0h</span></div>
+<div class="fx jb ac mb4"><span class="ts td">BB</span><span class="ts ta" id="aBB">0h</span></div>
+<div class="fx jb ac mb4"><span class="ts td">YT</span><span class="ts ta" id="aYT">0h</span></div>
+<hr style="border-color:var(--bd);margin:4px 0"><div class="fx jb ac"><span class="ts" style="font-weight:700">Total</span><span class="ts ta" style="font-weight:700" id="aAl">0h</span></div>
+</div>
+<div class="c">
+<h3>Advanced Probability Model</h3>
+<div class="sec">Factor Weights</div>
+<div class="fx jb ac mb4"><span class="ts td">Skill Acquisition (logistic)</span><span class="ts ta" id="pSkill">—</span></div>
+<div class="fx jb ac mb4"><span class="ts td">Consistency Coefficient</span><span class="ts ta" id="pCons">—</span></div>
+<div class="fx jb ac mb4"><span class="ts td">Time Feasibility</span><span class="ts ta" id="pFeas">—</span></div>
+<div class="fx jb ac mb4"><span class="ts td">Personality + Weapons Adj.</span><span class="ts ta" id="pPers">—</span></div>
+<hr style="border-color:var(--bd);margin:4px 0">
+<div class="fx jb ac mb4"><span class="ts" style="font-weight:700">P(Bug Bounty $)</span><span class="ts ta" style="font-weight:700" id="pBBf">—</span></div>
+<div class="fx jb ac mb4"><span class="ts" style="font-weight:700">P(YouTube traction)</span><span class="ts ta" style="font-weight:700" id="pYTf">—</span></div>
+<div class="fx jb ac"><span class="ts" style="font-weight:700">P(any income)</span><span class="ts ta" style="font-weight:700" id="pCf">—</span></div>
+<div class="sec mt8">Bottleneck</div>
+<div class="al w" id="bn">Analyzing...</div>
+</div>
+</div>
+<div class="c mb10">
+<h3>Sensitivity Analysis — What Moves the Needle Most?</h3>
+<p class="ts td mb6">Marginal probability gain per action. Do the highest-impact thing first.</p>
+<div id="sensRows"></div>
+</div>
+<div class="c">
+<h3>Data Management</h3>
+<div class="fx" style="gap:10px;margin-top:10px;flex-wrap:wrap">
+<button class="bt p" onclick="expD()">⭳ Export JSON</button>
+<button class="bt" onclick="document.getElementById('impFile').click()">⭱ Import JSON</button>
+<button class="bt d" onclick="if(confirm('Delete everything?')){localStorage.clear();location.reload()}">⚠ Reset All</button>
+<input type="file" id="impFile" accept=".json" class="hide" onchange="impD(event)">
+</div>
+</div>
+</div>
+</div>
+
+<!-- ===== REVIEW ===== -->
+<div class="pg" id="pg-rev">
+<div class="mh"><h2>Weekly Review</h2><p>15 minutes that multiply everything</p></div>
+<div class="ct">
+<div class="al i">Your high openness will say this is boring. It's the most important 15 minutes of your week.</div>
+<div class="c mb10 mt10">
+<h3>Week <span id="wN">1</span></h3>
+<div class="wr"><label>Wins</label><textarea class="note" id="r1"></textarea></div>
+<div class="wr"><label>Bottleneck (the ONE constraint)</label><textarea class="note" id="r2"></textarea></div>
+<div class="wr"><label>BB: concepts + labs completed</label><textarea class="note" id="r3"></textarea></div>
+<div class="wr"><label>YT: uploads + traction + patterns</label><textarea class="note" id="r4"></textarea></div>
+<div class="wr"><label>One change for next week</label><textarea class="note" id="r5"></textarea></div>
+<div class="wr"><label>Rate 1-10</label><input class="note" id="r6" style="min-height:auto"></div>
+<button class="bt p mt4" onclick="saveR()">Save</button>
+</div>
+<div id="pR"></div>
+</div>
+</div>
+
+</div><!-- end .mn -->
+
+<!-- MODALS -->
+<div class="em"><button onclick="showE()" title="Override">!</button></div>
+<div class="mo" id="eMo"><div class="mo-c"><h2>Override</h2><p id="eTx" style="font-size:11px;color:var(--w2);line-height:1.8"></p><div id="eCn" class="mt8"></div><div class="tc mt14"><button class="bt p" onclick="closeE()" style="padding:10px 24px">Execute</button></div></div></div>
+<div class="mo" id="sMo"><div class="mo-c"><h2>Initialize</h2><p style="font-size:11px;color:var(--w2);margin-bottom:10px">Set Day 1.</p><label>Start</label><input type="date" id="sDt"><div class="tc mt14"><button class="bt p" onclick="doS()" style="padding:10px 24px">Begin</button></div></div></div>
+
+<!-- QUIT BUTTON PARADOX MODAL -->
+<div class="mo" id="quitModal">
+<div class="mo-c">
+<h2 style="color:var(--r)">Before you quit:</h2>
+<div class="qm-consequence">Your Spite Target wins. <strong id="qmSpite"></strong></div>
+<div class="qm-consequence">Shadow You pulls further ahead. Gap increases instantly.</div>
+<div class="qm-consequence">Probability engine drops to 0%.</div>
+<div class="qm-grave mt8">
+<div style="font-size:9px;color:var(--w3);margin-bottom:4px;text-transform:uppercase">You will be added to the graveyard:</div>
+<div id="qmGraveList" style="max-height:100px;overflow-y:auto"></div>
+</div>
+<div class="qm-btns">
+<button class="qm-refuse" onclick="refuseQuit()">NO. I REFUSE TO BE AVERAGE.</button>
+<button class="qm-confirm" id="qmConfBtn" disabled onclick="confirmQuit()">Yes, I'm average</button>
+</div>
+</div>
+</div>
+
+<!-- MEDIOCRITY TRAP MODAL (Replaces Stop Button) -->
+<div class="mo" id="trapModal">
+  <div class="mo-c" style="text-align:center">
+    <h2 id="trapTitle" style="color:var(--r)">Mediocrity Trap</h2>
+    <p id="trapDesc" style="font-size:11px;color:var(--w2);line-height:1.6;margin-bottom:16px"></p>
+    <div class="qm-btns" style="justify-content:center">
+      <button class="qm-refuse" onclick="trapResume()" style="background:var(--a3)">REFUSE & KEEP WORKING</button>
+      <button class="qm-confirm" id="trapQuitBtn" onclick="trapQuit()">Yes, I am average</button>
+    </div>
+  </div>
+</div>
+<!-- FIREBASE DROP-IN SYNC FOR BLACKSWAN -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+ const firebaseConfig = {
+  apiKey: "AIzaSyBNhpnU9EXqLKeiIVQvOqOew75skQxv8xU",
+  authDomain: "ibro-83f84.firebaseapp.com",
+  projectId: "ibro-83f84",
+  storageBucket: "ibro-83f84.firebasestorage.app",
+  messagingSenderId: "888130214428",
+  appId: "1:888130214428:web:9a71f9484db9f0f640ddd9",
+  measurementId: "G-XYYK8FJTYM"
+};
+
+  const fireApp = initializeApp(firebaseConfig);
+  const db = getFirestore(fireApp);
+  const auth = getAuth(fireApp);
+  const provider = new GoogleAuthProvider();
+
+  const syncDiv = document.createElement('div');
+  syncDiv.style.cssText = "position:fixed; bottom:20px; right:20px; width:200px; z-index:99999;";
+  syncDiv.innerHTML = `
+    <button id="fb-login-btn" style="display:none; width: 100%; padding: 12px; background: #448aff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+      Sign in to Sync
+    </button>
+    <div id="fb-user-info" style="display:none; font-size: 11px; color: #fff; text-align: center; background: #1e1e2e; padding: 10px; border-radius: 8px; border: 1px solid #313244; box-shadow: 0 4px 12px rgba(0,0,0,0.3);"></div>
+  `;
+  document.body.appendChild(syncDiv);
+
+  const loginBtn = document.getElementById('fb-login-btn');
+  const userInfo = document.getElementById('fb-user-info');
+  
+  const appKeys = ['bsv5']; 
+
+  let currentUser = null;
+
+  getRedirectResult(auth).catch((error) => {
+    console.error("Google Login Error: " + error.message);
+  });
+
+  const originalSetItem = localStorage.setItem;
+  localStorage.setItem = function(key, value) {
+    originalSetItem.apply(this, arguments); 
+    if (appKeys.includes(key) && currentUser) {
+      setDoc(doc(db, "userData", currentUser.uid), { [key]: value }, { merge: true }).catch(e => console.error(e));
+    }
+  };
+
+  loginBtn.addEventListener('click', () => signInWithRedirect(auth, provider));
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      loginBtn.style.display = 'none';
+      userInfo.style.display = 'block';
+      userInfo.innerHTML = `☁️ Synced: ${user.email} <br><button id="fb-logout-btn" style="background:transparent; border:none; color:#ff5252; cursor:pointer; margin-top:6px; font-weight:bold;">(Logout)</button>`;
+      
+      document.getElementById('fb-logout-btn').addEventListener('click', () => {
+        signOut(auth).then(() => window.location.reload());
+      });
+
+      try {
+        const docSnap = await getDoc(doc(db, "userData", user.uid));
+        if (docSnap.exists()) {
+          const cloudData = docSnap.data();
+          let needsRefresh = false;
+          appKeys.forEach(k => {
+            // ---> THE FIX IS RIGHT HERE <---
+            // It now ONLY triggers a refresh if the cloud data is completely new/different!
+            if (cloudData[k] && cloudData[k] !== localStorage.getItem(k)) {
+                originalSetItem.call(localStorage, k, cloudData[k]);
+                needsRefresh = true;
+            }
+          });
+          
+          if(needsRefresh) {
+              window.location.reload(); 
+          }
+        } else {
+          appKeys.forEach(k => {
+              const l = localStorage.getItem(k);
+              if (l) localStorage.setItem(k, l);
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      currentUser = null;
+      loginBtn.style.display = 'block';
+      userInfo.style.display = 'none';
+    }
+  });
+</script>
+<!-- SCRIPTS IN ORDER -->
+<script src="js/state.js"></script>
+<script src="js/probability.js"></script>
+<script src="js/urgency.js"></script>
+<script src="js/weapons.js"></script>
+<script src="js/timer.js"></script>
+<script src="js/execution.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
