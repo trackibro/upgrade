@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDO Mastery Guide</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1a1a24;
+  --surface3: #20202e;
+  --border: #2a2a3a;
+  --border2: #353548;
+  --accent: #8b7cf8;
+  --accent2: #4ecdc4;
+  --accent3: #f7c06a;
+  --accent4: #f76a8b;
+  --success: #6af7a0;
+  --danger: #f76a6a;
+  --text: #eeeef5;
+  --text2: #9999bb;
+  --text3: #55556a;
+  --radius: 14px;
+  --radius2: 9px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.app { display: flex; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 270px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.sidebar-logo {
+  padding: 28px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-badge { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+
+.logo-text { font-size: 16px; font-weight: 800; color: var(--text); }
+.logo-sub { font-size: 11px; color: var(--text3); letter-spacing: 0.05em; }
+
+.nav-group { padding: 16px 12px 8px; }
+
+.nav-group-label {
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text3); padding: 0 10px; margin-bottom: 6px;
+}
+
+.nav-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 12px;
+  border: none; background: none;
+  border-radius: var(--radius2);
+  cursor: pointer; font-size: 13px;
+  color: var(--text2); text-align: left;
+  transition: all 0.15s ease; position: relative;
+}
+
+.nav-btn:hover { background: var(--surface2); color: var(--text); }
+
+.nav-btn.active {
+  background: rgba(139,124,248,0.12);
+  color: var(--accent);
+}
+
+.nav-btn.active::before {
+  content: '';
+  position: absolute; left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 60%;
+  background: var(--accent);
+  border-radius: 0 3px 3px 0;
+}
+
+.nav-icon { font-size: 15px; width: 22px; text-align: center; flex-shrink: 0; }
+
+.nav-badge {
+  margin-left: auto; font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px;
+  background: rgba(139,124,248,0.15); color: var(--accent);
+}
+
+/* MAIN */
+.main {
+  margin-left: 270px; flex: 1;
+  padding: 48px 48px 80px;
+  max-width: calc(100vw - 270px);
+}
+
+/* SECTIONS */
+.section { display: none; animation: fadeUp 0.3s ease; }
+.section.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* PAGE HEADER */
+.page-header { margin-bottom: 40px; }
+
+.page-eyebrow {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px;
+}
+
+.page-title {
+  font-size: 32px; font-weight: 800;
+  letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 10px;
+}
+
+.page-title span {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page-subtitle { font-size: 15px; color: var(--text2); max-width: 600px; }
+
+/* COPY BLOCK */
+.copy-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.copy-block-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+.copy-block-title {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.copy-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--surface3);
+  color: var(--text3); font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s;
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+.copy-btn.copied { border-color: var(--success); color: var(--success); }
+
+.copy-block-content { padding: 20px; }
+
+/* TYPOGRAPHY */
+h2.sh {
+  font-size: 20px; font-weight: 700; color: var(--text);
+  margin: 40px 0 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+h2.sh::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+h3.ssh {
+  font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--accent2); margin: 24px 0 10px;
+}
+
+p.body {
+  font-size: 14px; color: var(--text2);
+  margin-bottom: 14px; max-width: 700px;
+}
+
+strong { color: var(--text); }
+em { color: var(--accent3); font-style: normal; }
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px; margin-bottom: 16px;
+}
+
+.card-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+}
+
+.card-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+
+.card-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.card-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+/* GRID */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin: 16px 0; }
+
+/* HIGHLIGHT */
+.hl {
+  border-radius: var(--radius2); padding: 16px 20px;
+  margin: 16px 0; font-size: 14px; border-left: 3px solid;
+  max-width: 750px;
+}
+.hl p { margin: 0; max-width: none; }
+.hl.purple { background: rgba(139,124,248,0.08); border-color: var(--accent); color: var(--text); }
+.hl.teal { background: rgba(78,205,196,0.08); border-color: var(--accent2); color: var(--text); }
+.hl.yellow { background: rgba(247,192,106,0.08); border-color: var(--accent3); color: var(--text); }
+.hl.red { background: rgba(247,106,106,0.08); border-color: var(--danger); color: var(--text); }
+.hl.green { background: rgba(106,247,160,0.08); border-color: var(--success); color: var(--text); }
+.hl.pink { background: rgba(247,106,139,0.08); border-color: var(--accent4); color: var(--text); }
+
+/* BIG QUOTE */
+.big-quote {
+  background: linear-gradient(135deg, rgba(139,124,248,0.08), rgba(78,205,196,0.08));
+  border: 1px solid rgba(139,124,248,0.2);
+  border-radius: var(--radius); padding: 32px;
+  margin: 24px 0; text-align: center; max-width: 750px;
+}
+.big-quote p {
+  font-size: 18px; font-weight: 700; color: var(--text);
+  font-style: italic; margin: 0; max-width: none; line-height: 1.5;
+}
+
+/* VS BOX */
+.vs-wrap { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; margin: 20px 0; }
+.vs-label { font-size: 22px; font-weight: 900; color: var(--text3); text-align: center; }
+.vs-side { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius2); padding: 18px; }
+.vs-side.wrong { border-color: rgba(247,106,106,0.4); }
+.vs-side.right { border-color: rgba(106,247,160,0.4); }
+.vs-side h4 { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+.vs-side.wrong h4 { color: var(--danger); }
+.vs-side.right h4 { color: var(--success); }
+.vs-side ul { list-style: none; }
+.vs-side ul li { padding: 5px 0; font-size: 13px; color: var(--text2); display: flex; gap: 8px; align-items: flex-start; }
+.vs-side.wrong ul li::before { content: "✗"; color: var(--danger); flex-shrink: 0; }
+.vs-side.right ul li::before { content: "✓"; color: var(--success); flex-shrink: 0; }
+
+/* STEP LIST */
+.step-list { list-style: none; counter-reset: step; }
+.step-list li { counter-increment: step; display: flex; gap: 16px; margin-bottom: 22px; align-items: flex-start; }
+.step-list li::before {
+  content: counter(step);
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white; width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; flex-shrink: 0; margin-top: 2px;
+}
+.step-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.step-desc { font-size: 13px; color: var(--text2); }
+
+/* TABLE */
+.table-wrap { overflow-x: auto; margin: 16px 0; border-radius: var(--radius2); border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 12px 16px; background: var(--surface2); color: var(--text3); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+td { padding: 13px 16px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.015); }
+
+/* LEVELS */
+.level-card { border-radius: var(--radius); padding: 22px 26px; margin-bottom: 14px; border: 1px solid; position: relative; overflow: hidden; }
+.level-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+.level-card.l1 { background: rgba(247,106,106,0.05); border-color: rgba(247,106,106,0.2); }
+.level-card.l1::before { background: var(--danger); }
+.level-card.l2 { background: rgba(247,192,106,0.05); border-color: rgba(247,192,106,0.2); }
+.level-card.l2::before { background: var(--accent3); }
+.level-card.l3 { background: rgba(106,247,160,0.05); border-color: rgba(106,247,160,0.2); }
+.level-card.l3::before { background: var(--success); }
+
+.level-badge { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
+.l1 .level-badge { background: rgba(247,106,106,0.15); color: var(--danger); }
+.l2 .level-badge { background: rgba(247,192,106,0.15); color: var(--accent3); }
+.l3 .level-badge { background: rgba(106,247,160,0.15); color: var(--success); }
+.level-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+
+/* LADDER */
+.ladder { margin: 24px 0; }
+.rung { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 4px; }
+.rung-left { display: flex; flex-direction: column; align-items: center; }
+.rung-num { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; flex-shrink: 0; z-index: 1; border: 2px solid; }
+.rung-line { width: 2px; flex: 1; min-height: 20px; background: var(--border); margin: 4px 0; }
+.rung.current .rung-num { background: rgba(139,124,248,0.2); border-color: var(--accent); color: var(--accent); box-shadow: 0 0 20px rgba(139,124,248,0.3); }
+.rung.done .rung-num { background: rgba(106,247,160,0.15); border-color: var(--success); color: var(--success); }
+.rung.future .rung-num { background: var(--surface2); border-color: var(--border2); color: var(--text3); }
+.rung.goal .rung-num { background: linear-gradient(135deg, rgba(139,124,248,0.3), rgba(247,192,106,0.3)); border-color: var(--accent3); color: var(--accent3); box-shadow: 0 0 30px rgba(247,192,106,0.2); }
+.rung-body { flex: 1; padding-bottom: 24px; }
+.rung-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.rung-sub { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
+.rung-tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+
+/* COMMUNITY */
+.comm-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; }
+.comm-header { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+.comm-num { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.c1 .comm-num { background: rgba(247,106,139,0.15); }
+.c2 .comm-num { background: rgba(247,192,106,0.15); }
+.c3 .comm-num { background: rgba(139,124,248,0.15); }
+.c4 .comm-num { background: rgba(78,205,196,0.15); }
+.comm-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.comm-focus { font-size: 12px; color: var(--text3); margin-top: 3px; }
+.comm-tag { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; margin-right: 6px; margin-bottom: 6px; }
+.tag-gold { background: rgba(247,192,106,0.15); color: var(--accent3); }
+.tag-silver { background: rgba(139,124,248,0.15); color: var(--accent); }
+.tag-tool { background: rgba(78,205,196,0.15); color: var(--accent2); }
+
+/* DAY ACCORDION */
+.day-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+.day-header { display: flex; align-items: center; gap: 16px; padding: 18px 20px; cursor: pointer; transition: background 0.15s; user-select: none; }
+.day-header:hover { background: var(--surface2); }
+.day-num { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; flex-shrink: 0; }
+.day-info { flex: 1; }
+.day-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.day-focus { font-size: 12px; color: var(--text3); margin-top: 3px; }
+.day-chevron { color: var(--text3); transition: transform 0.2s; font-size: 11px; }
+.day-card.open .day-chevron { transform: rotate(180deg); }
+.day-body { display: none; padding: 0 22px 22px; border-top: 1px solid var(--border); }
+.day-card.open .day-body { display: block; }
+.day-section-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin: 18px 0 8px; }
+.success-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(106,247,160,0.08); border: 1px solid rgba(106,247,160,0.25); color: var(--success); font-size: 12px; font-weight: 700; padding: 7px 14px; border-radius: 20px; margin-top: 10px; }
+
+/* TIMER */
+.timer-wrap { max-width: 520px; margin: 0 auto; }
+.timer-settings { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+.setting-group { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.setting-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); }
+.setting-row { display: flex; align-items: center; gap: 12px; }
+.s-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.s-btn:hover { border-color: var(--accent); color: var(--accent); }
+.s-val { font-size: 20px; font-weight: 800; color: var(--text); width: 36px; text-align: center; }
+
+.ring-wrap { position: relative; width: 220px; height: 220px; margin: 0 auto 24px; }
+.ring-svg { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: var(--surface2); stroke-width: 10; }
+.ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 0.1s linear, stroke 0.4s ease; }
+.ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+.ring-num { font-size: 52px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; transition: color 0.4s; }
+.ring-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3); margin-top: 4px; }
+
+.timer-phase-text { font-size: 18px; font-weight: 700; text-align: center; min-height: 28px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; color: var(--text2); }
+.timer-instruction { font-size: 13px; color: var(--text3); text-align: center; min-height: 52px; max-width: 400px; margin: 0 auto 28px; line-height: 1.6; }
+.timer-controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
+
+.btn { padding: 12px 28px; border-radius: var(--radius2); border: none; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em; }
+.btn-primary { background: linear-gradient(135deg, var(--accent), #6a58f0); color: white; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(139,124,248,0.3); }
+.btn-secondary { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+.btn-secondary:hover { color: var(--text); }
+.btn-danger { background: rgba(247,106,106,0.1); color: var(--danger); border: 1px solid rgba(247,106,106,0.2); }
+
+.cycle-dots { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+.cdot { width: 10px; height: 10px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border2); transition: all 0.3s; }
+.cdot.done { background: var(--success); border-color: var(--success); }
+.cdot.active { background: var(--accent); border-color: var(--accent); transform: scale(1.4); }
+.cycle-count { text-align: center; font-size: 13px; color: var(--text3); min-height: 20px; }
+
+.rung-selector { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
+.rung-sel-btn { padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text3); font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+.rung-sel-btn:hover { color: var(--text); }
+.rung-sel-btn.active { background: rgba(139,124,248,0.15); border-color: var(--accent); color: var(--accent); }
+
+.timer-tip { background: var(--surface2); border-radius: var(--radius2); padding: 14px 18px; margin-top: 20px; font-size: 13px; color: var(--text2); }
+.timer-tip strong { display: block; margin-bottom: 4px; color: var(--text); }
+
+/* REF */
+.ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 16px 0; }
+.ref-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+.ref-card h3 { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.ref-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.ref-item:last-child { border-bottom: none; }
+.ref-item .ri { flex-shrink: 0; margin-top: 1px; }
+.ref-item .rt { color: var(--text2); }
+.ref-item .rt strong { color: var(--text); display: block; margin-bottom: 2px; }
+
+/* PHASE CARDS */
+.phase-card { border-radius: var(--radius); padding: 22px; margin-bottom: 14px; border: 1px solid; }
+.phase-card.p1 { background: rgba(247,106,106,0.05); border-color: rgba(247,106,106,0.25); }
+.phase-card.p2 { background: rgba(247,192,106,0.05); border-color: rgba(247,192,106,0.25); }
+.phase-card.p3 { background: rgba(106,247,160,0.05); border-color: rgba(106,247,160,0.25); }
+.phase-badge { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
+.p1 .phase-badge { background: rgba(247,106,106,0.15); color: var(--danger); }
+.p2 .phase-badge { background: rgba(247,192,106,0.15); color: var(--accent3); }
+.p3 .phase-badge { background: rgba(106,247,160,0.15); color: var(--success); }
+.phase-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+
+/* MOBILE */
+.menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 200; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius2); padding: 9px 13px; cursor: pointer; color: var(--text); font-size: 18px; }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 90; backdrop-filter: blur(4px); }
+
+@media (max-width: 900px) {
+  .menu-toggle { display: block; }
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .overlay.open { display: block; }
+  .main { margin-left: 0; max-width: 100vw; padding: 24px 20px 60px; padding-top: 70px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .vs-wrap { grid-template-columns: 1fr; }
+  .vs-label { display: none; }
+  .ring-num { font-size: 44px; }
+}
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" onclick="toggleMenu()">☰</button>
+<div class="overlay" id="overlay" onclick="closeMenu()"></div>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">
+      <div class="logo-icon">🎯</div>
+      <div>
+        <div class="logo-text">MDO Mastery</div>
+        <div class="logo-sub">Complete Training Guide</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Foundation</div>
+    <button class="nav-btn active" onclick="show('home',this)"><span class="nav-icon">🏠</span>Overview</button>
+    <button class="nav-btn" onclick="show('mechanism',this)"><span class="nav-icon">🧠</span>The Mechanism</button>
+    <button class="nav-btn" onclick="show('levels',this)"><span class="nav-icon">📊</span>Three Levels</button>
+    <button class="nav-btn" onclick="show('laws',this)"><span class="nav-icon">⚖️</span>The Laws</button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">RK Protocol</div>
+    <button class="nav-btn" onclick="show('sensation',this)"><span class="nav-icon">🎯</span>Finding the Drop</button>
+    <button class="nav-btn" onclick="show('mechanics',this)"><span class="nav-icon">⚙️</span>Mechanics</button>
+    <button class="nav-btn" onclick="show('belly',this)"><span class="nav-icon">💨</span>Good/Bad Belly</button>
+    <button class="nav-btn" onclick="show('microbreath',this)"><span class="nav-icon">🌬️</span>Micro-Breathing<span class="nav-badge">Key</span></button>
+    <button class="nav-btn" onclick="show('phases',this)"><span class="nav-icon">📈</span>The 3 Phases</button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">The Ladder</div>
+    <button class="nav-btn" onclick="show('ladder',this)"><span class="nav-icon">🪜</span>MDO Ladder</button>
+    <button class="nav-btn" onclick="show('communities',this)"><span class="nav-icon">👥</span>Communities</button>
+    <button class="nav-btn" onclick="show('timeline',this)"><span class="nav-icon">📅</span>8-Week Plan</button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Practice</div>
+    <button class="nav-btn" onclick="show('drill',this)"><span class="nav-icon">🏋️</span>Core Drill</button>
+    <button class="nav-btn" onclick="show('timer',this)"><span class="nav-icon">⏱️</span>Breath Timer</button>
+    <button class="nav-btn" onclick="show('week1',this)"><span class="nav-icon">📆</span>Week 1 Plan<span class="nav-badge">Now</span></button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Reference</div>
+    <button class="nav-btn" onclick="show('quickref',this)"><span class="nav-icon">⚡</span>Quick Reference</button>
+    <button class="nav-btn" onclick="show('mistakes',this)"><span class="nav-icon">🚫</span>Mistakes</button>
+    <button class="nav-btn" onclick="show('analogies',this)"><span class="nav-icon">💡</span>Analogies</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ==================== HOME ==================== -->
+<div class="section active" id="home">
+  <div class="page-header">
+    <div class="page-eyebrow">MDO Mastery Guide</div>
+    <div class="page-title">Everything You Learned.<br><span>Nothing Forgotten.</span></div>
+    <div class="page-subtitle">From resting-state Reverse Kegel to Multiple Dry Orgasm — the complete map.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">🎯 The Master Rule</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="big-quote" style="margin:0;">
+        <p>"You are never trying to hold the drop.<br>You are only ever removing reasons for it to close."</p>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sh">The Complete Goal</h2>
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">✊ The Fist Model</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="grid-2">
+        <div class="hl red"><p><strong>Ejaculation</strong> = PC muscle contracting = fist CLOSING. Requires the fist to squeeze.</p></div>
+        <div class="hl green"><p><strong>RK</strong> = PC muscle releasing = fist OPEN. An open fist cannot squeeze.</p></div>
+      </div>
+      <div class="hl purple" style="margin-top:8px;">
+        <p><strong>Therefore:</strong> A pelvic floor in genuine release state cannot trigger ejaculation. The RK is not a barrier held against ejaculation — it is the <em>absence of the habit</em> that causes ejaculation.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sh">Where You Are</h2>
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">📊 Status Map</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="table-wrap" style="margin:0;">
+        <table>
+          <tr><th>Stage</th><th>What</th><th>Status</th></tr>
+          <tr><td>Inhale drop</td><td>Level 2 access — floor drops when you allow it</td><td style="color:var(--success);">✅ Have it</td></tr>
+          <tr><td>Exhale hold</td><td>Sustain Level 2 without recoil — building</td><td style="color:var(--accent3);">🔧 Building</td></tr>
+          <tr><td>60-second RK</td><td>Sustained parasympathetic permission + micro-breathing</td><td style="color:var(--text3);">⏳ Target</td></tr>
+          <tr><td>Arousal ladder</td><td>RK stable under increasing sympathetic pressure</td><td style="color:var(--text3);">⏳ After 60s</td></tr>
+          <tr><td>MDO</td><td>Open fist at PONR — orgasm without ejaculation</td><td style="color:var(--accent);">🎯 Final goal</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sh">Your Own Words</h2>
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">💬 The Proof You Understand</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <p class="body">When asked what happens when you try too hard vs. stop trying:</p>
+      <div class="big-quote" style="margin:12px 0; padding:20px;">
+        <p style="font-size:16px;">"Tried hard → became harder.<br>Stopped trying → became easy."</p>
+      </div>
+      <p class="body" style="margin:0;">Six words. The entire neurology of the Reverse Kegel.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MECHANISM ==================== -->
+<div class="section" id="mechanism">
+  <div class="page-header">
+    <div class="page-eyebrow">Core Science</div>
+    <div class="page-title">The <span>Mechanism</span></div>
+    <div class="page-subtitle">Why the pelvic floor does what it does. Why trying harder makes it worse.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">⚡ Two Nervous System Modes</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="vs-wrap">
+        <div class="vs-side wrong">
+          <h4>⚡ Gas Pedal — Sympathetic</h4>
+          <ul>
+            <li>Activated by threat, effort, urgency</li>
+            <li>Activated by self-monitoring and checking</li>
+            <li>Activated by trying to achieve something</li>
+            <li>Activated by rising CO2 / arousal pressure</li>
+            <li>Pelvic floor: CLOSES</li>
+            <li>Sphincters: CLENCH</li>
+            <li>At PONR: MAXIMUM activation</li>
+          </ul>
+        </div>
+        <div class="vs-label">VS</div>
+        <div class="vs-side right">
+          <h4>🌿 Brake Pedal — Parasympathetic</h4>
+          <ul>
+            <li>Activated by safety, stillness, ease</li>
+            <li>Activated by neutral present sensation</li>
+            <li>Activated by absence of agenda</li>
+            <li>Activated by jaw softness, open throat</li>
+            <li>Pelvic floor: OPENS</li>
+            <li>Sphincters: RELEASE</li>
+            <li>What MDO requires: sustained dominance</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">🫁 The Canister Model</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="hl yellow">
+        <p>Diaphragm = lid. Pelvic floor = base. Together they form a pressure chamber. On inhale: diaphragm descends → canister pressurizes → pelvic floor yields DOWN. On exhale: diaphragm ascends → pressure drops → floor must stay yielded through nervous system state AND Good Belly pressure maintenance alone.</p>
+      </div>
+      <p class="body" style="margin-top:12px;"><strong>Why the exhale is harder:</strong> The inhale has mechanical help. The exhale has none — unless you maintain the Good Belly at 2/10 to replace the lost diaphragm pressure.</p>
+    </div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">📉 Why the Exhale Collapses — Step by Step</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <ol class="step-list">
+        <li><div><div class="step-title">Inhale — Mechanical assist + nervous system</div><div class="step-desc">Diaphragm descends. Pressure drops floor. Jaw loose. You are passive. Level 2 reached.</div></div></li>
+        <li><div><div class="step-title">Exhale begins — two assists withdraw simultaneously</div><div class="step-desc">Diaphragm rises (mechanical assist gone). If Good Belly not maintained, container collapses.</div></div></li>
+        <li><div><div class="step-title">Mind shifts to monitoring</div><div class="step-desc">"Is the drop still there?" Thinking brain activates. Gas pedal fires.</div></div></li>
+        <li><div><div class="step-title">Both causes compound</div><div class="step-desc">Mechanical pressure loss + nervous system sympathetic activation = double recoil force.</div></div></li>
+        <li><div><div class="step-title">Floor returns to Level 1 tone</div><div class="step-desc">Drop collapses. Fix: Good Belly maintains pressure. Jaw proxy maintains nervous system state.</div></div></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">🌊 The MDO Mechanism</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="hl purple">
+        <p>The contraction and the orgasm are not the same thing. They have been linked by habit — not by biology. MDO training decouples them. The orgasmic wave moves through an open system. The fist is simply not closed. No resistance required.</p>
+      </div>
+      <p class="body" style="margin-top:12px;">Ejaculation has two stages: <strong>Emission</strong> (smooth muscle, sympathetic, involuntary — happens before pelvic floor moves) and <strong>Expulsion</strong> (pelvic floor contracts rhythmically — this is what RK prevents). You cannot prevent Stage 1 mechanically. You can prevent Stage 2 by keeping the floor genuinely released.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== LEVELS ==================== -->
+<div class="section" id="levels">
+  <div class="page-header">
+    <div class="page-eyebrow">Nervous System Map</div>
+    <div class="page-title">The <span>Three Levels</span></div>
+    <div class="page-subtitle">A map of your inner territory during practice.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">📊 The Three Levels</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="level-card l1">
+        <div class="level-badge">Level 1</div>
+        <div class="level-title">Default Daily State</div>
+        <p class="body">Where you live most of the time. Feels normal — but normal does not mean relaxed. Significant background tension you have stopped noticing. <strong>Pelvic floor:</strong> holding baseline residual tension.</p>
+      </div>
+      <div class="level-card l2">
+        <div class="level-badge">Level 2</div>
+        <div class="level-title">Maximum Voluntary Relaxation</div>
+        <p class="body">The drop you feel on your inhale. The relaxation during urination. A slight easing, dropping, softening. Still contains significant residual tension — it is the ceiling of conscious effort, not deep release. <strong>Your current training zone.</strong></p>
+      </div>
+      <div class="level-card l3">
+        <div class="level-badge">Level 3</div>
+        <div class="level-title">Profound Relaxation — The Healing Chamber</div>
+        <p class="body">Cannot be commanded. Arrives after sustained non-grasping residence in Level 2. <strong>Your 60-second RK and eventually MDO live here.</strong> Entered through surrender, non-resistance, non-demand — never through effort.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== LAWS ==================== -->
+<div class="section" id="laws">
+  <div class="page-header">
+    <div class="page-eyebrow">Non-Negotiable Rules</div>
+    <div class="page-title">The <span>Laws</span></div>
+    <div class="page-subtitle">Your body operates by these. Not suggestions — physics.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">⚖️ All Four Laws</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+
+      <div class="card" style="border-color:rgba(247,106,139,0.3); margin-bottom:14px;">
+        <div class="card-header"><div class="card-icon" style="background:rgba(247,106,139,0.1);">⚖️</div><div><div class="card-title">Law 1: The Sphincter Law</div><div class="card-sub">Ina May Gaskin</div></div></div>
+        <div class="hl pink"><p><strong>Sphincters cannot be forced open. They can only be allowed to open when the nervous system signals safety.</strong></p></div>
+      </div>
+
+      <div class="card" style="border-color:rgba(139,124,248,0.3); margin-bottom:14px;">
+        <div class="card-header"><div class="card-icon" style="background:rgba(139,124,248,0.1);">🔄</div><div><div class="card-title">Law 2: The Paradox Law</div><div class="card-sub">Paradoxical Relaxation</div></div></div>
+        <div class="hl purple"><p><strong>The more you try to achieve relaxation, the less relaxed you become. The moment you stop trying to achieve it, it becomes possible.</strong></p></div>
+      </div>
+
+      <div class="card" style="border-color:rgba(78,205,196,0.3); margin-bottom:14px;">
+        <div class="card-header"><div class="card-icon" style="background:rgba(78,205,196,0.1);">🕹️</div><div><div class="card-title">Law 3: The Attention Law</div><div class="card-sub">Paradoxical Relaxation</div></div></div>
+        <div class="hl teal"><p><strong>Attention is the joystick of the nervous system. Where you point your attention, the nervous system follows.</strong></p></div>
+      </div>
+
+      <div class="card" style="border-color:rgba(247,192,106,0.3);">
+        <div class="card-header"><div class="card-icon" style="background:rgba(247,192,106,0.1);">🌊</div><div><div class="card-title">Law 4: The Decoupling Law</div><div class="card-sub">MDO Specific</div></div></div>
+        <div class="hl yellow"><p><strong>Ejaculation and orgasm are not the same event. They are linked by conditioning, not by biology. That link can be broken through progressive nervous system training.</strong></p></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SENSATION ==================== -->
+<div class="section" id="sensation">
+  <div class="page-header">
+    <div class="page-eyebrow">RK Protocol — Step 1 & 2</div>
+    <div class="page-title"><span>Finding the Drop</span></div>
+    <div class="page-subtitle">Before you hold it, you must know exactly what you are looking for.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">🎯 What the RK Actually Feels Like</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="vs-wrap">
+        <div class="vs-side wrong">
+          <h4>✗ Normal Kegel</h4>
+          <ul>
+            <li>Feels like stopping urine or holding gas</li>
+            <li>The hole tightens and blinks</li>
+            <li>Pulls UP inside you</li>
+            <li>Requires active muscular effort</li>
+          </ul>
+        </div>
+        <div class="vs-label">VS</div>
+        <div class="vs-side right">
+          <h4>✓ Reverse Kegel</h4>
+          <ul>
+            <li>Feels like letting go to pass gas</li>
+            <li>Or sitting down to start a bowel movement</li>
+            <li>The hole slightly expands and drops DOWN</li>
+            <li>A smooth, quiet melting sensation — zero effort</li>
+          </ul>
+        </div>
+      </div>
+      <div class="hl purple" style="margin-top:12px;">
+        <p><strong>The center of the pelvic floor hammock is the anus.</strong> It has the most nerve endings and is your best internal sensor. This is your primary biofeedback point.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">🔧 Three Calibration Drills</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <h3 class="ssh">Drill A: The Passing Gas Hack</h3>
+      <p class="body">Squeeze your anus as if holding in gas. Hold 3 seconds. Now LET IT GO. Feel that specific relaxation and slight outward bulge? That is a pure Reverse Kegel. The release — not the squeeze — is what you are training.</p>
+
+      <h3 class="ssh">Drill B: The Cough and Freeze</h3>
+      <p class="body">Give a gentle fake cough. Notice how the pelvic floor bulges downward for a split second? That is the bottom position. Do it again — and the exact millisecond it drops, FREEZE it there. Stop it from bouncing back up. You are catching the drop before the escalator reclaims it.</p>
+
+      <h3 class="ssh">Drill C: The Crocodile Breath</h3>
+      <p class="body">Lie flat on your stomach, forehead on hands. Air has nowhere to go but DOWN. Take a slow breath into your lower back and tailbone. You will literally feel the inhale push your tailbone and anus backward and downward. This is the drop made completely unmistakable.</p>
+
+      <div class="hl teal" style="margin-top:12px;">
+        <p><strong>Avoid towel or cushion biofeedback.</strong> These are "dumb" sensors that trigger adjacent muscles to tighten. Use your fingers on the perineum instead — but as a sensation anchor only, not as a performance monitor.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MECHANICS ==================== -->
+<div class="section" id="mechanics">
+  <div class="page-header">
+    <div class="page-eyebrow">RK Protocol — Step 3</div>
+    <div class="page-title"><span>Mechanics</span></div>
+    <div class="page-subtitle">The water balloon rule, the escalator problem, and the posture hack.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">⚙️ Core Mechanics</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-header"><div class="card-icon" style="background:rgba(78,205,196,0.1);">🎈</div><div><div class="card-title">The Water Balloon Rule (Inhale)</div></div></div>
+        <p class="body">Your torso is a water balloon. When you breathe in, air fills the top. The bottom — the pelvic floor — gets heavy, stretches, and bulges DOWN. You do NOT push. The air does it for you. You are passive.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-header"><div class="card-icon" style="background:rgba(247,192,106,0.1);">🪜</div><div><div class="card-title">The Escalator Rule (Exhale)</div></div></div>
+        <p class="body">Normally: inhale = floor rides down, exhale = floor rides up. A true RK is <strong>stepping off the escalator at the bottom.</strong> You must hold the open/dropped stretch while the air leaves — without being carried back up.</p>
+        <div class="hl yellow"><p>This requires two things simultaneously: the Good Belly (mechanical — replaces lost diaphragm pressure) and the Jaw Proxy (nervous system — keeps parasympathetic dominant).</p></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-icon" style="background:rgba(139,124,248,0.1);">🧎</div><div><div class="card-title">The Posture Hack</div></div></div>
+        <p class="body">Get into a deep Asian squat — heels flat on floor, elbows inside knees. This mechanically spreads the sit-bones to maximum width. It shuts off the glutes and thighs from compensating. The pelvic floor has no help from neighboring muscles — it must release on its own terms.</p>
+        <p class="body"><strong>Optional sensory hack:</strong> Place bare index and middle fingers on your perineum. When you inhale, feel it physically bulge into your fingers. When you exhale, use your fingers as a physical reminder that the muscle should stay down. Use as sensation anchor — not performance monitor.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== BELLY ==================== -->
+<div class="section" id="belly">
+  <div class="page-header">
+    <div class="page-eyebrow">RK Protocol — Step 4</div>
+    <div class="page-title">Good Belly / <span>Bad Belly</span></div>
+    <div class="page-subtitle">The mechanical layer that makes the exhale hold possible. The most important thing missing from early practice.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">💨 The Good Belly vs Bad Belly</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="hl purple">
+        <p><strong>Why this exists:</strong> On the exhale, the diaphragm rises and intra-abdominal pressure drops. Without replacement pressure, the pelvic floor loses its downward push and recoils upward. The Good Belly replaces that lost pressure — mechanically holding the container open so the floor has no reason to recoil.</p>
+      </div>
+
+      <div class="vs-wrap" style="margin-top:20px;">
+        <div class="vs-side wrong">
+          <h4>✗ Bad Belly (Danger Zone)</h4>
+          <ul>
+            <li>Tensing upper six-pack abs</li>
+            <li>Sucking stomach inward</li>
+            <li>Pushing violently downward</li>
+            <li>Face turning red</li>
+            <li>Effort creeping from 2/10 to 6/10</li>
+            <li>This is Valsalva — causes hemorrhoids, closes floor</li>
+          </ul>
+        </div>
+        <div class="vs-label">VS</div>
+        <div class="vs-side right">
+          <h4>✓ Good Belly (Sweet Spot)</h4>
+          <ul>
+            <li>Upper stomach completely soft</li>
+            <li>Lower belly (below belly button) slightly outward</li>
+            <li>2/10 effort — barely there</li>
+            <li>Think "keep it open" not "push it out"</li>
+            <li>Effort directed at container walls — not at floor</li>
+            <li>Compatible with zero-effort floor principle</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="hl yellow" style="margin-top:16px;">
+        <p><strong>IAP Creep Warning:</strong> As seconds tick by, do not let 2/10 slowly become 6/10. Re-calibrate every 10 seconds: <em>"I am not pushing down. I am refusing to pull up."</em> That distinction is everything.</p>
+      </div>
+
+      <div class="hl teal" style="margin-top:12px;">
+        <p><strong>Reconciling with "no effort" principle:</strong> The Good Belly does NOT contradict the zero-effort pelvic floor principle. It is effort directed at the container WALLS — not at the floor itself. The floor remains passive. The walls gently maintain the environment that keeps the floor dropped. Two different structures. Two different jobs.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">🧠 Active Body Scanner</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <p class="body">Check every 5 seconds — but as <strong>sensation resting</strong>, not evaluative monitoring. Feel each area without judging it. If you notice tension, withdraw it passively.</p>
+      <div class="table-wrap" style="margin:0;">
+        <table>
+          <tr><th>What to Scan</th><th>If You Notice</th><th>The Fix</th></tr>
+          <tr><td>Upper abs</td><td>Tightness or gripping</td><td>Relax upper stomach. Return focus to 2/10 lower belly.</td></tr>
+          <tr><td>Glutes</td><td>Any squeezing</td><td>Sink deeper into squat to mechanically disable them.</td></tr>
+          <tr><td>The hole</td><td>Pulling upward</td><td>Escalator caught you. Micro-cough or deep inhale to drop back.</td></tr>
+          <tr><td>Lower belly</td><td>Effort creeping above 2/10</td><td>Stop. Remember: un-clenching not pushing. Reset to 2/10.</td></tr>
+          <tr><td>Jaw</td><td>Teeth touching, temple grip</td><td>Let jaw fall open. Lips part. Tongue heavy.</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MICRO-BREATHING ==================== -->
+<div class="section" id="microbreath">
+  <div class="page-header">
+    <div class="page-eyebrow">The Missing Bridge</div>
+    <div class="page-title"><span>Micro-Breathing</span></div>
+    <div class="page-subtitle">The single most important technique for sustaining the 60-second hold. The bridge between 3 seconds and 60 seconds.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">🌬️ Why Micro-Breathing Solves the 60-Second Problem</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="hl purple">
+        <p><strong>The core problem with full breathing during an RK hold:</strong> Every full breath cycle creates a large pressure swing. The inhale drops the floor. The exhale creates a large mechanical recoil force. Fighting this force requires increasing Good Belly effort — which creeps from 2/10 toward Valsalva territory. Over 60 seconds, full breathing makes the hold mechanically unsustainable.</p>
+      </div>
+
+      <div class="vs-wrap" style="margin-top:20px;">
+        <div class="vs-side wrong">
+          <h4>✗ Full Breath During Hold</h4>
+          <ul>
+            <li>Diaphragm descends far on inhale</li>
+            <li>Big pressure change disturbs floor</li>
+            <li>Diaphragm ascends far on exhale</li>
+            <li>Large mechanical recoil force</li>
+            <li>Good Belly must fight large force</li>
+            <li>Effort creeps to Valsalva territory</li>
+            <li>Floor braces shut within 10-15 seconds</li>
+          </ul>
+        </div>
+        <div class="vs-label">VS</div>
+        <div class="vs-side right">
+          <h4>✓ Micro-Breath During Hold</h4>
+          <ul>
+            <li>Diaphragm barely moves</li>
+            <li>Tiny pressure change — floor barely disturbed</li>
+            <li>Tiny exhale — minimal recoil force</li>
+            <li>Good Belly stays at genuine 2/10</li>
+            <li>Floor stays dropped across full 60 seconds</li>
+            <li>No mechanical reason to recoil</li>
+            <li>Nervous system layer does the rest</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="hl green" style="margin-top:16px;">
+        <p><strong>The mechanism in one sentence:</strong> Micro-breathing reduces the pressure swing per breath cycle to near zero — so the floor stays dropped across the full minute without fighting breath mechanics on every cycle.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">🌊 Where Micro-Breathing Comes From</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+
+      <div class="comm-card c4" style="margin-bottom:14px;">
+        <div class="comm-header">
+          <div class="comm-num">🌊</div>
+          <div>
+            <div class="comm-name">Primary Source: Freediving</div>
+            <div class="comm-focus">Residual Volume Breathing · Static Apnea Relaxation Phase</div>
+          </div>
+        </div>
+        <span class="comm-tag tag-gold">⭐ Best Source</span>
+        <p class="body" style="margin-top:12px;">Freedivers doing static apnea discovered that the biggest enemy of a long hold is the diaphragm moving. Every full breath cycle disturbs the entire system. Solution: <strong>residual volume breathing</strong> — breathing at the very bottom of lung capacity, using only the top 10-15% of tidal volume.</p>
+        <div class="hl teal"><p><strong>What to search:</strong> "Static apnea relaxation phase breathing" — this is the exact moment in a freedive where the diver switches to micro-breathing to extend the hold. <strong>Best resource:</strong> Stig Severinsen's "Breatheology" — the most precise somatic description available.</p></div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px; border-color:rgba(139,124,248,0.3);">
+        <div class="card-header"><div class="card-icon" style="background:rgba(139,124,248,0.1);">🧘</div><div><div class="card-title">Secondary Source: Buteyko Method</div><div class="card-sub">CO2 Tolerance + Micro-Breath Combined</div></div></div>
+        <p class="body">Konstantin Buteyko discovered most people chronically over-breathe. Reducing breath volume increases CO2 tolerance and keeps the nervous system parasympathetically dominant.</p>
+        <p class="body"><strong>What to extract:</strong> The Buteyko "reduced breathing" exercise — deliberately breathing less than you feel you need to for 3-5 minutes. Trains the nervous system to stay calm with less air movement. Directly applicable to your 60-second hold.</p>
+        <p class="body"><strong>The control pause:</strong> After a natural exhale, hold until the first urge to breathe. This simultaneously trains CO2 tolerance and micro-breath awareness in one practice.</p>
+      </div>
+
+      <div class="card" style="border-color:rgba(78,205,196,0.3);">
+        <div class="card-header"><div class="card-icon" style="background:rgba(78,205,196,0.1);">🌙</div><div><div class="card-title">Tertiary Source: Yoga Nidra / Pranayama</div><div class="card-sub">The Nervous System Version</div></div></div>
+        <p class="body">In deep Yoga Nidra states, the breath naturally becomes micro — almost imperceptible. Teachers describe it as <strong>"the breath breathing itself."</strong> So small it feels like it has stopped, but hasn't.</p>
+        <p class="body"><strong>What to extract:</strong> Sama Vritti at minimal volume — equal inhale and exhale, reduced to the smallest movement that satisfies the urge. No retention. Just the smallest breath that feels complete.</p>
+        <p class="body">This is the nervous system framing of what freedivers discovered mechanically. Both arrive at the same place: barely-moving diaphragm, sustained open pelvic floor.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">📋 How to Do Micro-Breathing — Step by Step</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <ol class="step-list">
+        <li><div><div class="step-title">Establish the drop normally</div><div class="step-desc">Use the inhale drop with full breath. Jaw loose. Good Belly at 2/10. Floor drops.</div></div></li>
+        <li><div><div class="step-title">Transition to micro-breathing</div><div class="step-desc">Close your mouth. Switch to tiny, shallow, slow nose breaths. Breathe into only the lower belly — the upper chest does not move.</div></div></li>
+        <li><div><div class="step-title">Reduce the volume deliberately</div><div class="step-desc">Take the smallest breath that satisfies the urge to inhale. This is approximately 10-15% of your normal tidal volume. The diaphragm barely moves.</div></div></li>
+        <li><div><div class="step-title">Maintain Good Belly at 2/10</div><div class="step-desc">Because the pressure swings are now tiny, the Good Belly barely has to work. This is the key — micro-breathing makes the Good Belly sustainable for 60 seconds.</div></div></li>
+        <li><div><div class="step-title">At the bottom of each micro-exhale</div><div class="step-desc">When the urge to inhale arrives — feel it as neutral sensation for 1-2 seconds before inhaling. Do not panic. Do not suppress. Just observe: "there is the urge." Then take the next micro-inhale.</div></div></li>
+        <li><div><div class="step-title">Scan every 5 seconds</div><div class="step-desc">Jaw loose? Upper abs soft? Glutes quiet? Hole staying down? Lower belly at 2/10? Return attention to sensation — not evaluation.</div></div></li>
+      </ol>
+
+      <div class="hl yellow">
+        <p><strong>The transition cue:</strong> After establishing the drop on the full inhale — on your next exhale, instead of taking a full breath back in, take a breath that is half the size. Then half again. Until you are at the minimum satisfying volume. The drop will stay — because you stopped disturbing it.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">🔗 How Everything Works Together</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="table-wrap" style="margin:0;">
+        <table>
+          <tr><th>Layer</th><th>Tool</th><th>What It Does</th></tr>
+          <tr><td><strong>Nervous System</strong></td><td>Jaw proxy</td><td>Keeps parasympathetic dominant — floor has no neurological reason to close</td></tr>
+          <tr><td><strong>Nervous System</strong></td><td>Attention resting in sensation</td><td>Keeps thinking brain offline — no monitoring signal to gas pedal</td></tr>
+          <tr><td><strong>Mechanical</strong></td><td>Good Belly 2/10</td><td>Replaces lost diaphragm pressure on exhale — floor has no mechanical reason to recoil</td></tr>
+          <tr><td><strong>Mechanical</strong></td><td>Micro-breathing</td><td>Reduces pressure swings per cycle to near zero — makes Good Belly sustainable for 60s</td></tr>
+          <tr><td><strong>Structural</strong></td><td>Asian squat or back lying</td><td>Mechanically disables compensating muscles — glutes, thighs cannot interfere</td></tr>
+        </table>
+      </div>
+      <div class="hl green" style="margin-top:16px;">
+        <p><strong>All five layers operating simultaneously = 60-second hold becomes possible.</strong> Remove any one layer and the hold collapses at a predictable point.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PHASES ==================== -->
+<div class="section" id="phases">
+  <div class="page-header">
+    <div class="page-eyebrow">RK Protocol — Step 5</div>
+    <div class="page-title">The <span>Three Phases</span></div>
+    <div class="page-subtitle">The roadmap to 60 seconds. Do not jump phases. Each one installs a specific layer.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">📈 Phase 1, 2 and 3</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+
+      <div class="phase-card p1">
+        <div class="phase-badge">Phase 1</div>
+        <div class="phase-title">The Drop and Reset — Mastering the Entry</div>
+        <p class="body">Find the drop using the fake cough or the deep inhale. Hold that wide, relaxed, dropped feeling for 5 seconds while holding your breath.</p>
+        <p class="body"><strong>What you are installing:</strong> The mind-muscle connection. The ability to find the bottom position reliably on demand.</p>
+        <div class="hl red"><p><strong>Pass/Fail:</strong> Pass if it felt like a gentle 5-second release with zero glute or ab tension. Fail if you felt any pushing, bearing down, or compensating muscle activity.</p></div>
+      </div>
+
+      <div class="phase-card p2" style="margin-top:14px;">
+        <div class="phase-badge">Phase 2</div>
+        <div class="phase-title">Surviving the Exhale — The Paradox Lock</div>
+        <p class="body">Inhale to drop the pelvic floor. Exhale with a gentle "Haaaaa" sound — like fogging a mirror. This slows the diaphragm's ascent and stops it from violently yanking the floor back up. Do NOT use sharp "Tssss" sounds — these spike pressure.</p>
+        <p class="body">Simultaneously: Good Belly at 2/10. Jaw loose. Keep the floor bulging outward for the entire 10-second exhale.</p>
+        <p class="body"><strong>What you are installing:</strong> The mechanical exhale lock — voiced exhale + Good Belly working together.</p>
+        <div class="hl yellow"><p><strong>Pass/Fail:</strong> Pass if the anus stays completely dropped and open until you run out of air. Fail if you feel the floor riding up with the breath at any point during the exhale.</p></div>
+      </div>
+
+      <div class="phase-card p3" style="margin-top:14px;">
+        <div class="phase-badge">Phase 3</div>
+        <div class="phase-title">The 60-Second Master Hold — Micro-Breathing</div>
+        <p class="body">Drop the pelvic floor with a full inhale. Close your mouth. Switch to micro-breathing — tiny, shallow, slow nose breaths into the belly only. Because the breaths are tiny, the diaphragm barely moves. The pressure swing is near zero. The floor barely notices each breath cycle.</p>
+        <p class="body">Good Belly stays at 2/10 effortlessly because there is almost nothing to fight. Jaw stays loose. Attention rests in sensation without monitoring.</p>
+        <p class="body"><strong>What you are installing:</strong> All five layers simultaneously — for duration.</p>
+        <div class="hl green"><p><strong>Pass/Fail:</strong> Pass if you can sustain the dropped, open, non-effortful state for 60 seconds while taking tiny breaths. The test: it should feel like the floor is simply resting at the bottom — not being held there. Like the hand resting in warm water.</p></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==================== LADDER ==================== -->
+<div class="section" id="ladder">
+  <div class="page-header">
+    <div class="page-eyebrow">The MDO Path</div>
+    <div class="page-title">The <span>Arousal Ladder</span></div>
+    <div class="page-subtitle">You cannot skip rungs. Each one is a different nervous system challenge.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">🪜 The Complete Ladder</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="big-quote" style="margin-bottom:24px;">
+        <p>"The fist must learn to stay open in silence<br>before it can stay open in a storm."</p>
+      </div>
+      <div class="ladder">
+        <div class="rung current">
+          <div class="rung-left"><div class="rung-num">1</div><div class="rung-line"></div></div>
+          <div class="rung-body">
+            <div class="rung-title">Resting State RK</div>
+            <div class="rung-sub">Non-aroused. Lying still. All 5 layers. 60-second hold.</div>
+            <span class="rung-tag" style="background:rgba(139,124,248,0.15);color:var(--accent);">📍 You Are Here</span>
+            <div class="hl purple" style="margin-top:12px;"><p><strong>Goal:</strong> 60-second sustained drop. Zero residual effort. Micro-breathing installed. Good Belly at 2/10. Jaw proxy automatic.</p></div>
+          </div>
+        </div>
+        <div class="rung future">
+          <div class="rung-left"><div class="rung-num">2</div><div class="rung-line"></div></div>
+          <div class="rung-body">
+            <div class="rung-title">Mild Arousal RK</div>
+            <div class="rung-sub">Early arousal entering. First sympathetic signal. Weeks 3-4.</div>
+            <span class="rung-tag" style="background:rgba(106,247,160,0.1);color:var(--success);">Weeks 3–4</span>
+          </div>
+        </div>
+        <div class="rung future">
+          <div class="rung-left"><div class="rung-num">3</div><div class="rung-line"></div></div>
+          <div class="rung-body">
+            <div class="rung-title">Moderate Arousal RK</div>
+            <div class="rung-sub">Sustained arousal. Flutter likely. Accept oscillation.</div>
+            <span class="rung-tag" style="background:rgba(106,247,160,0.1);color:var(--success);">Weeks 4–5</span>
+          </div>
+        </div>
+        <div class="rung future">
+          <div class="rung-left"><div class="rung-num">4</div><div class="rung-line"></div></div>
+          <div class="rung-body">
+            <div class="rung-title">High Arousal RK</div>
+            <div class="rung-sub">Significant sympathetic activation. Voiced exhale critical.</div>
+            <span class="rung-tag" style="background:rgba(106,247,160,0.1);color:var(--success);">Weeks 6–7</span>
+          </div>
+        </div>
+        <div class="rung future">
+          <div class="rung-left"><div class="rung-num">5</div><div class="rung-line"></div></div>
+          <div class="rung-body">
+            <div class="rung-title">PONR Edge</div>
+            <div class="rung-sub">Maximum sympathetic surge. Anchor word fires. Fist stays open.</div>
+            <span class="rung-tag" style="background:rgba(106,247,160,0.1);color:var(--success);">Week 7–8</span>
+          </div>
+        </div>
+        <div class="rung goal">
+          <div class="rung-left"><div class="rung-num">🎯</div></div>
+          <div class="rung-body">
+            <div class="rung-title">MDO</div>
+            <div class="rung-sub">Orgasmic sensation without ejaculation. The fist was never closed.</div>
+            <span class="rung-tag" style="background:rgba(247,192,106,0.15);color:var(--accent3);">The Goal</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== COMMUNITIES ==================== -->
+<div class="section" id="communities">
+  <div class="page-header">
+    <div class="page-eyebrow">Resource Extraction</div>
+    <div class="page-title">The <span>Communities</span></div>
+    <div class="page-subtitle">Extract the mechanism. Leave the mythology.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">👥 Community Extraction Map</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+
+      <div class="table-wrap" style="margin-bottom:20px;">
+        <table>
+          <tr><th>Requirement</th><th>Best Source</th><th>Second</th></tr>
+          <tr><td>Initial Release</td><td>Community 1 — Sphincter Law, jaw proxy</td><td>Community 2 — Canister model</td></tr>
+          <tr><td>Parasympathetic Lock</td><td>Community 3 — Level 2→3 transition</td><td>Community 4 — CO2 tolerance</td></tr>
+          <tr><td>Breath Management</td><td>Community 4 — Micro-breathing / residual volume</td><td>Community 2 — Canister model</td></tr>
+          <tr><td>Attention Stability</td><td>Community 3 — Joystick, present-moment</td><td>Community 4 — Body scan under pressure</td></tr>
+          <tr><td>PONR Survival</td><td>Community 1 — Voiced exhale, anchor word</td><td>Community 4 — Freefall mental model</td></tr>
+          <tr><td>Micro-Breathing</td><td>Community 4 — Residual volume breathing</td><td>Buteyko Method (bonus)</td></tr>
+        </table>
+      </div>
+
+      <div class="comm-card c1" style="margin-bottom:14px;">
+        <div class="comm-header"><div class="comm-num">🤱</div><div><div class="comm-name">Community 1: Midwife / Hypnobirthing</div><div class="comm-focus">Sphincter Law · Jaw-Pelvis · Yielding · Voiced Exhale · Anchor Word</div></div></div>
+        <span class="comm-tag tag-gold">⭐ Stage 1 Primary</span><span class="comm-tag tag-gold">Stage 3 Primary</span>
+        <p class="body" style="margin-top:10px;"><strong>Extract:</strong> Jaw proxy · Laughter pre-load · Hypnobirthing body scan audio · Voiced exhale ("ahhh") at Rung 4-5 · Conditioned anchor word for PONR</p>
+      </div>
+
+      <div class="comm-card c2" style="margin-bottom:14px;">
+        <div class="comm-header"><div class="comm-num">🏋️</div><div><div class="comm-name">Community 2: Powerlifting / DNS</div><div class="comm-focus">Canister Model · 360-Degree Breathing · Exhale Mechanics</div></div></div>
+        <span class="comm-tag tag-silver">Understanding Layer — All Stages</span>
+        <p class="body" style="margin-top:10px;"><strong>Extract:</strong> 360-degree breathing cue (first 3 cycles per session) · Canister mental model for exhale · "Breathe into your hands" cue</p>
+      </div>
+
+      <div class="comm-card c3" style="margin-bottom:14px;">
+        <div class="comm-header"><div class="comm-num">🧘</div><div><div class="comm-name">Community 3: CPPS / Paradoxical Relaxation</div><div class="comm-focus">Three Levels · Attention Stability · Sustained Parasympathetic Lock</div></div></div>
+        <span class="comm-tag tag-gold">⭐ Stage 1+2 Primary</span>
+        <p class="body" style="margin-top:10px;"><strong>Extract:</strong> David Wise PR audio · Three-level map · Monitoring impulse practice · Kriyas normalization for flutter at Rung 2-3</p>
+      </div>
+
+      <div class="comm-card c4">
+        <div class="comm-header"><div class="comm-num">🌊</div><div><div class="comm-name">Community 4: Freediving + Buteyko</div><div class="comm-focus">Micro-Breathing · CO2 Tolerance · Freefall · Body Scan Under Pressure</div></div></div>
+        <span class="comm-tag tag-gold">⭐ Micro-Breathing Primary</span><span class="comm-tag tag-silver">Stage 2+ Primary</span>
+        <p class="body" style="margin-top:10px;"><strong>Extract:</strong> Residual volume breathing (Stig Severinsen "Breatheology") · Static apnea relaxation phase · Buteyko reduced breathing + control pause · Freefall mental model ("I am being opened") · Pre-session ritual conditioning</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TIMELINE ==================== -->
+<div class="section" id="timeline">
+  <div class="page-header">
+    <div class="page-eyebrow">2-Month Plan</div>
+    <div class="page-title">The <span>8-Week Timeline</span></div>
+    <div class="page-subtitle">Complete path from resting RK to MDO.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">📅 8-Week Plan</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="table-wrap" style="margin:0;">
+        <table>
+          <tr><th>Weeks</th><th>Rung</th><th>Primary</th><th>New Tool</th><th>Goal</th><th>Marker</th></tr>
+          <tr><td><strong>1–2</strong></td><td>1</td><td>CPPS + Hypnobirthing</td><td>Micro-breathing, Good Belly</td><td>60s RK, all 5 layers</td><td>Drop feels received not held</td></tr>
+          <tr><td><strong>3–4</strong></td><td>2</td><td>CPPS</td><td>Passive CO2 observation</td><td>RK stable mild arousal</td><td>Drop doesn't collapse when arousal enters</td></tr>
+          <tr><td><strong>4–5</strong></td><td>3</td><td>Freediving freefall</td><td>CO2 tables (dry)</td><td>RK moderate arousal</td><td>Flutter accepted without panic</td></tr>
+          <tr><td><strong>6–7</strong></td><td>4</td><td>Hypnobirthing voiced exhale</td><td>Pre-session ritual</td><td>RK high arousal</td><td>Jaw holds without monitoring</td></tr>
+          <tr><td><strong>7–8</strong></td><td>5+MDO</td><td>Hypnobirthing anchor word</td><td>All integrated</td><td>MDO</td><td>Orgasm without ejaculation</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== DRILL ==================== -->
+<div class="section" id="drill">
+  <div class="page-header">
+    <div class="page-eyebrow">Core Practice</div>
+    <div class="page-title">The <span>Complete Drill</span></div>
+    <div class="page-subtitle">All five layers. One session. Built from first principles.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">🏋️ The Full Drill — Step by Step</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="card" style="margin-bottom:16px;">
+        <p class="body" style="margin:0;"><strong>Setup:</strong> Lying on back, knees bent, feet flat OR deep Asian squat. 10 minutes max. Laughter pre-load first. Measure jaw — not floor.</p>
+      </div>
+      <ol class="step-list">
+        <li><div><div class="step-title">Laughter Pre-Load (90 seconds)</div><div class="step-desc">Genuine laughter before lying down. Pre-loads parasympathetic state. Shortens time to Level 2 significantly.</div></div></li>
+        <li><div><div class="step-title">Settle (2 minutes)</div><div class="step-desc">No agenda. Weight sinks into floor. Notice the floor holding you — you do not hold yourself.</div></div></li>
+        <li><div><div class="step-title">360-Degree Breath Cue (3 cycles)</div><div class="step-desc">Hands on sides of ribcage. Breathe outward in all directions including downward. Establishes canister drop. Then remove hands.</div></div></li>
+        <li><div><div class="step-title">Jaw Scan and Release</div><div class="step-desc">Find any grip. Teeth touching? Temple tension? Let jaw fall open. Lips part. Tongue heavy. Throat soft.</div></div></li>
+        <li><div><div class="step-title">Establish the Drop (Full Inhale)</div><div class="step-desc">Full natural inhale. Floor drops passively. You receive it — you did not create it.</div></div></li>
+        <li><div><div class="step-title">Good Belly Activated (2/10)</div><div class="step-desc">On the exhale: lower belly stays slightly outward. Upper abs completely soft. Container walls maintained. Not pushing — refusing to pull up.</div></div></li>
+        <li><div><div class="step-title">Voiced Exhale (Phase 2 tool)</div><div class="step-desc">Gentle "Haaaaa" — like fogging a mirror. Slows diaphragm ascent. Keeps jaw, lips, throat mechanically open. Cannot voice this sound with clenched jaw.</div></div></li>
+        <li><div><div class="step-title">Transition to Micro-Breathing (Phase 3)</div><div class="step-desc">Close mouth. Reduce breath volume by half. Then half again. Tiny slow nose breaths into lower belly only. Diaphragm barely moves. Floor barely disturbed.</div></div></li>
+        <li><div><div class="step-title">Sustain with Active Scan (every 5 seconds)</div><div class="step-desc">Jaw loose? Upper abs soft? Glutes quiet? Hole staying down? Lower belly at 2/10? Feel — don't evaluate. Withdraw any tension passively.</div></div></li>
+        <li><div><div class="step-title">When Push Starts — Withdraw It</div><div class="step-desc">Lift hand off what you were pressing. Each catch is one successful rep. Not failure — the practice.</div></div></li>
+      </ol>
+      <div class="hl green">
+        <p><strong>The one thing that tells you it's working:</strong> The floor feels like it is simply resting at the bottom — not held there. Like the hand resting in warm water. No effort in the exhale. Micro-breaths feel like almost nothing.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TIMER ==================== -->
+<div class="section" id="timer">
+  <div class="page-header">
+    <div class="page-eyebrow">Practice Tool</div>
+    <div class="page-title"><span>Breath Timer</span></div>
+    <div class="page-subtitle">Guided breath cycles with rung-appropriate settings and instructions.</div>
+  </div>
+
+  <div class="timer-wrap">
+    <div class="rung-selector">
+      <button class="rung-sel-btn active" onclick="setPreset(this,4,6,5,'Rung 1 — Resting','Jaw loose. Good Belly 2/10. Receive the drop — do not create it.')">Rung 1</button>
+      <button class="rung-sel-btn" onclick="setPreset(this,4,7,8,'Rung 2 — Mild Arousal','Arousal entering. Jaw proxy is your anchor. Attention to neutral sensation.')">Rung 2</button>
+      <button class="rung-sel-btn" onclick="setPreset(this,4,8,8,'Rung 3 — Moderate','Flutter is release beginning. Feel it without interpreting as failure.')">Rung 3</button>
+      <button class="rung-sel-btn" onclick="setPreset(this,5,8,6,'Rung 4 — High Arousal','Voiced exhale now. Barely audible ahhh — cannot do with clenched jaw.')">Rung 4</button>
+      <button class="rung-sel-btn" onclick="setPreset(this,5,10,5,'Rung 5 — PONR Edge','I am being opened — not stay open. Passive reception. Wave through open system.')">Rung 5</button>
+      <button class="rung-sel-btn" onclick="setPreset(this,2,3,10,'Micro-Breath Mode','Tiny nose breaths. Barely moving. Floor barely disturbed. Sustain the drop.')">Micro 🌬️</button>
+    </div>
+
+    <div class="timer-settings">
+      <div class="setting-group">
+        <div class="setting-label">Inhale (s)</div>
+        <div class="setting-row">
+          <button class="s-btn" onclick="adj('i',-1)">−</button>
+          <div class="s-val" id="iv">4</div>
+          <button class="s-btn" onclick="adj('i',1)">+</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <div class="setting-label">Exhale (s)</div>
+        <div class="setting-row">
+          <button class="s-btn" onclick="adj('e',-1)">−</button>
+          <div class="s-val" id="ev">6</div>
+          <button class="s-btn" onclick="adj('e',1)">+</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <div class="setting-label">Cycles</div>
+        <div class="setting-row">
+          <button class="s-btn" onclick="adj('c',-1)">−</button>
+          <div class="s-val" id="cv">5</div>
+          <button class="s-btn" onclick="adj('c',1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cycle-dots" id="cdots"></div>
+
+    <div class="ring-wrap">
+      <svg class="ring-svg" width="220" height="220" viewBox="0 0 220 220">
+        <circle class="ring-bg" cx="110" cy="110" r="96"/>
+        <circle class="ring-fill" id="rfill" cx="110" cy="110" r="96" stroke-dasharray="603" stroke-dashoffset="603" stroke="var(--accent)"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-num" id="rnum" style="color:var(--text);">—</div>
+        <div class="ring-label" id="rlbl"></div>
+      </div>
+    </div>
+
+    <div class="timer-phase-text" id="tphase">Ready</div>
+    <div class="timer-instruction" id="tinstr">Select your rung. Settle your jaw. Press Start when ready.</div>
+
+    <div class="timer-controls">
+      <button class="btn btn-primary" id="startb" onclick="tStart()">Start</button>
+      <button class="btn btn-secondary" id="pauseb" style="display:none" onclick="tPause()">Pause</button>
+      <button class="btn btn-danger" id="resetb" style="display:none" onclick="tReset()">Reset</button>
+    </div>
+
+    <div class="cycle-count" id="ccount"></div>
+
+    <div class="timer-tip" id="ttip">
+      <strong>Rung 1 — Resting State</strong>
+      Jaw loose on the exhale. Good Belly at 2/10. Receive the drop — do not create it.
+    </div>
+  </div>
+</div>
+
+<!-- ==================== WEEK 1 ==================== -->
+<div class="section" id="week1">
+  <div class="page-header">
+    <div class="page-eyebrow">Current Stage</div>
+    <div class="page-title">Week 1 <span>Day-by-Day</span></div>
+    <div class="page-subtitle">One session per day. 10 minutes maximum. Quality over duration.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">📆 Week 1 — All 7 Days</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+
+      <div class="day-card" id="d1"><div class="day-header" onclick="toggleDay('d1')"><div class="day-num" style="background:rgba(139,124,248,0.15);color:var(--accent);">1</div><div class="day-info"><div class="day-name">Baseline — Find the Moment</div><div class="day-focus">Locate when the push starts. Not fix it. Just find it.</div></div><div class="day-chevron">▼</div></div><div class="day-body"><div class="day-section-label">Session</div><p class="body">2 minutes settling. 5 breath cycles. Inhale: receive the drop. Exhale: notice the exact moment pushing begins. Do not try to stop it yet. Is it at the start, middle, or bottom of the exhale?</p><div class="success-pill">✓ Success: You can identify the moment. That is all.</div></div></div>
+
+      <div class="day-card" id="d2"><div class="day-header" onclick="toggleDay('d2')"><div class="day-num" style="background:rgba(78,205,196,0.15);color:var(--accent2);">2</div><div class="day-info"><div class="day-name">Jaw Proxy + Good Belly Install</div><div class="day-focus">Two control panels installed simultaneously.</div></div><div class="day-chevron">▼</div></div><div class="day-body"><div class="day-section-label">Session</div><p class="body">Laughter pre-load. Jaw scan and open. 5 breath cycles: inhale receive, exhale keep jaw loose AND lower belly gently outward at 2/10. Ignore the floor completely. Trust the two proxies.</p><p class="body">End of each exhale: <em>Was my jaw loose? Was my belly at 2/10 not 6/10?</em></p><div class="success-pill">✓ Success: At least 2 of 5 exhales with both proxies maintained.</div></div></div>
+
+      <div class="day-card" id="d3"><div class="day-header" onclick="toggleDay('d3')"><div class="day-num" style="background:rgba(247,192,106,0.15);color:var(--accent3);">3</div><div class="day-info"><div class="day-name">Withdrawal — Catch and Release</div><div class="day-focus">Each catch is one successful rep.</div></div><div class="day-chevron">▼</div></div><div class="day-body"><div class="day-section-label">Session</div><p class="body">Laughter pre-load. 8 breath cycles. When pushing starts — withdraw it. Not by doing something new. Just lift your hand off what you were pressing. Jaw and Good Belly stay at their levels.</p><div class="success-pill">✓ Success: Catch the push at least 4 times across 8 cycles.</div></div></div>
+
+      <div class="day-card" id="d4"><div class="day-header" onclick="toggleDay('d4')"><div class="day-num" style="background:rgba(106,247,160,0.15);color:var(--success);">4</div><div class="day-info"><div class="day-name">Rest Day — Two Observations</div><div class="day-focus">Urination reference + belly observation.</div></div><div class="day-chevron">▼</div></div><div class="day-body"><div class="day-section-label">The Practice</div><p class="body">No formal session. During urination: notice you did nothing except stop preventing it. During any natural exhale today: notice whether your lower belly is slightly outward or slightly pulled in. The pulled-in version is what creates the recoil.</p><div class="success-pill">✓ Success: Both observations made at least once.</div></div></div>
+
+      <div class="day-card" id="d5"><div class="day-header" onclick="toggleDay('d5')"><div class="day-num" style="background:rgba(139,124,248,0.15);color:var(--accent);">5</div><div class="day-info"><div class="day-name">Micro-Breath Introduction</div><div class="day-focus">The bridge to 60 seconds. Install the third layer.</div></div><div class="day-chevron">▼</div></div><div class="day-body"><div class="day-section-label">Session</div><p class="body">Laughter pre-load. Establish drop with full inhale. Good Belly 2/10. Jaw loose. Then: close mouth and reduce breath volume by half. Then half again. Hold the dropped state across 5 micro-breaths.</p><p class="body">Notice: the floor barely moves. The Good Belly barely has to work. The jaw stays loose naturally.</p><div class="success-pill">✓ Success: 5 consecutive micro-breaths with floor staying dropped.</div></div></div>
+
+      <div class="day-card" id="d6"><div class="day-header" onclick="toggleDay('d6')"><div class="day-num" style="background:rgba(78,205,196,0.15);color:var(--accent2);">6</div><div class="day-info"><div class="day-name">Duration — String Everything Together</div><div class="day-focus">All five layers. Building toward 30 seconds.</div></div><div class="day-chevron">▼</div></div><div class="day-body"><div class="day-section-label">Session</div><p class="body">Full protocol: laughter → settle → 360 cue → jaw open → drop → Good Belly → transition to micro-breathing. Hold for as long as the drop feels genuine and effortless. Stop when you notice effortful holding creeping in. Do not push duration.</p><p class="body">Active scan every 5 seconds. Feel — do not evaluate.</p><div class="success-pill">✓ Success: Any stretch of micro-breathing where all layers feel genuinely simultaneous.</div></div></div>
+
+      <div class="day-card" id="d7"><div class="day-header" onclick="toggleDay('d7')"><div class="day-num" style="background:rgba(106,247,160,0.15);color:var(--success);">7</div><div class="day-info"><div class="day-name">Integration — Let It Run</div><div class="day-focus">Put nothing in charge. 7 minutes.</div></div><div class="day-chevron">▼</div></div><div class="day-body"><div class="day-section-label">Session</div><p class="body">Full protocol. Set timer for 7 minutes. Keep giving permission. Micro-breathing sustained. When push comes — withdraw it. When attention wanders — return to sensation. No drama. At end: am I slightly more settled than when I started?</p><div class="success-pill">✓ Success: 7 minutes completed without stopping.</div></div></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==================== QUICK REF ==================== -->
+<div class="section" id="quickref">
+  <div class="page-header">
+    <div class="page-eyebrow">Before Every Session</div>
+    <div class="page-title"><span>Quick Reference</span></div>
+    <div class="page-subtitle">Open this. Read it. Put it down. Practice.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">⚡ Complete Quick Reference</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="ref-grid">
+
+        <div class="ref-card">
+          <h3>🎯 The Five Layers</h3>
+          <div class="ref-item"><span class="ri">1</span><span class="rt"><strong>Jaw loose</strong> Parasympathetic signal. Control panel 1.</span></div>
+          <div class="ref-item"><span class="ri">2</span><span class="rt"><strong>Attention in sensation</strong> No monitoring. No evaluation. Just feeling.</span></div>
+          <div class="ref-item"><span class="ri">3</span><span class="rt"><strong>Good Belly 2/10</strong> Container walls maintained. Not pushing — refusing to pull up.</span></div>
+          <div class="ref-item"><span class="ri">4</span><span class="rt"><strong>Micro-breathing</strong> Tiny nose breaths. Diaphragm barely moves. Floor barely disturbed.</span></div>
+          <div class="ref-item"><span class="ri">5</span><span class="rt"><strong>Posture</strong> Asian squat or back lying. Glutes and thighs mechanically disabled.</span></div>
+        </div>
+
+        <div class="ref-card">
+          <h3>🚫 Never Do These</h3>
+          <div class="ref-item"><span class="ri">✗</span><span class="rt"><strong>Push or bear down</strong> Valsalva — closes everything.</span></div>
+          <div class="ref-item"><span class="ri">✗</span><span class="rt"><strong>Monitor floor directly</strong> Monitoring = gas pedal = Level 1.</span></div>
+          <div class="ref-item"><span class="ri">✗</span><span class="rt"><strong>Hold the drop with effort</strong> Holding is the thing that closes.</span></div>
+          <div class="ref-item"><span class="ri">✗</span><span class="rt"><strong>Let Good Belly creep to 6/10</strong> That is Valsalva territory.</span></div>
+          <div class="ref-item"><span class="ri">✗</span><span class="rt"><strong>Take full breaths during hold</strong> Large pressure swings disturb the floor.</span></div>
+          <div class="ref-item"><span class="ri">✗</span><span class="rt"><strong>Skip rungs</strong> Each is a different nervous system challenge.</span></div>
+        </div>
+
+        <div class="ref-card">
+          <h3>✅ Always Do These</h3>
+          <div class="ref-item"><span class="ri">✓</span><span class="rt"><strong>Laughter first</strong> 90s genuine laughter pre-loads parasympathetic.</span></div>
+          <div class="ref-item"><span class="ri">✓</span><span class="rt"><strong>360 cue first 3 cycles</strong> Establishes canister drop.</span></div>
+          <div class="ref-item"><span class="ri">✓</span><span class="rt"><strong>Jaw scan before any breath</strong> Find and release all grip first.</span></div>
+          <div class="ref-item"><span class="ri">✓</span><span class="rt"><strong>Transition to micro-breath</strong> After establishing drop.</span></div>
+          <div class="ref-item"><span class="ri">✓</span><span class="rt"><strong>Active scan every 5 seconds</strong> Feel — not evaluate.</span></div>
+          <div class="ref-item"><span class="ri">✓</span><span class="rt"><strong>Stop at 10 minutes</strong> Quality degrades. More is not better.</span></div>
+        </div>
+
+        <div class="ref-card">
+          <h3>💡 Key Analogies</h3>
+          <div class="ref-item"><span class="ri">🚿</span><span class="rt"><strong>Urination</strong> Stop holding it shut — don't open it.</span></div>
+          <div class="ref-item"><span class="ri">💧</span><span class="rt"><strong>Hand in warm water</strong> Conditions create softness — not commands.</span></div>
+          <div class="ref-item"><span class="ri">🎈</span><span class="rt"><strong>Water balloon</strong> Air fills top, bottom gets heavy and drops.</span></div>
+          <div class="ref-item"><span class="ri">🪜</span><span class="rt"><strong>Escalator</strong> Step off at the bottom — don't ride it back up.</span></div>
+          <div class="ref-item"><span class="ri">🌊</span><span class="rt"><strong>Freefall</strong> "I am being opened" — not "stay open."</span></div>
+          <div class="ref-item"><span class="ri">✊</span><span class="rt"><strong>The fist</strong> RK = open fist. Open fist cannot squeeze.</span></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MISTAKES ==================== -->
+<div class="section" id="mistakes">
+  <div class="page-header">
+    <div class="page-eyebrow">Failure Modes</div>
+    <div class="page-title">Common <span>Mistakes</span></div>
+    <div class="page-subtitle">What goes wrong, the mechanism, and the exact fix.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">🚫 All Common Mistakes</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+
+      <div class="card" style="margin-bottom:12px; border-color:rgba(247,106,106,0.2);">
+        <div class="card-header"><div class="card-icon" style="background:rgba(247,106,106,0.1);">1</div><div><div class="card-title">Pushing to Create the Drop</div></div></div>
+        <p class="body"><strong>Mechanism:</strong> Pushing = Valsalva = global contraction = signals effort to old brain = sphincters close.</p>
+        <div class="hl green"><p><strong>Fix:</strong> On the inhale, do nothing except breathe. Diaphragm drops the floor. You are passive.</p></div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px; border-color:rgba(247,106,106,0.2);">
+        <div class="card-header"><div class="card-icon" style="background:rgba(247,106,106,0.1);">2</div><div><div class="card-title">Monitoring the Floor Directly</div></div></div>
+        <p class="body"><strong>Mechanism:</strong> Monitoring = Level 1 cognitive activity = gas pedal = "performance happening" = floor closes.</p>
+        <div class="hl green"><p><strong>Fix:</strong> Monitor the jaw and Good Belly. Trust the proxies. Never check the floor directly.</p></div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px; border-color:rgba(247,106,106,0.2);">
+        <div class="card-header"><div class="card-icon" style="background:rgba(247,106,106,0.1);">3</div><div><div class="card-title">IAP Creep — Good Belly Becoming Bad Belly</div></div></div>
+        <p class="body"><strong>Mechanism:</strong> 2/10 slowly becomes 6/10 as you try to maintain the hold. This is Valsalva — closes the floor and risks hemorrhoids.</p>
+        <div class="hl green"><p><strong>Fix:</strong> Re-calibrate every 10 seconds. "I am not pushing down. I am refusing to pull up." Switch to micro-breathing — it makes the Good Belly almost effortless.</p></div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px; border-color:rgba(247,106,106,0.2);">
+        <div class="card-header"><div class="card-icon" style="background:rgba(247,106,106,0.1);">4</div><div><div class="card-title">Taking Full Breaths During the Hold</div></div></div>
+        <p class="body"><strong>Mechanism:</strong> Full breath cycles create large pressure swings. Each exhale creates a large mechanical recoil force. Good Belly must fight harder. Effort creeps. Hold collapses.</p>
+        <div class="hl green"><p><strong>Fix:</strong> Transition to micro-breathing after establishing the drop. Tiny nose breaths. Floor barely disturbed per cycle.</p></div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px; border-color:rgba(247,106,106,0.2);">
+        <div class="card-header"><div class="card-icon" style="background:rgba(247,106,106,0.1);">5</div><div><div class="card-title">Treating the Catch as Failure</div></div></div>
+        <p class="body"><strong>Mechanism:</strong> Frustration = sympathetic activation = deepens Level 1 = makes next exhale harder.</p>
+        <div class="hl green"><p><strong>Fix:</strong> The catch IS the practice. Each withdrawal is a successful rep. Catching is winning.</p></div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px; border-color:rgba(247,106,106,0.2);">
+        <div class="card-header"><div class="card-icon" style="background:rgba(247,106,106,0.1);">6</div><div><div class="card-title">Rushing the Arousal Ladder</div></div></div>
+        <p class="body"><strong>Mechanism:</strong> Each rung trains a pattern. A sloppy pattern at Rung 1 becomes catastrophically broken at Rung 5 when the PONR surge arrives.</p>
+        <div class="hl green"><p><strong>Fix:</strong> Advance only when the current rung feels unremarkable — automatic, not requiring conscious attention.</p></div>
+      </div>
+
+      <div class="card" style="border-color:rgba(247,106,106,0.2);">
+        <div class="card-header"><div class="card-icon" style="background:rgba(247,106,106,0.1);">7</div><div><div class="card-title">Holding the Fist Against the Contraction at PONR</div></div></div>
+        <p class="body"><strong>Mechanism:</strong> Resisting a contraction is itself a contraction. Fighting amplifies the sympathetic response.</p>
+        <div class="hl green"><p><strong>Fix:</strong> The fist stays open because the habit of closing is absent — not because you resist closing. The wave moves through an open system.</p></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ANALOGIES ==================== -->
+<div class="section" id="analogies">
+  <div class="page-header">
+    <div class="page-eyebrow">Mental Models</div>
+    <div class="page-title">Key <span>Analogies</span></div>
+    <div class="page-subtitle">Each one is a real mechanism, not decoration.</div>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <div class="copy-block-title">💡 All Key Analogies</div>
+      <button class="copy-btn" onclick="copyBlock(this)">📋 Copy</button>
+    </div>
+    <div class="copy-block-content">
+      <div class="grid-2">
+
+        <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(78,205,196,0.1);">🚿</div><div><div class="card-title">Urination</div></div></div><p class="body">You don't open the sphincter. You stop holding it shut. Permission — not action.</p><div class="hl teal"><p>Your drop works the same way.</p></div></div>
+
+        <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(139,124,248,0.1);">💧</div><div><div class="card-title">Hand in Warm Water</div></div></div><p class="body">Softens because conditions are right — not because commanded. Monitor it and a micro-tension enters immediately.</p><div class="hl purple"><p>That monitoring tension is the exhale problem.</p></div></div>
+
+        <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(247,192,106,0.1);">🎈</div><div><div class="card-title">Water Balloon</div></div></div><p class="body">Torso = balloon. Air fills top. Bottom gets heavy and bulges down. You do not push — air does it.</p><div class="hl yellow"><p>The inhale drop is passive — always.</p></div></div>
+
+        <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(247,106,106,0.1);">🪜</div><div><div class="card-title">The Escalator</div></div></div><p class="body">Inhale = floor rides down. Exhale = floor rides up. RK = stepping off at the bottom. Good Belly + micro-breath keep you off the escalator.</p><div class="hl red"><p>The exhale is not the enemy — the escalator is.</p></div></div>
+
+        <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(106,247,160,0.1);">💤</div><div><div class="card-title">Falling Asleep</div></div></div><p class="body">Cannot be forced. Trying harder keeps you awake. Stopping trying lets it happen.</p><div class="hl green"><p>"Tried hard → harder. Stopped trying → easy."</p></div></div>
+
+        <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(78,205,196,0.1);">🌊</div><div><div class="card-title">Freediver Freefall</div></div></div><p class="body">Stop kicking. Surrender to the descent. Fighting costs oxygen. Complete surrender is the skill.</p><div class="hl teal"><p>"I am being opened" — not "stay open."</p></div></div>
+
+        <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(247,106,139,0.1);">✊</div><div><div class="card-title">The Fist</div></div></div><p class="body">Ejaculation = fist squeezing. RK = fist open. Open fist cannot squeeze. MDO = the habit of squeezing is absent.</p><div class="hl pink"><p>Not resistance. Absence of the habit.</p></div></div>
+
+        <div class="card"><div class="card-header"><div class="card-icon" style="background:rgba(247,192,106,0.1);">🛡️</div><div><div class="card-title">The Cast</div></div></div><p class="body">A cast doesn't heal a bone — it removes disturbance. Your practice removes neurological disturbance so the floor can release itself.</p><div class="hl yellow"><p>You stop disturbing it. It heals itself.</p></div></div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ===== NAVIGATION =====
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  closeMenu();
+  window.scrollTo(0,0);
+}
+
+// ===== MOBILE =====
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+function closeMenu() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ===== ACCORDION =====
+function toggleDay(id) { document.getElementById(id).classList.toggle('open'); }
+
+// ===== COPY =====
+function copyBlock(btn) {
+  const content = btn.closest('.copy-block').querySelector('.copy-block-content');
+  const text = extractText(content);
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function extractText(el) {
+  let text = '';
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+  let node;
+  let lastBlock = null;
+  const blockTags = new Set(['P','H1','H2','H3','H4','H5','LI','TD','TH','DIV','TR','BR']);
+  
+  while(node = walker.nextNode()) {
+    const parent = node.parentElement;
+    const tag = parent ? parent.tagName : '';
+    const content = node.textContent.trim();
+    if(!content) continue;
+    
+    let blockParent = parent;
+    while(blockParent && !blockTags.has(blockParent.tagName)) {
+      blockParent = blockParent.parentElement;
+    }
+    
+    if(blockParent !== lastBlock) {
+      if(text && !text.endsWith('\n')) text += '\n';
+      lastBlock = blockParent;
+    } else {
+      if(text && !text.endsWith(' ') && !text.endsWith('\n')) text += ' ';
+    }
+    text += content;
+  }
+  return text.replace(/\n{3,}/g, '\n\n').trim();
+}
+
+// ===== TIMER =====
+const CIRC = 2 * Math.PI * 96;
+let T = { i:4, e:6, c:5, running:false, paused:false, phase:'idle', left:0, cycle:0, iv:null };
+
+const instrs = {
+  inhale: "Breathe in slowly. Belly rises. Jaw loose. Good Belly ready. Receive the drop — you are passive.",
+  exhale: "Breathe out slowly. Jaw stays loose. Good Belly stays at 2/10. No checking the floor. Just keep getting out of the way.",
+  micro_inhale: "Tiny nose breath. Barely moving. Just enough to satisfy the urge. Floor stays dropped.",
+  micro_exhale: "Tiny exhale. Almost nothing. Floor barely notices. Good Belly stays effortless.",
+  done: "Session complete. Are you slightly more settled than when you started? That is the only question."
+};
+
+let currentPreset = 'normal';
+
+function setPreset(btn, i, e, c, label, tip) {
+  document.querySelectorAll('.rung-sel-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  T.i=i; T.e=e; T.c=c;
+  document.getElementById('iv').textContent=i;
+  document.getElementById('ev').textContent=e;
+  document.getElementById('cv').textContent=c;
+  document.getElementById('ttip').innerHTML='<strong>'+label+'</strong> '+tip;
+  currentPreset = label.includes('Micro') ? 'micro' : 'normal';
+  buildDots();
+  if(!T.running) tReset();
+}
+
+function adj(k,d) {
+  if(k==='i'){T.i=Math.max(1,Math.min(20,T.i+d));document.getElementById('iv').textContent=T.i;}
+  if(k==='e'){T.e=Math.max(1,Math.min(20,T.e+d));document.getElementById('ev').textContent=T.e;}
+  if(k==='c'){T.c=Math.max(1,Math.min(30,T.c+d));document.getElementById('cv').textContent=T.c;buildDots();}
+}
+
+function buildDots() {
+  const el=document.getElementById('cdots'); el.innerHTML='';
+  for(let i=0;i<Math.min(T.c,20);i++){const d=document.createElement('div');d.className='cdot';d.id='cd'+i;el.appendChild(d);}
+}
+
+function updateDots(cur,done) {
+  for(let i=0;i<Math.min(T.c,20);i++){
+    const d=document.getElementById('cd'+i); if(!d) continue;
+    d.className='cdot';
+    if(i<done) d.classList.add('done');
+    else if(i===cur) d.classList.add('active');
+  }
+}
+
+function setRing(prog,phase) {
+  const f=document.getElementById('rfill');
+  f.style.strokeDashoffset=CIRC-(prog*CIRC);
+  f.style.stroke=phase==='inhale'?'var(--accent2)':'var(--accent)';
+}
+
+function getInstr(phase) {
+  if(currentPreset==='micro') return phase==='inhale'?instrs.micro_inhale:instrs.micro_exhale;
+  return instrs[phase]||'';
+}
+
+function updateDisplay() {
+  const ph=T.phase; const tot=ph==='inhale'?T.i:T.e;
+  const prog=1-(T.left/tot);
+  document.getElementById('rnum').textContent=T.left;
+  document.getElementById('rnum').style.color=ph==='inhale'?'var(--accent2)':'var(--accent)';
+  document.getElementById('rlbl').textContent=ph==='inhale'?'INHALE':'EXHALE';
+  document.getElementById('tphase').textContent=ph==='inhale'?'INHALE':'EXHALE';
+  document.getElementById('tinstr').textContent=getInstr(ph);
+  setRing(prog,ph);
+  document.getElementById('ccount').textContent='Cycle '+(T.cycle+1)+' of '+T.c;
+}
+
+function tStart() {
+  if(T.paused){T.paused=false;T.running=true;document.getElementById('pauseb').textContent='Pause';runPhase();return;}
+  T.running=true;T.paused=false;T.cycle=0;
+  document.getElementById('startb').style.display='none';
+  document.getElementById('pauseb').style.display='inline-block';
+  document.getElementById('resetb').style.display='inline-block';
+  updateDots(0,0); startPhase('inhale');
+}
+
+function startPhase(ph){T.phase=ph;T.left=ph==='inhale'?T.i:T.e;runPhase();}
+
+function runPhase(){
+  updateDisplay(); clearInterval(T.iv);
+  T.iv=setInterval(()=>{
+    if(T.paused) return;
+    T.left--; updateDisplay();
+    if(T.left<=0){clearInterval(T.iv);nextPhase();}
+  },1000);
+}
+
+function nextPhase(){
+  if(T.phase==='inhale'){startPhase('exhale');return;}
+  const done=T.cycle+1; updateDots(T.cycle,done); T.cycle++;
+  if(T.cycle>=T.c){
+    T.running=false;
+    document.getElementById('tphase').textContent='COMPLETE';
+    document.getElementById('tinstr').textContent=instrs.done;
+    document.getElementById('rnum').textContent='✓';
+    document.getElementById('rnum').style.color='var(--success)';
+    document.getElementById('rlbl').textContent='';
+    document.getElementById('pauseb').style.display='none';
+    document.getElementById('ccount').textContent=T.c+' / '+T.c+' cycles complete';
+    setRing(1,'exhale'); return;
+  }
+  updateDots(T.cycle,T.cycle);
+  document.getElementById('ccount').textContent='Cycle '+(T.cycle+1)+' of '+T.c;
+  startPhase('inhale');
+}
+
+function tPause(){
+  if(T.paused){T.paused=false;document.getElementById('pauseb').textContent='Pause';runPhase();}
+  else{T.paused=true;document.getElementById('pauseb').textContent='Resume';clearInterval(T.iv);}
+}
+
+function tReset(){
+  clearInterval(T.iv);
+  T.running=false;T.paused=false;T.phase='idle';T.left=0;T.cycle=0;T.iv=null;
+  document.getElementById('rnum').textContent='—';
+  document.getElementById('rnum').style.color='var(--text)';
+  document.getElementById('rlbl').textContent='';
+  document.getElementById('tphase').textContent='Ready';
+  document.getElementById('tinstr').textContent='Select your rung. Settle your jaw. Press Start when ready.';
+  document.getElementById('ccount').textContent='';
+  document.getElementById('startb').style.display='inline-block';
+  document.getElementById('pauseb').style.display='none';
+  document.getElementById('resetb').style.display='none';
+  setRing(0,'inhale'); buildDots();
+}
+
+buildDots();
+</script>
+</body>
+</html>
