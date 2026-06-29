@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Audit OS — Smart Contract Security War Map</title>
+<title>War Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -1681,7 +1681,7 @@ function renderRoadmap(){
   if(!S.phasesInited){if(curId)S.openPhases.add(curId);S.phasesInited=true;}
   const q=QUOTES[Math.floor(Date.now()/86400000)%QUOTES.length];
   let html=`<div class="rm-header">
-    <div class="rm-title">⚔️ Smart Contract Security — War Map</div>
+    <div class="rm-title">War Map</div>
     <div class="quote-box">${q}</div>
     ${!curId?`<div class="ph-done-banner" style="margin-top:12px"><span>🏆</span>All core phases complete — audit-ready. Phase 6 is optional specialization.</div>`:""}
   </div><div class="phase-list">`;
