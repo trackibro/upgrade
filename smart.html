@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit OS · Ledger Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#05080f;--sur:#0b1120;--s2:#101928;--s3:#162035;--s4:#1c2a42;
+  --bd:rgba(255,255,255,0.06);--bd-b:rgba(255,255,255,0.1);--bd-br:rgba(255,255,255,0.16);
+  --txt:#dde8f5;--dim:#7a8fa8;--faint:#3a5068;--faintest:#1e2f42;
+  --g:#00dba0;--g-lo:rgba(0,219,160,0.08);--g-glow:rgba(0,219,160,0.22);
+  --p:#7c5cbf;--p-lo:rgba(124,92,191,0.10);--p-glow:rgba(124,92,191,0.28);
+  --fire:#ff7c2a;--fire-lo:rgba(255,124,42,0.10);--gold:#f5a623;--gold-lo:rgba(245,166,35,0.10);
+  --red:#ef4444;--red-lo:rgba(239,68,68,0.10);
+  --work:#E8A33D;--work-glow:rgba(232,163,61,0.55);--work-wash:rgba(232,163,61,0.14);
+  --drift:#5C8AB0;--drift-glow:rgba(92,138,176,0.5);--drift-wash:rgba(92,138,176,0.12);
+  --must:#ef4444;--should:#f97316;--helps:#eab308;--sometimes:#3b82f6;--nice:#8b5cf6;--skip:#374151;
+  --fd:'Space Grotesk',sans-serif;--fb:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;
+  --r:10px;--r-lg:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--void);color:var(--txt);font-family:var(--fb);font-size:14px;line-height:1.5;overflow-x:hidden;}
+
+/* ANIMATED BG */
+.bg-orb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0;}
+.bg-orb-1{width:600px;height:600px;background:var(--g);opacity:.026;top:-150px;right:-100px;animation:od1 25s ease-in-out infinite;}
+.bg-orb-2{width:500px;height:500px;background:var(--p);opacity:.030;bottom:-100px;left:-80px;animation:od2 30s ease-in-out infinite;}
+@keyframes od1{0%,100%{transform:translate(0,0)}50%{transform:translate(-40px,60px)}}
+@keyframes od2{0%,100%{transform:translate(0,0)}50%{transform:translate(50px,-40px)}}
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+a{color:var(--g);}a:hover{text-decoration:underline;}
+
+/* LAYOUT */
+.app{position:relative;z-index:1;display:grid;grid-template-columns:300px 1fr;min-height:100vh;}
+@media(max-width:900px){.app{grid-template-columns:1fr;}}
+
+/* ── SIDEBAR ── */
+aside{
+  background:rgba(11, 17, 32, 0.4);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-right:1px solid var(--bd-b);padding:18px 16px 20px;
+  display:flex;flex-direction:column;gap:12px;position:sticky;top:0;height:100vh;
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--faint) transparent;
+}
+
+/* BRAND & AUTH */
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.brand-logo{width:28px;height:28px;background:linear-gradient(135deg,var(--g),var(--p));border-radius:8px;display:grid;place-items:center;flex-shrink:0;box-shadow:0 0 14px var(--g-lo);}
+.brand-logo svg{color:#fff;}
+.brand-name{font-family:var(--fd);font-weight:800;font-size:15px;letter-spacing:-.03em;}
+.brand-tag{font-family:var(--fm);font-size:8px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;}
+#auth-section {flex-shrink: 0;}
+#login-btn {width: 100%; padding: 10px; background: rgba(0,219,160,0.1); border: 1px solid rgba(0,219,160,0.3); color: var(--g); border-radius: 8px; font-family: var(--fm); font-size: 10.5px; font-weight: bold; cursor: pointer; transition: all 0.2s;}
+#login-btn:hover{background:var(--g);color:#000;box-shadow:0 0 15px var(--g-glow);}
+#user-info {display: none; font-family: var(--fm); font-size: 10px; color: var(--dim); padding: 8px; text-align: center; border: 1px solid var(--bd-b); border-radius: 8px; background: var(--s2);}
+
+/* PLAYER CARD */
+.player-card{
+  background:linear-gradient(145deg,rgba(16,25,40,0.8),rgba(22,32,53,0.8));
+  border:1px solid var(--bd-br);border-radius:var(--r-lg);
+  padding:14px;display:flex;flex-direction:column;gap:10px;
+  position:relative;overflow:hidden;flex-shrink:0;box-shadow:0 8px 24px rgba(0,0,0,0.2);
+}
+.player-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top right,var(--g-lo),transparent 65%);pointer-events:none;}
+.pc-row1{display:flex;align-items:center;gap:12px;z-index:2;}
+.av-wrap{position:relative;width:52px;height:52px;flex-shrink:0;}
+.av-svg{width:52px;height:52px;transform:rotate(-90deg);position:absolute;inset:0;}
+.av-bg{fill:none;stroke:var(--s4);stroke-width:4;}
+.av-fill{fill:none;stroke:url(#rankGrad);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .7s cubic-bezier(.4,0,.2,1);}
+.av-inner{position:absolute;inset:8px;background:var(--s3);border-radius:50%;display:grid;place-items:center;font-family:var(--fm);font-size:10px;font-weight:700;color:var(--g);}
+.pc-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;}
+.rank-name{font-family:var(--fd);font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rank-badges{display:flex;align-items:center;gap:5px;}
+.rank-badge{display:inline-flex;align-items:center;background:var(--p-lo);border:1px solid var(--p-glow);color:var(--p);font-family:var(--fm);font-size:8.5px;padding:2px 7px;border-radius:20px;font-weight:600;}
+.xp-track{height:6px;background:var(--s4);border-radius:4px;overflow:hidden;margin-top:2px;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--p),var(--g));border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+.xp-next-lbl{font-family:var(--fm);font-size:8.5px;color:var(--dim);}
+
+/* INTUITIVE CONSISTENCY & HEATMAP CARD (INTERACTIVE) */
+.consistency-card {
+  background: var(--s2); border: 1px solid var(--bd-b); border-radius: var(--r); padding: 14px; flex-shrink: 0; box-shadow: inset 0 1px 1px rgba(255,255,255,0.05);
+  cursor: pointer; transition: border-color 0.2s, transform 0.2s; position: relative;
+}
+.consistency-card:hover { border-color: var(--bd-br); transform: translateY(-1px); }
+.streak-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; }
+.streak-info { display: flex; align-items: center; gap: 8px; }
+.streak-flame { font-size: 24px; filter: drop-shadow(0 0 10px rgba(255,124,42,0.6)); animation: fp 2s infinite ease-in-out; }
+.streak-flame.dead { filter: grayscale(1); opacity: 0.3; animation: none; }
+.streak-text-val { font-family: var(--fd); font-weight: 800; font-size: 18px; color: var(--txt); line-height: 1; }
+.streak-text-lbl { font-family: var(--fm); font-size: 9px; color: var(--fire); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-top: 2px;}
+.streak-best { font-family: var(--fm); font-size: 9.5px; color: var(--dim); text-align: right;}
+@keyframes fp{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+
+/* Heatmap Grid */
+.heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 6px; }
+.hm-cell { position: relative; width: 100%; aspect-ratio: 1; border-radius: 4px; background: var(--s3); transition: all 0.2s; cursor: crosshair; display: flex; align-items: center; justify-content: center;}
+.hm-cell.lvl-sad { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); }
+.hm-cell.lvl-sad::after { content: '🥀'; font-size: 10px; opacity: 0.8; pointer-events: none; }
+.hm-cell.lvl-1 { background: rgba(232,163,61,0.2); border: 1px solid rgba(232,163,61,0.1); }
+.hm-cell.lvl-2 { background: rgba(232,163,61,0.5); border: 1px solid rgba(232,163,61,0.3); box-shadow: 0 0 8px rgba(232,163,61,0.2); }
+.hm-cell.lvl-3 { background: var(--work); box-shadow: 0 0 12px var(--work-glow); }
+.hm-cell.today { outline: 2px solid var(--txt); outline-offset: 1px; }
+
+.hm-tooltip { position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%); background: var(--s4); border: 1px solid var(--bd-br); color: var(--txt); padding: 5px 10px; font-family: var(--fm); font-size: 10px; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; box-shadow: 0 8px 16px rgba(0,0,0,0.6);}
+.hm-cell:hover .hm-tooltip { opacity: 1; }
+
+.consistency-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--bd); font-family: var(--fm); font-size: 9px; color: var(--g); letter-spacing: 0.05em; font-weight: 600; }
+
+/* LAUNCH TRACKER BUTTON */
+.launch-tracker-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(135deg, rgba(232,163,61,0.1), rgba(232,163,61,0.15));
+  border: 1px solid rgba(232,163,61,0.4); border-radius: var(--r); padding: 14px 16px;
+  cursor: pointer; transition: all 0.3s cubic-bezier(.4,0,.2,1); flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+}
+.launch-tracker-btn:hover {
+  background: rgba(232,163,61,0.2); border-color: var(--work); box-shadow: 0 0 24px var(--work-wash), 0 8px 24px rgba(0,0,0,0.3); transform: translateY(-2px);
+}
+.ltb-left { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.ltb-title { font-family: var(--fd); font-weight: 800; font-size: 15px; color: var(--work); letter-spacing: 0.02em; }
+.ltb-sub { font-family: var(--fm); font-size: 9.5px; color: var(--txt); opacity: 0.7; }
+.ltb-icon { font-size: 18px; }
+
+/* LOG SESSION & MONEY PATH & DEADLINE */
+.log-btn{display:flex;align-items:center;justify-content:space-between;background:var(--s2);border:1px solid var(--bd-b);color:var(--dim);font-family:var(--fm);font-size:10px;font-weight:600;padding:8px 12px;border-radius:var(--r);cursor:pointer;transition:all .2s;flex-shrink:0;width:100%;text-align:left;}
+.log-btn:hover{background:var(--s3);border-color:var(--faint);color:var(--txt);}
+.money-path{background:var(--s2);border:1px solid var(--bd-b);border-radius:var(--r);padding:12px;flex-shrink:0;}
+.mp-title{font-family:var(--fm);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:10px;font-weight:600;}
+.mp-steps{display:flex;flex-direction:column;}
+.mp-step{display:flex;align-items:center;gap:10px;padding:3px 0;}
+.mp-node{display:flex;flex-direction:column;align-items:center;width:12px;flex-shrink:0;}
+.mp-dot{width:10px;height:10px;border-radius:50%;border:2px solid;transition:all .3s;}
+.mp-vline{width:2px;flex:1;min-height:10px;background:var(--bd-b);}
+.mp-txt{flex:1;line-height:1.2;display:flex;gap:6px;}
+.mp-amt{font-family:var(--fm);font-size:11px;font-weight:700;}
+.mp-lbl{font-size:10.5px;color:var(--dim);}
+.mp-step.reached .mp-dot{background:var(--g);border-color:var(--g);box-shadow:0 0 10px var(--g-glow);}
+.mp-step.reached .mp-amt{color:var(--g);}
+.mp-step.cur .mp-dot{background:transparent;border-color:var(--g);animation:np 2s ease-in-out infinite;}
+@keyframes np{0%,100%{box-shadow:none}50%{box-shadow:0 0 0 5px rgba(0,219,160,0.15)}}
+.mp-step.cur .mp-amt{color:var(--txt);font-weight:700;}
+.mp-step.future .mp-dot{background:transparent;border-color:var(--faint);}
+.mp-step.future .mp-amt{color:var(--faint);}
+.mp-step.future .mp-lbl{color:var(--faintest);}
+
+.deadline-box{background:var(--s3);border:1px solid var(--bd);border-radius:var(--r);padding:10px 12px;flex-shrink:0;}
+.dl-top{display:flex;align-items:baseline;gap:6px;margin-bottom:6px;}
+.dead-num{font-family:var(--fd);font-weight:800;font-size:22px;line-height:1;}
+.dead-lbl{font-size:10px;color:var(--dim);}
+.dl-prog{height:4px;background:var(--s4);border-radius:2px;overflow:hidden;margin-bottom:6px;}
+.dl-prog-fill{height:100%;background:linear-gradient(90deg,var(--g),var(--p));border-radius:2px;}
+.dl-start{display:flex;align-items:center;gap:6px;font-family:var(--fm);font-size:9px;}
+.dl-start-lbl{color:var(--faint);}
+.dl-start-date{color:var(--dim);}
+
+/* MODE TOGGLE & SIDEBAR FILTERS */
+.mode-toggle{display:flex;background:var(--s2);border:1px solid var(--bd-b);border-radius:8px;padding:3px;gap:3px;flex-shrink:0;}
+.mode-btn{flex:1;background:none;border:none;color:var(--dim);font-family:var(--fb);font-size:12px;font-weight:600;padding:6px 5px;border-radius:5px;cursor:pointer;transition:all .2s;}
+.mode-btn.act{background:var(--s3);color:var(--txt);box-shadow:0 2px 8px rgba(0,0,0,.5); border: 1px solid var(--bd);}
+.sec-lbl{font-family:var(--fm);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:4px;font-weight:600;}
+.lib-tabs{display:flex;flex-direction:column;gap:3px;}
+.lib-tab{display:flex;justify-content:space-between;align-items:center;background:none;border:1px solid transparent;color:var(--dim);font-family:var(--fb);font-size:12.5px;font-weight:500;padding:7px 10px;border-radius:6px;cursor:pointer;width:100%;transition:all .2s;}
+.lib-tab:hover{background:rgba(255,255,255,0.03);color:var(--txt);}
+.lib-tab.act{background:var(--s2);color:var(--txt);border-color:var(--bd-b);}
+.lib-tab .tc{font-family:var(--fm);font-size:9px;color:var(--faint);}
+.lib-tab.act .tc{color:var(--g);}
+.pri-filters{display:flex;flex-direction:column;gap:3px;}
+.pri-chip{display:flex;align-items:center;gap:8px;width:100%;background:none;border:1px solid transparent;color:var(--dim);font-size:11.5px;padding:6px 8px;border-radius:6px;cursor:pointer;transition:all .2s;}
+.pri-chip.on{background:var(--s2);border-color:var(--bd-b);color:var(--txt);}
+.pri-chip .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.pri-chip.off{opacity:.3;}
+.search-box{position:relative;}
+.search-box input{width:100%;background:var(--s2);border:1px solid var(--bd-b);color:var(--txt);font-family:var(--fb);font-size:12px;padding:8px 10px 8px 30px;border-radius:6px;outline:none;transition:border-color .2s;}
+.search-box input:focus{border-color:var(--g);}
+.s-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--faint);font-size:13px;}
+.data-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0;}
+.data-btn{background:var(--s2);border:1px solid var(--bd-b);color:var(--dim);font-family:var(--fm);font-size:10px;font-weight:600;padding:8px;border-radius:8px;cursor:pointer;text-align:center;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;}
+.data-btn:hover{border-color:var(--g);color:var(--txt);background:var(--g-lo);}
+.reset-btn{width:100%;background:none;border:1px solid var(--bd);color:var(--faint);font-family:var(--fb);font-size:11px;font-weight:500;padding:8px;border-radius:8px;cursor:pointer;transition:all .2s;flex-shrink:0;margin-top:auto;}
+.reset-btn:hover{border-color:rgba(239,68,68,.4);color:var(--red);background:rgba(239,68,68,0.05);}
+
+/* ── MAIN AREA ── */
+main{padding:30px 40px 80px;min-height:100vh;overflow-x:hidden;}
+@media(max-width:900px){main{padding:20px 20px 80px;}}
+
+.rm-header{margin-bottom:24px;}
+.rm-title{font-family:var(--fd);font-weight:800;font-size:26px;letter-spacing:-.03em;margin-bottom:10px;}
+.quote-box{background:rgba(255,255,255,0.02);border-left:3px solid var(--g);border-radius:0 var(--r) var(--r) 0;padding:12px 16px;font-size:13px;color:var(--dim);font-style:italic;line-height:1.6;}
+
+.phase-list{display:flex;flex-direction:column;}
+.phase-connector{width:2px;height:18px;background:var(--bd-b);margin-left:32px;}
+.phase-card{background:rgba(11,17,32,0.6);backdrop-filter:blur(10px);border:1px solid var(--bd-b);border-radius:var(--r-lg);overflow:hidden;transition:all .3s;}
+.phase-card.cur{border-color:var(--g);box-shadow:0 0 0 1px var(--g-lo),0 8px 30px var(--g-lo);background:rgba(16,25,40,0.8);}
+.phase-card.done{border-color:rgba(0,219,160,.2);}
+.phase-head{display:flex;align-items:center;gap:16px;padding:18px 20px;cursor:pointer;user-select:none;}
+.pr-wrap{position:relative;width:56px;height:56px;flex-shrink:0;}
+.pr-svg{width:56px;height:56px;transform:rotate(-90deg);}
+.pr-bg{fill:none;stroke:var(--s4);stroke-width:4;}
+.pr-fill{fill:none;stroke:var(--g);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .7s cubic-bezier(.4,0,.2,1);}
+.pr-pct{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--fm);font-size:11px;font-weight:700;color:var(--g);}
+.ph-meta{flex:1;min-width:0;}
+.ph-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+.ph-n{font-family:var(--fm);font-size:9px;color:var(--faint);letter-spacing:.1em;font-weight:600;}
+.ph-title{font-family:var(--fd);font-weight:800;font-size:16px;}
+.here-tag{display:inline-flex;align-items:center;background:var(--g);color:#000;font-family:var(--fm);font-size:8px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:20px;animation:hpulse 2.5s ease-in-out infinite;}
+@keyframes hpulse{0%,100%{box-shadow:0 0 0 0 var(--g-glow)}60%{box-shadow:0 0 0 6px transparent}}
+.done-tag{display:inline-flex;align-items:center;background:var(--g-lo);border:1px solid rgba(0,219,160,.3);color:var(--g);font-family:var(--fm);font-size:8.5px;padding:2px 8px;border-radius:20px;font-weight:600;}
+.money-tag{display:inline-flex;align-items:center;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.25);color:var(--gold);font-family:var(--fm);font-size:8.5px;padding:2px 8px;border-radius:20px;font-weight:600;}
+.ph-desc{font-size:12.5px;color:var(--dim);}
+.ph-chev{color:var(--faint);font-size:16px;flex-shrink:0;transition:transform .3s;}
+.phase-card.open .ph-chev{transform:rotate(90deg);}
+.phase-body{display:none;padding:0 20px 20px;border-top:1px solid var(--bd);overflow:hidden;}
+.phase-card.open .phase-body{display:block;padding-top:16px;}
+.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+
+/* ITEM CARD */
+.item-card{background:rgba(255,255,255,0.02);border:1px solid var(--bd-b);border-radius:var(--r);overflow:hidden;transition:all .2s;position:relative;}
+.item-card:hover{border-color:var(--bd-br);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.3);}
+.item-card.learned{border-color:rgba(0,219,160,.15);background:rgba(0,219,160,.02);}
+.item-card.boss{border-color:rgba(245,166,35,.2);}
+.item-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:var(--r) 0 0 var(--r);}
+.item-card[data-pri="must"]::before{background:var(--must);}
+.item-card[data-pri="should"]::before{background:var(--should);}
+.item-card[data-pri="helps"]::before{background:var(--helps);}
+.item-card[data-pri="sometimes"]::before{background:var(--sometimes);}
+.item-card[data-pri="nice"]::before{background:var(--nice);}
+.item-card[data-pri="skip"]::before{background:var(--skip);}
+.item-head{display:flex;align-items:flex-start;gap:10px;padding:12px 14px 12px 16px;cursor:pointer;}
+.cbox{width:20px;height:20px;border-radius:6px;border:2px solid var(--bd-br);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;cursor:pointer;transition:all .2s;position:relative;}
+.cbox:hover{border-color:var(--g);background:var(--g-lo);}
+.cbox.on{background:var(--g);border-color:var(--g);box-shadow:0 0 10px var(--g-glow);}
+.cbox.on::after{content:'✓';color:#000;font-size:12px;font-weight:800;line-height:1;pointer-events:none;}
+.cbox input{position:absolute;opacity:0;inset:0;cursor:pointer;margin:0;}
+.ic-body{flex:1;min-width:0;}
+.ic-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;}
+.pri-tag{font-family:var(--fm);font-size:8px;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:20px;border:1px solid;font-weight:600;}
+.ic-title{font-family:var(--fd);font-weight:700;font-size:14px;line-height:1.3;}
+.item-card.learned .ic-title{text-decoration:line-through;color:var(--faint);}
+.ic-desc{font-size:11.5px;color:var(--dim);margin-top:4px;line-height:1.5;}
+.sig-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+.sig-bar{flex:1;max-width:100px;height:4px;background:var(--s3);border-radius:2px;overflow:hidden;}
+.sig-fill{height:100%;background:linear-gradient(90deg,var(--g),var(--p));border-radius:2px;}
+.sig-val{font-family:var(--fm);font-size:9.5px;color:var(--faint);font-weight:600;}
+.ic-chev{color:var(--faint);font-size:14px;flex-shrink:0;margin-top:2px;transition:transform .3s;}
+.item-card.open .ic-chev{transform:rotate(90deg);}
+.item-expand{display:none;padding:0 14px 16px 42px;border-top:1px solid var(--bd);}
+.item-card.open .item-expand{display:block;padding-top:12px;}
+.ie-desc{font-size:12.5px;color:var(--dim);margin-bottom:14px;line-height:1.65;}
+.res-head{font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:8px;font-weight:600;}
+.res-item{padding:10px 0;border-top:1px solid var(--bd);}
+.res-item:first-of-type{border-top:none;padding-top:0;}
+.res-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+.res-name{font-size:12.5px;font-weight:500;color:var(--txt);}
+.res-kind{font-family:var(--fm);font-size:8.5px;color:var(--faint);border:1px solid var(--bd-b);padding:2px 6px;border-radius:8px;}
+.res-note{font-size:11.5px;color:var(--dim);line-height:1.6;}
+
+/* ================================================================
+   LEDGER FULL SCREEN OVERLAY
+   ================================================================ */
+.ledger-overlay {
+  position: fixed; inset: 0; z-index: 10000;
+  background: var(--void); font-family: 'Space Grotesk', sans-serif;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.ledger-overlay.show { opacity: 1; pointer-events: auto; }
+
+.ledger-close-btn {
+  position: absolute; top: 24px; right: 24px; z-index: 50;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--txt); font-family: var(--fm); font-size: 11px; font-weight: 600;
+  padding: 10px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+  backdrop-filter: blur(10px);
+}
+.ledger-close-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+
+.ledger-stage { position: relative; height: 100vh; width: 100vw; display: flex; }
+
+.ledger-panel {
+  position: relative; height: 100%; flex-grow: 0; flex-shrink: 0;
+  border: none; cursor: pointer; background: var(--void);
+  transition: flex-basis .9s cubic-bezier(.4,0,.2,1), background .5s ease;
+  display: block; -webkit-tap-highlight-color: transparent;
+}
+.ledger-panel.work { background: radial-gradient(ellipse at 25% 35%, var(--work-wash), var(--void) 65%); }
+.ledger-panel.drift { background: radial-gradient(ellipse at 75% 35%, var(--drift-wash), var(--void) 65%); }
+.ledger-panel.work.active { background: radial-gradient(ellipse at 25% 35%, var(--work-wash) 0%, rgba(232,163,61,0.20) 0%, var(--void) 72%); }
+.ledger-panel.drift.active { background: radial-gradient(ellipse at 75% 35%, rgba(92,138,176,0.22), var(--void) 72%); }
+.ledger-panel:not(.active) { filter: saturate(0.85); }
+
+.panel-label {
+  position: absolute; top: 40px; font-size: 14px; font-weight: 800; letter-spacing: 0.4em;
+  color: var(--faint); transition: color .5s ease, opacity .5s ease;
+}
+.ledger-panel.work .panel-label { left: 40px; }
+.ledger-panel.drift .panel-label { right: 40px; }
+.ledger-panel.work.active .panel-label { color: var(--work); }
+.ledger-panel.drift.active .panel-label { color: var(--drift); }
+
+.panel-sub {
+  position: absolute; bottom: 40px; font-family: var(--fm); font-size: 10px; font-weight: 500; letter-spacing: 0.15em;
+  color: var(--faint); opacity: 0.7;
+}
+.ledger-panel.work .panel-sub { left: 40px; }
+.ledger-panel.drift .panel-sub { right: 40px; text-align: right; }
+
+.ledger-seam {
+  width: 2px; height: 100%; flex-shrink: 0; background: var(--bd); position: relative; z-index: 5;
+  transition: background .5s ease, box-shadow .5s ease;
+}
+.ledger-seam.work-active { background: var(--work); box-shadow: 0 0 30px 4px var(--work-glow); }
+.ledger-seam.drift-active { background: var(--drift); box-shadow: 0 0 30px 4px var(--drift-glow); }
+.ledger-seam.pulsing { animation: seampulse 2.6s ease-in-out infinite; }
+@keyframes seampulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+
+.ledger-capsule {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 30;
+  background: rgba(16, 17, 20, 0.65); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 24px;
+  padding: 36px 50px 32px; min-width: 300px; text-align: center; cursor: pointer;
+  transition: border-color .4s ease, box-shadow .4s ease;
+}
+.ledger-capsule:hover { border-color: rgba(255,255,255,0.15); }
+
+.capsule-state {
+  font-family: var(--fm); font-size: 12px; font-weight: 700; letter-spacing: 0.4em;
+  color: var(--faint); margin-bottom: 12px; transition: color .4s ease;
+}
+.capsule-state.work { color: var(--work); text-shadow: 0 0 10px var(--work-glow);}
+.capsule-state.drift { color: var(--drift); text-shadow: 0 0 10px var(--drift-glow);}
+
+.capsule-timer {
+  font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(40px, 6vw, 60px);
+  color: var(--txt); font-variant-numeric: tabular-nums; letter-spacing: 0.01em; line-height: 1;
+}
+.capsule-hint { margin-top: 12px; font-family: var(--fm); font-size: 10px; color: var(--dim); letter-spacing: 0.1em; text-transform: uppercase; }
+.capsule-stats {
+  display: flex; justify-content: center; gap: 32px; margin-top: 24px; padding-top: 20px;
+  border-top: 1px solid var(--bd);
+}
+.c-stat-val { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; color: var(--txt); }
+.c-stat-lbl { font-family: var(--fm); font-size: 9px; letter-spacing: 0.25em; color: var(--faint); margin-top: 6px; font-weight: 600; text-transform: uppercase; }
+
+/* ================================================================
+   SUMMARY & ANALYTICS OVERLAY (ELEGANT GLASS)
+   ================================================================ */
+.summary-overlay {
+  position: fixed; inset: 0; z-index: 14000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(5,8,15,0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+  opacity: 0; pointer-events: none; transition: opacity .35s ease;
+  padding: 20px;
+}
+.summary-overlay.open { opacity: 1; pointer-events: auto; }
+
+.summary-card {
+  width: min(500px, 92vw); max-height: 85vh; overflow-y: auto;
+  background: rgba(16, 25, 40, 0.75); border: 1px solid var(--bd-br);
+  border-radius: 24px; padding: 32px 36px 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(0,219,160,0.05);
+  transform: translateY(12px) scale(0.97);
+  transition: transform .35s cubic-bezier(.2,.7,.3,1);
+}
+.summary-overlay.open .summary-card { transform: translateY(0) scale(1); }
+
+.summary-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.summary-date { font-family: var(--fm); font-size: 10px; font-weight: 700; letter-spacing: 0.25em; color: var(--g); text-transform: uppercase; }
+.summary-close { background: rgba(255,255,255,0.05); border: 1px solid var(--bd-b); color: var(--dim); font-family: var(--fm); font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: all .2s; }
+.summary-close:hover { color: var(--txt); border-color: var(--bd-br); background: rgba(255,255,255,0.1); }
+
+.summary-hero {
+  font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400;
+  font-size: clamp(22px, 4vw, 28px); line-height: 1.3; color: var(--txt); margin-bottom: 22px;
+}
+
+.summary-section { padding-top: 16px; border-top: 1px solid var(--bd); margin-top: 16px; }
+.summary-section-label { font-family: var(--fm); font-size: 9px; font-weight: 700; letter-spacing: 0.22em; color: var(--faint); margin-bottom: 12px; text-transform: uppercase; }
+
+.compare-row { display: flex; gap: 16px; }
+.compare-col { flex: 1; background: rgba(255,255,255,0.02); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--bd); }
+.compare-col-label { font-family: var(--fm); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; color: var(--dim); margin-bottom: 8px; }
+.compare-line { font-family: 'Space Mono', monospace; font-size: 14px; color: var(--txt); font-variant-numeric: tabular-nums; line-height: 1.6; }
+.compare-line .lbl { color: var(--faint); font-family: var(--fb); font-size: 10.5px; margin-left: 6px; }
+
+.delta-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-family: var(--fm); font-size: 11px; color: var(--dim); }
+.delta-arrow { font-size: 12px; color: var(--g); }
+
+.insight-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.insight-chip { font-family: var(--fb); font-size: 11.5px; color: var(--dim); background: rgba(255,255,255,0.03); border: 1px solid var(--bd); padding: 5px 12px; border-radius: 20px; }
+.insight-chip b { color: var(--g); font-weight: 700; }
+
+/* STOP CONFIRMATION MODAL */
+.st-overlay {
+  position: fixed; inset: 0; background: rgba(3,5,10,.97); z-index: 15000;
+  display: grid; place-items: center; opacity: 0; pointer-events: none;
+  transition: opacity .25s; padding: 20px; backdrop-filter: blur(10px);
+}
+.st-overlay.show { opacity: 1; pointer-events: all; }
+.st-box { max-width: 460px; width: 100%; animation: pop .35s cubic-bezier(.34,1.56,.64,1); display: flex; flex-direction: column; gap: 0; }
+.st-elapsed { font-family: var(--fm); font-size: 11px; color: var(--faint); letter-spacing: .08em; text-transform: uppercase; text-align: center; margin-bottom: 14px; }
+.st-elapsed span { color: var(--dim); }
+.st-card { background: var(--s2); border-radius: 18px; padding: 28px 30px; border: 1px solid var(--bd-b); box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+.st-title { font-family: var(--fd); font-weight: 800; font-size: 21px; letter-spacing: -.02em; text-align: center; margin-bottom: 14px; line-height: 1.2; }
+.st-body { font-size: 13px; color: var(--dim); line-height: 1.75; text-align: center; margin-bottom: 22px; }
+.st-body strong { color: var(--txt); }
+.st-actions { display: flex; flex-direction: column; gap: 8px; }
+.st-keep {
+  background: linear-gradient(135deg, var(--g), #00b88a); color: #000; border: none; font-family: var(--fd);
+  font-weight: 800; font-size: 14px; letter-spacing: .02em; padding: 14px; border-radius: 10px; cursor: pointer;
+  transition: transform .15s, box-shadow .15s; box-shadow: 0 0 24px var(--g-glow);
+}
+.st-keep:hover { transform: translateY(-1px); box-shadow: 0 0 36px var(--g-glow); }
+.st-quit { background: none; border: 1px solid var(--bd-b); color: var(--faint); font-family: var(--fm); font-size: 11px; padding: 10px; border-radius: 10px; cursor: pointer; transition: all .2s; }
+.st-quit:hover { border-color: rgba(239,68,68,.35); color: rgba(239,68,68,.6); }
+
+/* LEVEL UP & TOAST */
+.overlay-base{position:fixed;inset:0;background:rgba(5,8,15,.95);z-index:11000;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .35s;padding:20px;backdrop-filter:blur(10px);}
+.overlay-base.show{opacity:1;pointer-events:all;}
+.lv-box{background:linear-gradient(145deg,var(--s2),var(--s3));border:1px solid var(--g);border-radius:24px;padding:50px 60px;text-align:center;box-shadow:0 0 100px var(--g-glow);animation:pop .5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+.lv-icon{font-size:60px;margin-bottom:12px;filter:drop-shadow(0 0 20px var(--g-glow));}
+.lv-kicker{font-family:var(--fm);font-size:10px;color:var(--g);letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px;font-weight:700;}
+.lv-title{font-family:var(--fd);font-weight:800;font-size:32px;color:var(--txt);margin-bottom:8px;letter-spacing:-.02em;}
+.lv-sub{font-size:14px;color:var(--dim);margin-bottom:30px;}
+.lv-btn{background:var(--g);color:#000;border:none;font-family:var(--fd);font-weight:800;font-size:15px;padding:14px 40px;border-radius:12px;cursor:pointer;transition:transform .2s;}
+.lv-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--g-glow);}
+
+.toast-zone{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:12px;z-index:12000;}
+.toast{background:rgba(16,25,40,0.9);backdrop-filter:blur(10px);border:1px solid var(--bd-br);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 12px 40px rgba(0,0,0,.6);animation:tin .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes tin{0%{opacity:0;transform:translateX(40px) scale(.9)}100%{opacity:1;transform:none}}
+.toast.out{animation:tout .3s ease-in forwards;}
+@keyframes tout{100%{opacity:0;transform:translateX(40px)}}
+.toast-ico{font-size:24px;}
+.toast-name{font-family:var(--fd);font-weight:700;font-size:14px;}
+.toast-desc{font-size:12px;color:var(--dim);}
+
+::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--faint);border-radius:4px;}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="rankGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7c5cbf"/><stop offset="100%" stop-color="#00dba0"/>
+    </linearGradient>
+  </defs>
+</svg>
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+
+<div class="app">
+<aside id="sidebar">
+
+  <!-- BRAND -->
+  <div class="brand">
+    <div class="brand-logo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+    <div><div class="brand-name">Audit OS</div><div class="brand-tag">War Map · $60k Goal</div></div>
+  </div>
+
+  <!-- AUTH SECTION (Firebase) -->
+  <div id="auth-section">
+    <button id="login-btn">Sign in to Sync</button>
+    <div id="user-info"></div>
+  </div>
+
+  <!-- PLAYER CARD -->
+  <div class="player-card">
+    <div class="pc-row1">
+      <div class="av-wrap">
+        <svg class="av-svg" viewBox="0 0 52 52" fill="none">
+          <circle class="av-bg" cx="26" cy="26" r="22"/>
+          <circle class="av-fill" id="av-ring" cx="26" cy="26" r="22" stroke-dasharray="138.2" stroke-dashoffset="138.2"/>
+        </svg>
+        <div class="av-inner" id="lv-label">LV1</div>
+      </div>
+      <div class="pc-right">
+        <div class="rank-name" id="rank-name">Script Kiddie</div>
+        <div class="rank-badges"><span class="rank-badge" id="rank-badge">⬡ Level 1</span></div>
+        <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+        <div class="xp-next-lbl" id="xp-next">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTUITIVE CONSISTENCY & HEATMAP CARD (INTERACTIVE) -->
+  <div class="consistency-card" onclick="openSummary()" title="Click for Detailed History & Analytics">
+    <div class="streak-header">
+      <div class="streak-info">
+        <div class="streak-flame" id="streak-flame">🔥</div>
+        <div>
+          <div class="streak-text-val" id="streak-val">0 Days</div>
+          <div class="streak-text-lbl">Current Streak</div>
+        </div>
+      </div>
+      <div class="streak-best" id="streak-best-val">Best: 0</div>
+    </div>
+    <div class="heatmap-grid" id="heatmap-grid">
+      <!-- Generated via JS -->
+    </div>
+    <div class="consistency-footer">
+      <span>28-Day Consistency</span>
+      <span>Analytics ›</span>
+    </div>
+  </div>
+
+  <!-- LAUNCH TRACKER BUTTON -->
+  <div class="launch-tracker-btn" onclick="openLedger()">
+    <div class="ltb-left">
+      <div class="ltb-title">Launch Tracker</div>
+      <div class="ltb-sub">Enter Deep Work or Drift</div>
+    </div>
+    <div class="ltb-icon">›</div>
+  </div>
+
+  <!-- EMERGENCY LOG -->
+  <button class="log-btn" id="log-session-btn" onclick="logEmergency()" title="Use if you tracked outside the app">
+    <span id="log-btn-left">⚡ Emergency — save streak</span>
+    <span>›</span>
+  </button>
+
+  <!-- MONEY PATH -->
+  <div class="money-path">
+    <div class="mp-title">Money milestones</div>
+    <div class="mp-steps" id="money-steps"></div>
+  </div>
+
+  <!-- DEADLINE -->
+  <div class="deadline-box">
+    <div class="dl-top"><span class="dead-num" id="dl-num">60</span><span class="dead-lbl">days remaining</span></div>
+    <div class="dl-prog"><div class="dl-prog-fill" id="dl-prog-fill" style="width:0%"></div></div>
+    <div class="dl-start" id="dl-start-row"><span class="dl-start-lbl">Started:</span><span class="dl-start-date" id="dl-start-date">—</span></div>
+  </div>
+
+  <!-- MODE TOGGLE -->
+  <div class="mode-toggle">
+    <button class="mode-btn act" id="btn-rm" onclick="setMode('roadmap')">🗺 Roadmap</button>
+    <button class="mode-btn" id="btn-lib" onclick="setMode('library')">📚 Library</button>
+  </div>
+
+  <!-- DYNAMIC CONTENT (filters / overview) -->
+  <div id="sidebar-extra"></div>
+
+  <!-- EXPORT / IMPORT / RESET -->
+  <div class="data-actions">
+    <button class="data-btn" onclick="exportData()">⬆ Export</button>
+    <div class="data-btn import-wrap" style="position:relative;overflow:hidden;">⬇ Import<input type="file" accept=".json" onchange="importData(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;"></div>
+  </div>
+  <button class="reset-btn" id="reset-btn">Reset all progress</button>
+
+</aside>
+<main id="main"></main>
+</div>
+
+<!-- ================================================================
+     LEDGER FULL SCREEN OVERLAY 
+     ================================================================ -->
+<div class="ledger-overlay" id="ledgerOverlay">
+  <button class="ledger-close-btn" id="ledgerCloseBtn" onclick="requestCloseLedger()">✕ Dashboard</button>
+  <div class="ledger-stage">
+    <button class="ledger-panel work" id="panelWork" aria-label="Track working time">
+      <span class="panel-label">WORK</span>
+      <span class="panel-sub">press W</span>
+    </button>
+    <div class="ledger-seam" id="seam"></div>
+    <button class="ledger-panel drift" id="panelDrift" aria-label="Track drifting time">
+      <span class="panel-label">DRIFT</span>
+      <span class="panel-sub">press D</span>
+    </button>
+
+    <div class="ledger-capsule" id="capsule" role="button" tabindex="0" aria-label="Tap to pause tracking">
+      <div class="capsule-state" id="capsuleState">IDLE</div>
+      <div class="capsule-timer" id="capsuleTimer">00:00</div>
+      <div class="capsule-hint" id="capsuleHint">tap a side to begin</div>
+      <div class="capsule-stats">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div class="c-stat-val" id="statWork">0m</div>
+          <div class="c-stat-lbl">WORK</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div class="c-stat-val" id="statFocus">—</div>
+          <div class="c-stat-lbl">FOCUS</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div class="c-stat-val" id="statDrift">0m</div>
+          <div class="c-stat-lbl">DRIFT</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     SUMMARY & ANALYTICS OVERLAY (GLASS)
+     ================================================================ -->
+<div class="summary-overlay" id="summaryOverlay" onclick="if(event.target===this) closeSummary()">
+  <div class="summary-card">
+    <div class="summary-top">
+      <div class="summary-date" id="summaryDate">TODAY</div>
+      <button class="summary-close" onclick="closeSummary()">ESC ✕</button>
+    </div>
+    <div class="summary-hero" id="summaryHero">—</div>
+
+    <div class="summary-section">
+      <div class="summary-section-label">TODAY VS YESTERDAY</div>
+      <div class="compare-row">
+        <div class="compare-col">
+          <div class="compare-col-label">TODAY</div>
+          <div class="compare-line" id="cmpTodayWork">— <span class="lbl">work</span></div>
+          <div class="compare-line" id="cmpTodayDrift">— <span class="lbl">drift</span></div>
+          <div class="compare-line" id="cmpTodayFocus">— <span class="lbl">focus</span></div>
+        </div>
+        <div class="compare-col">
+          <div class="compare-col-label">YESTERDAY</div>
+          <div class="compare-line" id="cmpYestWork">— <span class="lbl">work</span></div>
+          <div class="compare-line" id="cmpYestDrift">— <span class="lbl">drift</span></div>
+          <div class="compare-line" id="cmpYestFocus">— <span class="lbl">focus</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-section">
+      <div class="summary-section-label">THIS WEEK VS LAST WEEK</div>
+      <div class="compare-row">
+        <div class="compare-col">
+          <div class="compare-col-label">THIS WEEK</div>
+          <div class="compare-line" id="cmpWeekWork">— <span class="lbl">work</span></div>
+          <div class="compare-line" id="cmpWeekFocus">— <span class="lbl">avg focus</span></div>
+        </div>
+        <div class="compare-col">
+          <div class="compare-col-label">LAST WEEK</div>
+          <div class="compare-line" id="cmpLastWeekWork">— <span class="lbl">work</span></div>
+          <div class="compare-line" id="cmpLastWeekFocus">— <span class="lbl">avg focus</span></div>
+        </div>
+      </div>
+      <div class="delta-row" id="weekDelta"></div>
+    </div>
+
+    <div class="summary-section">
+      <div class="summary-section-label">NOTED INSIGHTS</div>
+      <div class="insight-row" id="insightRow"></div>
+    </div>
+  </div>
+</div>
+
+<!-- STOP CONFIRMATION MODAL -->
+<div class="st-overlay" id="st-overlay">
+  <div class="st-box">
+    <div class="st-elapsed">Total Focus Today: <span id="st-elapsed-val">0:00</span></div>
+    <div class="st-card">
+      <div class="st-title" id="st-title">—</div>
+      <div class="st-body" id="st-body">—</div>
+      <div class="st-actions">
+        <button class="st-keep" id="st-keep-btn" onclick="keepWorking()">KEEP WORKING</button>
+        <button class="st-quit" id="st-quit-btn" onclick="confirmStop()">stop anyway</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEVEL UP -->
+<div class="overlay-base" id="lv-overlay">
+  <div class="lv-box"><div class="lv-icon">⚡</div><div class="lv-kicker">Rank Up</div><div class="lv-title" id="lv-new-title">—</div><div class="lv-sub">Keep going. $60k is built one finding at a time.</div><button class="lv-btn" onclick="closeLV()">Continue ›</button></div>
+</div>
+
+<div class="toast-zone" id="toast-zone"></div>
+
+<script>
+// ================================================================
+// 1. DATA & ROADMAP
+// ================================================================
+const PRI={
+  must:     {label:"Must learn",          color:"#ef4444",order:0},
+  should:   {label:"Should learn",        color:"#f97316",order:1},
+  helps:    {label:"Helps a lot",         color:"#eab308",order:2},
+  sometimes:{label:"Sometimes important", color:"#3b82f6",order:3},
+  nice:     {label:"Nice to have",        color:"#8b5cf6",order:4},
+  skip:     {label:"Not needed — skip",   color:"#374151",order:5}
+};
+
+const QUOTES=[
+  "Hard means you're at the edge of what you know. That edge is exactly where the $10K findings live.",
+  "Low agreeableness is an asset in auditing. You're not here to believe the developer. You're here to break their code.",
+  "The BOLT 50s score means your nervous system can handle 4-hour deep focus sessions most people can't. Use it.",
+  "One finding. One contest. $500. That's the whole plan for week 8. Not complicated.",
+  "You don't need to finish a concept today. You need to move the understanding forward. That's enough.",
+  "The exploit meta shifts fast. Reading one report on Solodit today is better than planning to read ten tomorrow.",
+  "High openness means you can think across patterns others miss. That's your edge. Build the pattern library.",
+  "Confusion isn't a problem to fix. It's proof you're reading something hard enough to be worth reading.",
+  "$60K/year from auditing = roughly one serious finding per month at scale. You're learning the machine that finds them.",
+  "Most auditors who plateaued did so because they stopped doing CTFs. Don't stop the reps.",
+  "The bug is already in the code. Your job is systematic coverage, not inspiration."
+];
+
+const MILESTONES=[
+  {amt:"$500", phase:"ph1",lbl:"Phase 1 complete"},
+  {amt:"$2k",  phase:"ph2",lbl:"Phase 2 complete"},
+  {amt:"$10k", phase:"ph3",lbl:"Phase 3 complete"},
+  {amt:"$20k", phase:"ph4",lbl:"Phase 4 complete"},
+  {amt:"$60k", phase:"ph5",lbl:"Go live in contests"}
+];
+
+const DATA={
+concepts:[
+  {id:"c1",title:"EVM Execution & State Transitions",priority:"must",signal:95,
+   desc:"The runtime that executes every smart contract. Stack-based architecture (1024 slot limit), storage (permanent, 32-byte slots, 20k gas cold write), memory (temporary), calldata (read-only). Every bug exists because EVM behavior differs from developer expectation. This is the foundation — everything else builds on it.",
+   resources:[
+     {name:"evm.codes",url:"https://evm.codes",kind:"interactive",signal:95,note:"Every opcode, gas cost, and interactive execution. Bookmark immediately — use daily."},
+     {name:"Cyfrin Updraft — Full Audit Course (Patrick Collins)",url:"https://updraft.cyfrin.io",kind:"course",signal:92,note:"Best structured free course from zero to auditor. START HERE. Do NOT just watch — CODE ALONG with every lesson. Watching without coding is just expensive entertainment."},
+     {name:"ethereum.org — EVM overview",url:"https://ethereum.org/en/developers/docs/evm/",kind:"docs",signal:80,note:"Good first pass before the Solidity docs get technical."},
+     {name:"Solidity docs — intro to smart contracts",url:"https://docs.soliditylang.org",kind:"docs",signal:88,note:"Primary source. Reread the EVM sections more than once."}]},
+  {id:"c2",title:"Trust Boundaries & Attacker's Vantage Point",priority:"must",signal:92,
+   desc:"Any input that isn't hard-coded is attacker-controlled: calldata, msg.sender, timestamps, even bytecode of contracts you call. Auditing is drawing this boundary precisely, then trying to cross it. This mental model underpins every vulnerability class.",
+   resources:[
+     {name:"Trail of Bits — Building Secure Contracts",url:"https://github.com/crytic/building-secure-contracts",kind:"guide",signal:90,note:"Written by people paid to break contracts. Treat as a primary source."},
+     {name:"RareSkills blog — security fundamentals",url:"https://www.rareskills.io/post",kind:"blog",signal:76,note:"Clear, technically dense, low fluff."}]},
+  {id:"c3",title:"Reentrancy — All 4 Variants",priority:"must",signal:91,
+   desc:"Single-function, cross-function, cross-contract, and read-only reentrancy. Contract A calls B; B's fallback re-enters A before A updates state. Still found in 2024. One finding = $5K–$50K. Cure: Checks-Effects-Interactions (CEI) pattern — always update state before external calls.",
+   resources:[
+     {name:"Solidity by Example — Reentrancy",url:"https://solidity-by-example.org/hacks/re-entrancy/",kind:"tutorial",signal:86,note:"Minimal and runnable — right depth for first pass."},
+     {name:"Consensys Smart Contract Best Practices",url:"https://consensys.github.io/smart-contract-best-practices/",kind:"guide",signal:80,note:"Good checklist once you understand the mechanism."},
+     {name:"DeFiHackLabs — reproduce real reentrancy hacks",url:"https://github.com/SunWeb3Sec/DeFiHackLabs",kind:"practice",signal:95,note:"200+ real hacks reproduced in Foundry. Highest learning density available."}]},
+  {id:"c4",title:"Access Control — Every Pattern",priority:"must",signal:89,
+   desc:"Who can call what. The single most frequent finding category. onlyOwner bypass, missing modifiers, tx.origin authentication, privilege escalation, and unprotected initializers in proxy contracts. Check every sensitive function — these are easy to find and easy to miss if you're not systematic.",
+   resources:[
+     {name:"OpenZeppelin Contracts docs — Access Control",url:"https://docs.openzeppelin.com/contracts/access-control",kind:"docs",signal:83,note:"The de facto standard implementation. Know it well enough to spot deviations."},
+     {name:"Solodit — filter by access-control tag",url:"https://solodit.xyz",kind:"search tool",signal:92,note:"Read the top 20 accepted access-control findings to build pattern recognition."}]},
+  {id:"c5",title:"Economic Security vs. Code Security",priority:"should",signal:80,
+   desc:"A contract with zero bugs can still be drained if incentives are wrong — oracle games, MEV extraction, governance attacks. Conceptually harder than syntax bugs. Pays off more in month two than month one.",
+   resources:[
+     {name:"Paradigm research blog",url:"https://www.paradigm.xyz/writing",kind:"blog",signal:86,note:"Densest writing in the field. Steep on-ramp but worth it."},
+     {name:"Flashbots docs — MEV",url:"https://docs.flashbots.net",kind:"docs",signal:68,note:"Useful background, not auditing-specific."}]},
+  {id:"c6",title:"Composability & Cross-Protocol Attack Surface",priority:"should",signal:82,
+   desc:"Many real exploits live in the gap between two protocols that each behaved correctly in isolation. Flash loans remove the capital constraint that used to make this class hard. You need to think in terms of multi-transaction, multi-protocol attack chains.",
+   resources:[
+     {name:"samczsun — research blog",url:"https://samczsun.com",kind:"blog",signal:91,note:"One of the clearest technical writers in the field. Read everything."},
+     {name:"rekt.news",url:"https://rekt.news",kind:"case studies",signal:66,note:"High pattern value, but read AFTER you understand the underlying mechanisms."}]},
+  {id:"c7",title:"Upgradability & Proxy Risk",priority:"should",signal:76,
+   desc:"Proxies, implementation contracts, and storage-slot collisions create a risk category that doesn't exist in immutable contracts. You'll meet this in most real audits within your first month of contests. delegatecall context, EIP-1967, uninitialized implementations.",
+   resources:[
+     {name:"OpenZeppelin — Proxy Upgrade Pattern docs",url:"https://docs.openzeppelin.com/upgrades-plugins/proxies",kind:"docs",signal:86,note:"The canonical reference. Read it twice."}]},
+  {id:"c8",title:"Off-Chain Dependency Risk (Oracles, Admin Keys, Keepers)",priority:"should",signal:78,
+   desc:"The contract code can be perfect and the system still fails because it trusts a price feed, centralized admin key, or off-chain bot. See c15 for oracle manipulation specifics. This is the broader trust model.",
+   resources:[
+     {name:"Chainlink docs — oracle security",url:"https://docs.chain.link",kind:"docs",signal:70,note:"Vendor docs — technically solid, read critically."}]},
+  {id:"c9",title:"Gas as an Attack Surface (DoS, Griefing)",priority:"should",signal:68,
+   desc:"Unbounded loops, external calls forced to revert, griefing patterns that brick contracts without stealing funds. Also: block gas limit exploitation and gas griefing via return data bombing. More common than the 'nice to have' label suggests.",
+   resources:[
+     {name:"Solidity by Example — DoS patterns",url:"https://solidity-by-example.org/hacks/denial-of-service/",kind:"tutorial",signal:72,note:""}]},
+  {id:"c10",title:"Building Your Own L1/L2 Consensus Internals",priority:"skip",signal:14,
+   desc:"Occasionally relevant if you specialize in bridge/rollup audits — but does not move you toward a first paid finding. Classic rabbit hole. Skip for now entirely.",
+   resources:[]},
+  {id:"c11",title:"DeFi Primitives — AMM, Lending & Vaults",priority:"must",signal:89,
+   desc:"Most protocols you'll audit are DeFi. AMM x*y=k, slippage & price impact. Lending: collateral ratio, liquidation cascade, health factor. Flash loans. ERC4626 vault math & share-price inflation. MakerDAO CDP model. You cannot spot a broken invariant in a vault if you don't know what a healthy one looks like.",
+   resources:[
+     {name:"Uniswap V2 whitepaper",url:"https://uniswap.org/whitepaper.pdf",kind:"primary source",signal:91,note:"Short and the founding document of the AMM pattern. Read first."},
+     {name:"Finematics YouTube",url:"https://www.youtube.com/@Finematics",kind:"video",signal:76,note:"Visual DeFi protocol explanations. Best for building the mental model before reading code."},
+     {name:"RareSkills — DeFi math articles",url:"https://www.rareskills.io/post",kind:"blog",signal:81,note:"Solid technical depth on the underlying math."}]},
+  {id:"c12",title:"Signature-Based Auth, EIP-712 & Merkle Proofs",priority:"must",signal:83,
+   desc:"EIP-712 typed signatures and permit() pattern. Vulnerability class: replay across chains/contracts, missing nonce or deadline checks, ecrecover returning address(0) (always check!), phishing via blind signing. Also covers Merkle proof bugs: leaf/node hash confusion (passing a leaf hash as a node proof), missing double-leaf validation in whitelist systems. Keccak256, ECDSA, and Merkle Trees all belong in this mental bucket — they are all ways to authorize actions off-chain.",
+   resources:[
+     {name:"EIP-712 specification",url:"https://eips.ethereum.org/EIPS/eip-712",kind:"primary source",signal:80,note:"Read once for the structure, don't memorize."},
+     {name:"OpenZeppelin docs — ERC20Permit",url:"https://docs.openzeppelin.com/contracts/api/token/erc20",kind:"docs",signal:80,note:""}]},
+  {id:"c13",title:"Cross-Chain Bridge & Messaging Trust Models",priority:"sometimes",signal:70,
+   desc:"Bridges introduce a distinct trust model: who can post a message, how finality is decided, what happens if a relayer/validator set is compromised. High-value specialization — not a month-one priority.",
+   resources:[
+     {name:"LayerZero docs",url:"https://layerzero.network/developers",kind:"docs",signal:64,note:""}]},
+  {id:"c14",title:"Integer Arithmetic, Overflow & Precision Loss",priority:"must",signal:90,
+   desc:"DeFi math bugs are billion-dollar losses. Pre-0.8 overflow wraps silently. Integer division truncates (1/3 = 0 in Solidity). Always multiply before dividing. WAD = 1e18 fixed-point. Share price inflation attacks (ERC4626 donation). Rounding direction determines whether a protocol is solvent or can be drained over time.",
+   resources:[
+     {name:"Solidity by Example — integer overflow",url:"https://solidity-by-example.org/hacks/overflow/",kind:"tutorial",signal:84,note:""},
+     {name:"Solodit — filter by 'arithmetic' or 'precision'",url:"https://solodit.xyz",kind:"search tool",signal:91,note:"Read 20+ real precision-loss findings — you'll start seeing the pattern immediately."}]},
+  {id:"c15",title:"Oracle Manipulation — Spot Price vs TWAP",priority:"must",signal:90,
+   desc:"Spot price (e.g. Uniswap pool) can be manipulated in a single block via flash loan. TWAP requires sustained manipulation over time — much harder. Chainlink latestRoundData() must check: staleness (updatedAt), zero price, and sequencer uptime on L2s. Wrong decimal handling is also a common finding.",
+   resources:[
+     {name:"samczsun — So You Want to Use a Price Oracle",url:"https://samczsun.com/so-you-want-to-use-a-price-oracle/",kind:"blog",signal:95,note:"The definitive guide. Read this before any DeFi audit."},
+     {name:"Solodit — filter by 'oracle' tag",url:"https://solodit.xyz",kind:"search tool",signal:90,note:""}]},
+  {id:"c16",title:"Flash Loan Attack Construction",priority:"should",signal:83,
+   desc:"Borrow millions in one transaction → manipulate price or state → exploit → repay. No capital risk for the attacker. Not a vulnerability itself — a tool that amplifies every existing bug. Understanding construction lets you ask: 'could a flash loan make this 10x worse?'",
+   resources:[
+     {name:"Damn Vulnerable DeFi — flash loan challenges",url:"https://www.damnvulnerabledefi.xyz",kind:"practice",signal:93,note:"The best hands-on introduction to flash loan attack construction."},
+     {name:"DeFiHackLabs — flash loan exploit reproductions",url:"https://github.com/SunWeb3Sec/DeFiHackLabs",kind:"practice",signal:94,note:"Reproduce real bZx, Euler, and Cream attacks in Foundry."}]},
+  {id:"c17",title:"MEV, Front-Running & Sandwich Attacks",priority:"should",signal:79,
+   desc:"Miners/validators see your transaction before it's confirmed. Front-running: attacker buys before you, sells after (sandwich). Slippage parameters can be exploited. Commit-reveal schemes, private mempools (Flashbots), and deadlines are mitigations. Know how to identify MEV-vulnerable functions.",
+   resources:[
+     {name:"Flashbots docs — MEV explained",url:"https://docs.flashbots.net",kind:"docs",signal:74,note:""},
+     {name:"Owen Thurm YouTube — MEV & front-running walkthroughs",url:"https://www.youtube.com/@owenthurm",kind:"video",signal:83,note:"Active auditor sharing practical, current techniques."}]},
+  {id:"c18",title:"Governance Attack Vectors",priority:"helps",signal:66,
+   desc:"Time-lock bypass, flash loan vote manipulation (borrow tokens → vote → repay in one tx), proposal spam, quorum gaming. Important in protocols with on-chain governance. Lower priority than the core six above.",
+   resources:[
+     {name:"Solodit — filter by 'governance'",url:"https://solodit.xyz",kind:"search tool",signal:80,note:""}]},
+  {id:"c19",title:"L2 Specifics & Vyper Quirks",priority:"sometimes",signal:53,
+   desc:"Arbitrum/Optimism sequencer uptime checks needed for Chainlink. block.timestamp behaves differently on some L2s. Vyper has its own footguns (reentrancy guard limitations, storage layout). Worth knowing once you start targeting L2-deployed or Vyper contracts.",
+   resources:[
+     {name:"Arbitrum docs — sequencer considerations",url:"https://docs.arbitrum.io",kind:"docs",signal:60,note:""}]},
+  {id:"c20",title:"Checks-Effects-Interactions (CEI) — The Golden Rule",priority:"must",signal:95,
+   desc:"The single most important defensive pattern in Solidity. Order: (1) Check all conditions and inputs. (2) Update all internal state. (3) Only then make external calls. If developers break this order — updating state AFTER calling an external contract — you can drain them via reentrancy. Every reentrancy vulnerability in history is a CEI violation. When reviewing code, this is the first thing you verify on every function that touches funds.",
+   resources:[
+     {name:"Solidity docs — security considerations: reentrancy",url:"https://docs.soliditylang.org/en/latest/security-considerations.html",kind:"docs",signal:91,note:"The official description of CEI. Short and precise."},
+     {name:"Consensys Smart Contract Best Practices — CEI",url:"https://consensys.github.io/smart-contract-best-practices/attacks/reentrancy/",kind:"guide",signal:86,note:""},
+     {name:"Solodit — search 'CEI violation'",url:"https://solodit.xyz",kind:"search tool",signal:93,note:"Read 10 real findings where CEI was broken. The pattern becomes instant recognition."}]},
+  {id:"c21",title:"Solidity Assembly & Yul Reading",priority:"should",signal:78,
+   desc:"Inline assembly (assembly { }) and Yul allow raw EVM opcode access. Audit relevance: reading assembly lets you find deep memory corruption bugs, slot calculation errors, and compiler-level logic flaws that Solidity syntax hides. You do not need to write Yul — you need to read it. Focus on: mstore/mload (memory), sstore/sload (storage slots), calldataload, and return/revert in assembly blocks.",
+   resources:[
+     {name:"evm.codes — opcode reference",url:"https://evm.codes",kind:"interactive",signal:92,note:"Use this alongside any Yul/assembly block you're reading. Look up every opcode you don't recognize."},
+     {name:"Solidity docs — Yul & inline assembly",url:"https://docs.soliditylang.org/en/latest/assembly.html",kind:"docs",signal:82,note:""},
+     {name:"Solodit — filter by 'assembly' tag",url:"https://solodit.xyz",kind:"search tool",signal:80,note:"Real findings where assembly bugs were exploited."}]}
+],
+facts:[
+  {id:"f1",title:"Vulnerability Taxonomy — Top 15 Classes",priority:"must",signal:93,
+   desc:"1. Reentrancy 2. Access Control 3. Integer arithmetic / precision 4. Oracle manipulation 5. Flash loan economic attacks 6. Front-running / MEV 7. Signature replay 8. Delegatecall storage collision 9. Uninitialized proxy 10. Token integration bugs 11. Unchecked return values 12. DoS / gas griefing 13. Price manipulation 14. Governance attacks 15. Incorrect event emission. Name these on recall without looking them up.",
+   resources:[
+     {name:"Solodit",url:"https://solodit.xyz",kind:"search tool",signal:96,note:"Searchable database of real findings. This is where taxonomy becomes pattern memory — use it daily."},
+     {name:"OWASP Smart Contract Top 10",url:"https://owasp.org/www-project-smart-contract-top-10/",kind:"reference",signal:88,note:"Good starting taxonomy, written for breadth."},
+     {name:"Secureum Bootcamp — YouTube archive",url:"https://www.youtube.com/@SecureumVideos",kind:"course",signal:86,note:"100-hour dense security course. Overwhelming at first, invaluable over time. Watch the vulnerability-class sessions."},
+     {name:"SWC Registry",url:"https://swcregistry.io",kind:"reference",signal:70,note:"Older catalog, not actively expanded, but the category names are still widely used."}]},
+  {id:"f2",title:"Solidity Language Landmines",priority:"must",signal:90,
+   desc:"tx.origin vs msg.sender. storage vs memory vs calldata. Default visibility (functions are internal by default in Solidity ≥0.8). fallback() vs receive(). delegatecall semantics and storage-slot collisions. Integer division truncation. Storage packing in structs/arrays. delete sets to zero but does NOT clear mapping keys. abi.encodePacked hash collisions. transfer/send vs call (gas stipend 2300).",
+   resources:[
+     {name:"Solidity docs",url:"https://docs.soliditylang.org",kind:"docs",signal:91,note:"Primary source, no substitute."},
+     {name:"Solidity by Example",url:"https://solidity-by-example.org",kind:"tutorial",signal:86,note:"Best clarity-to-time ratio for syntax-level facts."}]},
+  {id:"f3",title:"Token Standard Footguns",priority:"must",signal:86,
+   desc:"ERC20: approve race condition, missing return values (USDT), fee-on-transfer tokens (amount received < sent), rebasing tokens. ERC777: reentrancy via hooks. ERC721: reentrancy via onERC721Received. ERC4626: share-price inflation via donation attack. Non-standard tokens break protocol assumptions constantly.",
+   resources:[
+     {name:"Weird ERC20 Token List",url:"https://github.com/d-xo/weird-erc20",kind:"reference",signal:94,note:"Pure signal. Bookmark this and reference before every token-related review. Lists every known non-standard behavior."},
+     {name:"Solodit — filter by token-standard tags",url:"https://solodit.xyz",kind:"search tool",signal:91,note:""},
+     {name:"OpenZeppelin Contracts docs",url:"https://docs.openzeppelin.com/contracts",kind:"docs",signal:85,note:"Know the reference implementation well enough to spot deviations."}]},
+  {id:"f4",title:"Canonical Historical Hacks — Pattern Library",priority:"helps",signal:66,
+   desc:"The DAO (reentrancy), bZx (flash loan + oracle), Parity multisig (access control via delegatecall), Poly Network (access control), Ronin Bridge (key compromise), Cream Finance (flash loan + oracle), Euler Finance (donation + liquidation logic). Read these AFTER you understand the underlying mechanism — not as your introduction.",
+   resources:[
+     {name:"DeFiHackLabs — reproduce 200+ hacks in Foundry",url:"https://github.com/SunWeb3Sec/DeFiHackLabs",kind:"practice",signal:96,note:"The highest-signal resource for historical hack learning. You reproduce them, not just read about them."},
+     {name:"cmichel.io — audit post-mortems & security tutorials",url:"https://cmichel.io",kind:"blog",signal:92,note:"Cmichel was #1 competitive auditor on Code4rena for a long time. His write-ups show the elite thought process behind finding bugs — not just what the bug was, but how he reasoned his way to it. Read his Code4rena retrospectives and security posts before doing your first contest."},
+     {name:"rekt.news",url:"https://rekt.news",kind:"case studies",signal:66,note:"Good narrative summaries, occasionally light on root-cause depth."},
+     {name:"Protocol post-mortems (official)",url:"",kind:"primary source",signal:91,note:"Always search the team's own writeup first — highest-signal version."}]},
+  {id:"f5",title:"Auditing Tool Landscape",priority:"must",signal:86,
+   desc:"Slither (static analysis — run on every audit, catches 25-30% of low fruit). Echidna & Foundry invariant tests (fuzzing). Mythril & Manticore (symbolic execution). Certora, Halmos (formal verification). Tenderly (transaction tracer and simulator). Dedaub (decompile unverified contracts). Know what each is FOR before needing to be expert.",
+   resources:[
+     {name:"Foundry Book",url:"https://book.getfoundry.sh",kind:"docs",signal:96,note:"Install day 1. Treat as required reading, cover to cover."},
+     {name:"Slither GitHub + docs",url:"https://github.com/crytic/slither",kind:"tool",signal:89,note:"Install day 1. Run on every audit: slither . or slither . --detect reentrancy"}]},
+  {id:"f6",title:"Severity & Impact Classification",priority:"should",signal:80,
+   desc:"Critical: direct loss of user funds, no preconditions. High: loss of funds with attacker-controlled conditions. Medium: protocol works incorrectly, indirect loss, limited impact. Low/Info: bad practice, no immediate risk. Code4rena does NOT pay for Info findings. Likelihood × impact = severity. Misclassifying a real bug as 'informational' leaves money on the table.",
+   resources:[
+     {name:"Code4rena docs — severity categorization",url:"https://docs.code4rena.com",kind:"docs",signal:87,note:"Read carefully — contests follow this more strictly than you expect."}]},
+  {id:"f7",title:"The Contest & Bug-Bounty Ecosystem",priority:"must",signal:89,
+   desc:"CodeHawks First Flights: START HERE — smaller beginner audits with intentional training bugs, the best bridge from practice to live competition. Code4rena: competitive, shared findings, duplicates split the reward. Sherlock: Watson model, strict judging. Cantina: newer, less competition. Immunefi: live bug bounties, $1K-$10M per bug.",
+   resources:[
+     {name:"CodeHawks — First Flights",url:"https://www.codehawks.com/first-flights",kind:"platform",signal:96,note:"The single best bridge between Ethernaut/DVDFi practice and the full competition bloodbath. Smaller codebases, intentional training bugs, beginner-friendly judging. Do several First Flights before entering Code4rena."},
+     {name:"Code4rena",url:"https://code4rena.com",kind:"platform",signal:91,note:"Graduate here after a few First Flights. Competitive audits, $500-$50K per contest."},
+     {name:"Sherlock",url:"https://www.sherlock.xyz",kind:"platform",signal:87,note:"Stricter judging than C4. Read their docs on judging criteria before submitting."},
+     {name:"Cantina",url:"https://cantina.xyz",kind:"platform",signal:84,note:"Newer — less competition is a feature for beginners."},
+     {name:"Immunefi",url:"https://immunefi.com",kind:"platform",signal:83,note:"Best fit once you have findings under your belt. Competition from elite auditors is steep."},
+     {name:"Hats Finance",url:"https://hats.finance",kind:"platform",signal:68,note:"Decentralized bounties. Smaller amounts, less competition."}]},
+  {id:"f8",title:"What Makes a Finding 'Valid'",priority:"should",signal:83,
+   desc:"Judges reject for: duplicates, out-of-scope files, theoretically true but not exploitable, no direct impact. Knowing the unwritten rules is worth more than knowing ten more vulnerability classes. Read disputed findings, not just accepted ones — that's where the judgment calls live.",
+   resources:[
+     {name:"Past Code4rena / Sherlock judging decisions",url:"https://code4rena.com/reports",kind:"reports",signal:87,note:"Read the DISPUTED findings, not just the accepted ones."}]},
+  {id:"f9",title:"Gas Optimization Conventions",priority:"nice",signal:38,
+   desc:"Common gas-golfing patterns. Sometimes scored in contests. Rarely relevant to security. Don't let this eat time that should go to vulnerability classes.",
+   resources:[
+     {name:"Foundry gas reports / snapshots",url:"https://book.getfoundry.sh",kind:"docs",signal:58,note:""}]},
+  {id:"f10",title:"Compiler Version Quirks",priority:"should",signal:61,
+   desc:"Pre- vs post-0.8 overflow/underflow checks (massive security difference). Other breaking changes across major Solidity versions. You'll audit contracts written against very different compiler assumptions — know the version before assuming behavior.",
+   resources:[
+     {name:"Solidity changelog",url:"https://docs.soliditylang.org/en/latest/changelog.html",kind:"docs",signal:71,note:""}]},
+  {id:"f11",title:"Memorizing Exact Gas Costs of Every Opcode",priority:"skip",signal:9,
+   desc:"Useful trivia for gas-golfing competitions. Not for finding bugs. Look it up in evm.codes when you actually need it. Do not front-load this.",
+   resources:[]},
+  {id:"f12",title:"Signature & Permit Vulnerability Patterns",priority:"must",signal:86,
+   desc:"Specific recurring bugs: missing deadline checks, missing or replayable nonces, signature malleability, cross-chain replay (no chainId in signed message), permit front-running, ecrecover returning address(0) with no null check. These appear constantly in contest findings.",
+   resources:[
+     {name:"Solodit — filter by 'signature' tag",url:"https://solodit.xyz",kind:"search tool",signal:91,note:""}]},
+  {id:"f13",title:"AMM & DeFi Math Facts",priority:"should",signal:79,
+   desc:"Constant-product formula (x*y=k). Slippage and price-impact mechanics. Why rounding direction matters for solvency (always round in protocol's favor). Sandwich attacks. JIT liquidity. Liquidation math. Know these cold — you'll need them in 90% of DeFi audits.",
+   resources:[
+     {name:"Uniswap V2 whitepaper",url:"https://uniswap.org/whitepaper.pdf",kind:"primary source",signal:89,note:""},
+     {name:"RareSkills — AMM math posts",url:"https://www.rareskills.io/post",kind:"blog",signal:81,note:""}]},
+  {id:"f14",title:"Foundry Cheat Codes & Test Patterns",priority:"must",signal:91,
+   desc:"vm.prank(addr) — impersonate any address. vm.deal(addr, amount) — give ETH. vm.warp(timestamp) — change block time. vm.roll(blockNum) — change block number. vm.createFork(rpcUrl) — fork mainnet. vm.expectRevert() — test reverts. vm.startPrank / vm.stopPrank. These are the tools that turn a theoretical bug into a working PoC. Memorize them.",
+   resources:[
+     {name:"Foundry Book — cheatcodes reference",url:"https://book.getfoundry.sh/cheatcodes/",kind:"docs",signal:96,note:"Mandatory reading. Every cheat code is documented here with examples."}]},
+  {id:"f15",title:"EVM Storage Gas Costs for Security",priority:"should",signal:69,
+   desc:"SSTORE cold write: 20,000 gas. SSTORE warm write: 2,900 gas. SLOAD cold: 2,100 gas. CALL: 700 gas. Block limit ~30M gas. These matter for identifying DoS vectors — unbounded loops that hit the block gas limit, or griefing attacks that make operations prohibitively expensive.",
+   resources:[
+     {name:"evm.codes — gas cost reference",url:"https://evm.codes",kind:"interactive",signal:88,note:"Interactive opcode table with exact gas costs. Look up rather than memorize."}]},
+  {id:"f16",title:"OpenZeppelin Safety Specifics",priority:"should",signal:76,
+   desc:"ReentrancyGuard does NOT protect against cross-contract reentrancy — only within the same contract. Use SafeERC20 for all external token calls. Ownable2Step is safer than standard Ownable (prevents accidental ownership transfers). Know the limitations of the tools you're checking against.",
+   resources:[
+     {name:"OpenZeppelin Contracts docs",url:"https://docs.openzeppelin.com/contracts",kind:"docs",signal:85,note:"Know these well enough to spot when protocols deviate or misuse them."}]},
+  {id:"f17",title:"Severity Definitions — Exact Judging Standards",priority:"must",signal:88,
+   desc:"Critical = direct loss of user funds, no preconditions, attacker profit. High = loss of funds with specific attacker-controlled conditions met. Medium = protocol behaves incorrectly but limited/indirect loss. Low = bad practice, safe currently but fragile. Info = no risk. Sherlock and Code4rena have slightly different standards — read both docs before submitting to either.",
+   resources:[
+     {name:"Code4rena docs — severity categorization",url:"https://docs.code4rena.com",kind:"docs",signal:88,note:""},
+     {name:"Sherlock docs — judging criteria",url:"https://docs.sherlock.xyz",kind:"docs",signal:85,note:"Different from C4rena. Read both."}]},
+  {id:"f18",title:"Protocol Interface Recognition On Sight",priority:"helps",signal:66,
+   desc:"Recognize on sight: IUniswapV2Pair (reserve0/reserve1, getReserves, swap), AggregatorV3Interface (latestRoundData — always check staleness), IFlashLoanReceiver (executeOperation), IERC3156FlashLender, IAavePool. Pattern recognition here saves 15-20 minutes per audit.",
+   resources:[
+     {name:"Solodit — search by protocol name",url:"https://solodit.xyz",kind:"search tool",signal:80,note:""},
+     {name:"OpenZeppelin Contracts interfaces",url:"https://github.com/OpenZeppelin/openzeppelin-contracts/tree/master/contracts/interfaces",kind:"reference",signal:76,note:""}]}
+],
+procedures:[
+  {id:"p1",title:"Manual Code Review — 12-Step Systematic Process",priority:"must",signal:93,
+   desc:"1. Read ALL docs first. 2. Understand protocol purpose. 3. Map all contracts and inheritance. 4. Identify all entry points. 5. Follow the money flow. 6. Check state changes vs external calls (CEI). 7. Verify every sensitive function has access control. 8. Check all math (can it underflow/overflow? round wrong?). 9. Question every external call (what if it reverts? reenters? returns bad data?). 10. Check events (can they be faked?). 11. Read the tests (what's NOT tested is often the bug). 12. Check hardcoded values and magic numbers.",
+   resources:[
+     {name:"Secureum — audit methodology writeups",url:"https://secureum.substack.com",kind:"guide",signal:89,note:""},
+     {name:"cmichel.io — audit retrospectives",url:"https://cmichel.io",kind:"blog",signal:91,note:"Former #1 C4 auditor. His contest retrospectives are the closest thing to watching an elite auditor's review process in real time. Read these to understand how a professional structures their time and thinking across a codebase."},
+     {name:"Owen Thurm YouTube — real audit walkthroughs",url:"https://www.youtube.com/@owenthurm",kind:"video",signal:84,note:"Active auditor, practical and current. Watch his process before doing your first audit."},
+     {name:"Andy Li YouTube — audit walkthroughs",url:"https://www.youtube.com/@andyli",kind:"video",signal:72,note:"More audit walkthrough examples — useful for seeing different styles."}]},
+  {id:"p2",title:"Foundry Setup & Daily Workflow",priority:"must",signal:96,
+   desc:"forge init. forge test -vvvv (full trace). forge coverage. cast call (read live state). anvil --fork-url $RPC_URL (fork mainnet). Fluency here is non-negotiable — this is the chassis every PoC and test runs on. Set this up on Day 1, not Day 14.",
+   resources:[
+     {name:"Foundry Book",url:"https://book.getfoundry.sh",kind:"docs",signal:96,note:"Install day 1. Cover to cover eventually. Start with forge and anvil sections."}]},
+  {id:"p3",title:"Writing Fuzz & Invariant Tests",priority:"must",signal:89,
+   desc:"Write invariants (properties that must ALWAYS be true — e.g. 'total shares must equal sum of user balances'). Foundry/Echidna generates random inputs to break them. This finds bugs that manual review and static analysis miss entirely. Contests increasingly expect basic invariant coverage in serious submissions.",
+   resources:[
+     {name:"Foundry Book — invariant testing chapter",url:"https://book.getfoundry.sh",kind:"docs",signal:91,note:""},
+     {name:"Trail of Bits — Echidna tutorials",url:"https://github.com/crytic/echidna",kind:"tutorial",signal:86,note:""}]},
+  {id:"p4",title:"Running & Interpreting Slither",priority:"should",signal:79,
+   desc:"Run on every audit: slither . or slither . --detect reentrancy. Catches 25-30% of low-hanging fruit automatically. The skill is triage — the impact/confidence matrix tells you what to investigate vs what to ignore. High impact + high confidence = investigate first. Low confidence = often false positive.",
+   resources:[
+     {name:"Slither docs + detectors list",url:"https://github.com/crytic/slither",kind:"tool",signal:83,note:""}]},
+  {id:"p5",title:"Writing a Working Proof-of-Concept Exploit",priority:"must",signal:94,
+   desc:"Fork mainnet state, set up attacker contract, execute attack steps, assert attacker made a profit. Critical/High findings require PoC on most platforms — submissions without one are often downgraded or rejected. This is also what turns your suspicion into certainty that a bug is real, not theoretical.",
+   resources:[
+     {name:"DeFiHackLabs — 200+ real hacks reproduced in Foundry",url:"https://github.com/SunWeb3Sec/DeFiHackLabs",kind:"practice",signal:97,note:"The single highest-signal resource on this entire map for PoC skill. Reproduce first, understand why second."},
+     {name:"Damn Vulnerable DeFi",url:"https://www.damnvulnerabledefi.xyz",kind:"practice",signal:93,note:"Best structured practice for building your first PoCs."},
+     {name:"Ethernaut",url:"https://ethernaut.openzeppelin.com",kind:"practice",signal:85,note:"Start here if Damn Vulnerable DeFi feels too hard on day one. Struggle 2 hours per level before looking at hints — that struggle is where the skill lives."},
+     {name:"Paradigm CTF (past editions)",url:"https://www.paradigm.xyz/ctf",kind:"practice",signal:88,note:"Harder — save for month two."}]},
+  {id:"p6",title:"Tracing Transactions / Reading Call Traces",priority:"helps",signal:66,
+   desc:"When source isn't available or the bug only appears in execution order, you need to read a call trace or step through bytecode. forge test -vvvv gives you call traces. Tenderly gives visual transaction traces on live mainnet. Dedaub decompiles unverified contracts.",
+   resources:[
+     {name:"Tenderly",url:"https://tenderly.co",kind:"tool",signal:78,note:"Transaction tracer and simulator. Invaluable for on-chain investigation."},
+     {name:"Dedaub Decompiler",url:"https://library.dedaub.com/decompile",kind:"tool",signal:72,note:"Decompile unverified contracts to pseudo-Solidity."},
+     {name:"Foundry — forge debug / traces",url:"https://book.getfoundry.sh",kind:"docs",signal:76,note:""}]},
+  {id:"p7",title:"Writing an Audit-Quality Finding",priority:"must",signal:91,
+   desc:"Format: [Function Name] — [Impact]. Always include: exact vulnerable code line, step-by-step attack flow, exact consequence (funds lost, state corrupted), working PoC, and specific code mitigation. A correct bug written up badly scores lower than a clean writeup of a smaller bug. This is the literal deliverable that gets you paid.",
+   resources:[
+     {name:"Past accepted Code4rena / Sherlock reports",url:"https://code4rena.com/reports",kind:"examples",signal:91,note:"Read 10-15 accepted findings before writing your first one. Pay attention to format, not just content."}]},
+  {id:"p8",title:"Competing in Real Contests Under Time Pressure",priority:"must",signal:93,
+   desc:"Reading code with a clock running is a different skill from untimed practice. Clone the exact commit hash. Only audit in-scope files (out-of-scope findings get rejected). Submit via the platform template before the deadline. Enter a live contest even if you don't expect to place — it's the fastest feedback loop available.",
+   resources:[
+     {name:"Code4rena",url:"https://code4rena.com",kind:"platform",signal:91,note:"Start here. Browse open contests and join one this week."},
+     {name:"Sherlock",url:"https://www.sherlock.xyz",kind:"platform",signal:87,note:""}]},
+  {id:"p9",title:"Pattern-Drilling Past Audit Reports",priority:"must",signal:91,
+   desc:"The closest thing to spaced repetition for auditing: read accepted findings across many protocols until vulnerability patterns become recognition, not derivation. Ultralearning's 'drill' principle applied — isolate the weakest sub-skill (pattern recognition) and hammer it daily. ALSO: the exploit meta evolves fast — what was bleeding-edge last year is old news today. A weekly newsletter keeps your pattern library current.",
+   resources:[
+     {name:"Solodit",url:"https://solodit.xyz",kind:"search tool",signal:96,note:"Built specifically for this. Use it every single day. Filter by severity, protocol type, and category."},
+     {name:"DeFiHackLabs",url:"https://github.com/SunWeb3Sec/DeFiHackLabs",kind:"practice",signal:94,note:"Reproducing real hacks in Foundry is the active version of pattern drilling."},
+     {name:"Blockthreat (newsletter)",url:"https://newsletter.blockthreat.io",kind:"newsletter",signal:82,note:"Weekly digest of new DeFi exploits, vulnerability disclosures, and security research. Subscribe and read it every week — this is how you catch new vulnerability classes the week they emerge, not months later. Should-learn priority: the exploit meta shifts faster than any static resource can track."},
+     {name:"Blockchain Threat Intelligence (newsletter)",url:"https://blockchainthreat.substack.com",kind:"newsletter",signal:78,note:"Alternative to Blockthreat. Pick one, read it consistently. The habit of staying current is more important than which specific newsletter you choose."}]},
+  {id:"p10",title:"Formal Verification / Symbolic Execution",priority:"sometimes",signal:56,
+   desc:"Certora and Halmos can prove properties mathematically. Mythril (symbolic execution) has high false-positive rates. Learning curve is steep and ROI in your first two months is low vs manual review and fuzzing. Revisit after your first paid finding.",
+   resources:[
+     {name:"Certora docs",url:"https://www.certora.com",kind:"docs",signal:61,note:""}]},
+  {id:"p11",title:"CTF Practice Loop With a Fixed Time-Box",priority:"should",signal:81,
+   desc:"Ethernaut → Damn Vulnerable DeFi → Capture the Ether → DeFiHackLabs. Each challenge time-boxed: 45 minutes before you allow yourself a hint. Builds the habit of abandoning dead ends fast — critical under contest time pressure. Track your hints as a metric of improving.",
+   resources:[
+     {name:"Ethernaut",url:"https://ethernaut.openzeppelin.com",kind:"practice",signal:86,note:"30 levels. The mandatory starting point. Rule: struggle for at least 2 hours on each level before checking solutions. The struggle IS the learning — skipping it skips the skill."},
+     {name:"Capture the Ether",url:"https://capturetheether.com",kind:"practice",signal:74,note:"Classic challenges, still solid for fundamentals."},
+     {name:"Secureum RACE questions",url:"https://www.youtube.com/@SecureumVideos",kind:"practice",signal:80,note:"Multiple-choice security tests. Builds pattern recognition speed."}]},
+  {id:"p12",title:"Building a Full dApp Frontend / Web3 Stack",priority:"skip",signal:14,
+   desc:"A 'become a Web3 developer' bootcamp skill. Doesn't build audit skill and will eat weeks you don't have. You are an auditor, not a product developer. Skip entirely for this goal.",
+   resources:[]},
+  {id:"p13",title:"Read the Spec Before You Read the Code",priority:"must",signal:91,
+   desc:"Before opening a single .sol file: read the protocol's docs/whitepaper and write down in your own words what each contract is supposed to do. Almost every real bug is a gap between stated intent and implementation — you cannot see the gap if you skip straight to the code. This is Step 1, every audit, no exceptions.",
+   resources:[]},
+  {id:"p14",title:"Build a Personal Vulnerability Cheat-Sheet",priority:"should",signal:76,
+   desc:"Every time you learn a new pattern from Solodit or a contest, write a one-line entry in your own running checklist. Add to it every time you MISS a bug in a past report. By month two, your personal list — built from your specific blindspots — is more valuable than any public checklist.",
+   resources:[]},
+  {id:"p15",title:"Threat Modeling Before Reading Code",priority:"must",signal:91,
+   desc:"Before reading any code, list: (1) Assets — what can be stolen or broken? (2) Actors — who can interact and with what permissions? (3) Trust assumptions — what does the protocol assume to be honest? (4) Attack goals — what would an attacker want to achieve? This frames every line of code you subsequently read with the right questions.",
+   resources:[
+     {name:"nascentxyz Security Toolkit — threat model template",url:"https://github.com/nascentxyz/simple-security-toolkit",kind:"guide",signal:87,note:"Pre-audit checklist. Extremely useful, pure signal."},
+     {name:"Trail of Bits — Building Secure Contracts",url:"https://github.com/crytic/building-secure-contracts",kind:"guide",signal:88,note:"Contains threat modeling guidance alongside code-level patterns."}]},
+  {id:"p16",title:"On-Chain Investigation (Cast, Tenderly, Etherscan)",priority:"should",signal:73,
+   desc:"For Immunefi bug bounties on live protocols: use cast call (read state), cast storage (read storage slots), Tenderly (simulate transactions against live state), Etherscan (read ABIs, historical transactions). Crucial for verifying a bug is exploitable in the current deployed version, not just in the repo.",
+   resources:[
+     {name:"Tenderly",url:"https://tenderly.co",kind:"tool",signal:82,note:"Simulate transactions against mainnet state. Essential for Immunefi work."},
+     {name:"Foundry Book — cast reference",url:"https://book.getfoundry.sh",kind:"docs",signal:86,note:"cast call, cast storage, cast code — learn these commands."}]},
+  {id:"p17",title:"Competitive Auditing Workflow — Race Strategy",priority:"must",signal:86,
+   desc:"Clone at the exact commit hash specified in the contest scope. Only audit files listed as in-scope — out-of-scope findings get rejected. Spend 20% of time understanding the protocol intent, 80% actively trying to break it. Submit using the platform's exact report template. Time-box each contract. Start with the highest-value, most complex contracts first.",
+   resources:[
+     {name:"Code4rena docs — how to submit",url:"https://docs.code4rena.com",kind:"docs",signal:85,note:""},
+     {name:"Owen Thurm — contest strategy videos",url:"https://www.youtube.com/@owenthurm",kind:"video",signal:83,note:"Practical contest workflow from someone currently competing."}]},
+  {id:"p18",title:"Echidna Fuzzing Workflow",priority:"should",signal:76,
+   desc:"Write property functions: echidna_invariant_name() returns bool. Properties that should always return true. Echidna generates random transaction sequences to violate them. Effective for finding arithmetic bugs and state-machine violations that manual review misses. Pair with Foundry invariant testing — they complement each other.",
+   resources:[
+     {name:"Trail of Bits — Echidna tutorials",url:"https://github.com/crytic/echidna",kind:"tutorial",signal:86,note:"The canonical Echidna learning resource from its creators."},
+     {name:"Cyfrin Updraft — fuzzing section",url:"https://updraft.cyfrin.io",kind:"course",signal:82,note:"Practical fuzzing examples in the audit course context."}]}
+]};
+
+const ROADMAP=[
+  {id:"ph1",num:1,title:"Get Oriented",money:"First $500",emoji:"🛸",
+   blurb:"Foundation before you touch real code. ~Week 1. Open the first resource NOW.",
+   first:{name:"evm.codes + Cyfrin Updraft Course",url:"https://updraft.cyfrin.io"},
+   items:["p13","c1","c2","p2","f1","f2","f14"]},
+  {id:"ph2",num:2,title:"Build Pattern Recognition",money:"First $2k",emoji:"🔍",
+   blurb:"The vulnerability classes that appear in every contest. ~Weeks 2–3.",
+   first:{name:"Ethernaut — start from Level 1",url:"https://ethernaut.openzeppelin.com"},
+   items:["c3","c4","c14","c20","c12","f3","f12","p11"]},
+  {id:"ph3",num:3,title:"DeFi, Oracles & Drilling",money:"First $10k",emoji:"⚡",
+   blurb:"90% of targets are DeFi. Learn the protocols, then drill real findings. ~Weeks 3–4.",
+   first:{name:"Damn Vulnerable DeFi — challenge 1",url:"https://www.damnvulnerabledefi.xyz"},
+   items:["c11","c15","c16","c6","f13","f4","f18","p15","p1","f16"]},
+  {id:"ph4",num:4,title:"Tooling & Proof",money:"First $20k",emoji:"🛠",
+   blurb:"Turn a hunch into a provable, payable finding. ~Weeks 4–6.",
+   first:{name:"Foundry Book — invariant testing chapter",url:"https://book.getfoundry.sh"},
+   items:["p3","p4","p5","p7","f5","f17","p16","p18"]},
+  {id:"ph5",num:5,title:"Go Live in Contests",money:"First $60k",emoji:"🏆",
+   blurb:"Compete for real, under real time pressure. This is where the $60k gets made. ~Weeks 6–8+.",
+   first:{name:"Code4rena — join the next open contest",url:"https://code4rena.com"},
+   items:["p8","p17","c17","c5","c8","c7","f6","f7","f8","p14"]},
+  {id:"ph6",num:6,title:"Specialize & Compound",money:"Beyond $60k",emoji:"🌐",optional:true,
+   blurb:"Pick up ONLY after your first paid finding. Some items here are explicitly marked skip-for-now.",
+   first:null,
+   items:["c9","c10","c13","c18","c19","c21","f9","f10","f11","f15","p6","p9","p10","p12"]}
+];
+
+const ALL={};
+[...DATA.concepts,...DATA.facts,...DATA.procedures].forEach(it=>ALL[it.id]=it);
+const MAX_XP=Object.values(ALL).reduce((s,it)=>s+it.signal,0) || 1000;
+
+const LEVELS=[
+  {frac:0,   title:"Script Kiddie",          icon:"📖"},
+  {frac:.15, title:"Junior Researcher",      icon:"🔍"},
+  {frac:.35, title:"Smart Contract Auditor", icon:"🐛"},
+  {frac:.60, title:"Senior Auditor",         icon:"🛡"},
+  {frac:1.0, title:"EVM God",                icon:"🏆"}
+].map((l,i)=>({...l,min:Math.round(l.frac*MAX_XP),num:i+1}));
+
+
+// ================================================================
+// 2. STATE & STORAGE
+// ================================================================
+const S={
+  mode:"roadmap", libTab:"concepts", activePri:new Set(Object.keys(PRI)), query:"", onlyUnlearned:false,
+  openCards:new Set(), openPhases:new Set(), phasesInited:false,
+  learned:{}, streak:{cur:0,best:0,lastDate:null}, achievements:new Set(),
+  startDate:null, prevLevel:null, sessionCount:0,
+  
+  // LEDGER TRACKING STATE
+  ledger: {}, // 'YYYY-MM-DD': {work: seconds, drift: seconds}
+  tracker: {
+    activeState: 'idle', // 'idle', 'work', 'drift'
+    sessionStart: null,
+    lastCommit: null,
+    intervalId: null
+  }
+};
+
+window.S = S;
+
+const LS_PREFIX="audit-os:";
+async function save(k,v){
+  const str=JSON.stringify(v);
+  try{ localStorage.setItem(LS_PREFIX+k,str); }catch(e){}
+  if (window.syncToCloud) window.syncToCloud(k, v);
+}
+async function load(k,fb){
+  try{ const ls=localStorage.getItem(LS_PREFIX+k); if(ls) return JSON.parse(ls); }catch(e){}
+  return fb;
+}
+
+function dateKey(d){
+  d = d || new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function todayStr(){ return dateKey(); }
+
+function keyDaysAgo(n){
+  const d = new Date(); d.setDate(d.getDate()-n); return dateKey(d);
+}
+function daysBetween(a,b){return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/86400000);}
+
+function totalXP(s=S){return Object.keys(s.learned).filter(id=>s.learned[id]).reduce((sum,id)=>sum+(ALL[id]?ALL[id].signal:0),0);}
+function curLevel(){const xp=totalXP();let l=LEVELS[0];for(const lv of LEVELS)if(xp>=lv.min)l=lv;return l;}
+function nextLevel(){const c=curLevel();const i=LEVELS.indexOf(c);return i<LEVELS.length-1?LEVELS[i+1]:null;}
+function phasePct(ph){return Math.round(ph.items.filter(id=>S.learned[id]).length/ph.items.length*100);}
+function curPhaseId(){for(const ph of ROADMAP){if(!ph.optional && phasePct(ph)<100)return ph.id;}return null;}
+
+
+// ================================================================
+// 3. LEDGER CORE LOGIC & INTERCEPT
+// ================================================================
+function ensureDay(key){ if(!S.ledger[key]) S.ledger[key] = {work:0, drift:0}; }
+
+function commitElapsed(){
+  if(S.tracker.activeState === 'idle' || !S.tracker.lastCommit) return;
+  const now = Date.now();
+  const sec = (now - S.tracker.lastCommit) / 1000;
+  const today = dateKey();
+  ensureDay(today);
+  S.ledger[today][S.tracker.activeState] += sec;
+  S.tracker.lastCommit = now;
+  save("ledger-v1", S.ledger);
+}
+
+function todayTotals(){
+  const today = dateKey();
+  ensureDay(today);
+  const base = S.ledger[today];
+  let work = base.work, drift = base.drift;
+  if(S.tracker.activeState !== 'idle' && S.tracker.lastCommit){
+    const live = (Date.now() - S.tracker.lastCommit)/1000;
+    if(S.tracker.activeState === 'work') work += live;
+    if(S.tracker.activeState === 'drift') drift += live;
+  }
+  return {work, drift};
+}
+
+let _pendingTrackerState = null;
+
+function setTrackerState(newState){
+  playTick();
+  commitElapsed();
+  
+  if(newState === S.tracker.activeState || newState === 'idle'){
+    S.tracker.activeState = 'idle';
+    S.tracker.sessionStart = null;
+    S.tracker.lastCommit = null;
+  } else {
+    S.tracker.activeState = newState;
+    S.tracker.sessionStart = Date.now();
+    S.tracker.lastCommit = Date.now();
+  }
+  
+  save("active-tracker-v1", {
+    state: S.tracker.activeState,
+    sessionStart: S.tracker.sessionStart,
+    lastCommit: S.tracker.lastCommit
+  });
+  
+  renderLedgerUI();
+}
+
+// Intercept only when completely leaving the tracker (going to dashboard)
+function requestCloseLedger(){
+  commitElapsed(); 
+  const totalWorkSec = todayTotals().work;
+  
+  // If they have less than 4 hours, intercept the exit
+  if (totalWorkSec < 4 * 3600) {
+    _pendingTrackerState = 'dashboard';
+    showStopModal(totalWorkSec);
+    return;
+  }
+  executeCloseLedger();
+}
+
+// Modal UI Logic
+function showStopModal(totalWorkSec){
+  const totalMins = Math.floor(totalWorkSec / 60);
+  const h = Math.floor(totalMins / 60), m = totalMins % 60;
+  const timeStr = h > 0 ? `${h}h ${m}m` : `${totalMins}min`;
+  
+  document.getElementById("st-elapsed-val").textContent = timeStr;
+  
+  const msg = getStopMessage(totalWorkSec);
+  const title = document.getElementById("st-title");
+  title.textContent = msg.title;
+  title.style.color = msg.tc;
+  document.getElementById("st-body").innerHTML = msg.body;
+  document.getElementById("st-keep-btn").textContent = msg.keep;
+  document.getElementById("st-quit-btn").textContent = msg.quit;
+  
+  document.getElementById("st-overlay").classList.add("show");
+}
+
+function getStopMessage(totalWorkSec){
+  const totalMins = Math.floor(totalWorkSec / 60);
+  const h = Math.floor(totalMins / 60), m = totalMins % 60;
+  const timeStr = h > 0 ? `${h}h ${m}m` : `${totalMins}min`;
+  const minsLeft = Math.max(0, 240 - totalMins);
+  const rate = (totalWorkSec / 3600).toFixed(1);
+  const months = (2 / (parseFloat(rate)/4)).toFixed(1);
+
+  if(totalMins <= 15){
+    return {
+      title: "Tourist Mode: Confirmed", tc: "var(--red)",
+      body: `<strong>${timeStr}.</strong> You hit friction and decided that counted as a session. It doesn't. Every auditor making $60K/year has had this exact moment. You've done the login, not the work. The bug doesn't care that it was uncomfortable.`,
+      keep: "I'M NOT A TOURIST. KEEP WORKING.", quit: `Yes — ${timeStr} is my ceiling`
+    };
+  }
+  if(totalMins < 60){
+    return {
+      title: "You Just Paid For The Warmup", tc: "var(--fire)",
+      body: `<strong>${timeStr} in.</strong> The first hour is startup cost — context loading, getting the architecture in your head. You haven't started the productive work. You're stopping at the door.`,
+      keep: "USE THE WARMUP. KEEP GOING.", quit: `Waste the warmup, stop at ${timeStr}`
+    };
+  }
+  if(totalMins < 120){
+    return {
+      title: `On Pace For ${months} Months, Not 2`, tc: "var(--should)",
+      body: `<strong>${timeStr}.</strong> At ${rate}hrs/day your 2-month target becomes ${months} months. You have <strong>${minsLeft} minutes of window left today.</strong> The number is 4 hours.`,
+      keep: "CLOSE THE GAP.", quit: `Accept ${months}-month timeline`
+    };
+  }
+  if(totalMins < 180){
+    return {
+      title: "Halfway. Then Out.", tc: "var(--gold)",
+      body: `<strong>${timeStr} in.</strong> The second half is where the first half pays off. You're about to throw away the expensive context load at the exact moment it starts returning value.`,
+      keep: "FINISH THE SESSION.", quit: `Throw away the context, stop at ${timeStr}`
+    };
+  }
+  if(totalMins < 225){
+    return {
+      title: `${minsLeft} Minutes From Done`, tc: "var(--g)",
+      body: `You are <strong>${minsLeft} minutes</strong> from your daily target. The version of you who hits $60K this year does the <strong>${minsLeft} minutes.</strong>`,
+      keep: `DO THE ${minsLeft} MINUTES.`, quit: `Stop ${minsLeft}min short`
+    };
+  }
+  return {
+    title: `${minsLeft} Minutes. The Entire Distance.`, tc: "var(--g)",
+    body: `<strong>${minsLeft} minutes</strong> separates where you are from where you said you'd be today. You're ${minsLeft} minutes from not having this conversation with yourself again tomorrow.`,
+    keep: `FINISH. ${minsLeft} MORE MINUTES.`, quit: `${minsLeft}min short — stop anyway`
+  };
+}
+
+function keepWorking() {
+  document.getElementById("st-overlay").classList.remove("show");
+  _pendingTrackerState = null;
+}
+
+function confirmStop() {
+  document.getElementById("st-overlay").classList.remove("show");
+  if (_pendingTrackerState === 'dashboard') {
+    executeCloseLedger();
+  }
+  _pendingTrackerState = null;
+}
+
+function currentSessionSeconds(){
+  if(!S.tracker.sessionStart) return 0;
+  return (Date.now() - S.tracker.sessionStart)/1000;
+}
+
+function fmtClock(sec){
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec/3600);
+  const m = Math.floor((sec%3600)/60);
+  const s = sec%60;
+  if(h>0) return h + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function fmtShort(sec){
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec/3600);
+  const m = Math.floor((sec%3600)/60);
+  if(h>0) return h + 'h ' + m + 'm';
+  return m + 'm';
+}
+
+let _audioCtx = null;
+function playTick(){
+  try{
+    if(!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(_audioCtx.state === 'suspended') _audioCtx.resume();
+    const ctx = _audioCtx;
+    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+    osc.type = 'sine'; osc.frequency.value = 660;
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.05, ctx.currentTime+0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.12);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime+0.14);
+  }catch(e){}
+}
+
+function renderLedgerUI(){
+  const pWork = document.getElementById('panelWork');
+  const pDrift = document.getElementById('panelDrift');
+  const seam = document.getElementById('seam');
+  const cState = document.getElementById('capsuleState');
+  const cTimer = document.getElementById('capsuleTimer');
+  const cHint = document.getElementById('capsuleHint');
+  const sWork = document.getElementById('statWork');
+  const sFocus = document.getElementById('statFocus');
+  const sDrift = document.getElementById('statDrift');
+
+  if(!pWork) return;
+
+  const {work, drift} = todayTotals();
+  const total = work + drift;
+  const ratio = total > 0 ? work/total : 0.5;
+  const clamped = Math.min(0.82, Math.max(0.18, ratio));
+
+  pWork.style.flexBasis = (clamped*100) + '%';
+  pDrift.style.flexBasis = ((1-clamped)*100) + '%';
+
+  pWork.classList.toggle('active', S.tracker.activeState==='work');
+  pDrift.classList.toggle('active', S.tracker.activeState==='drift');
+  seam.classList.toggle('work-active', S.tracker.activeState==='work');
+  seam.classList.toggle('drift-active', S.tracker.activeState==='drift');
+  seam.classList.toggle('pulsing', S.tracker.activeState!=='idle');
+
+  cState.textContent = S.tracker.activeState==='idle' ? 'IDLE' : S.tracker.activeState.toUpperCase();
+  cState.classList.toggle('work', S.tracker.activeState==='work');
+  cState.classList.toggle('drift', S.tracker.activeState==='drift');
+
+  cTimer.textContent = fmtClock(currentSessionSeconds());
+  cHint.textContent = S.tracker.activeState==='idle' ? 'tap a side to begin' : 'tap this card to pause';
+
+  sWork.textContent = fmtShort(work);
+  sDrift.textContent = fmtShort(drift);
+  sFocus.textContent = total > 0 ? Math.round(work/total*100) + '%' : '—';
+}
+
+function openLedger(){
+  document.getElementById("ledgerOverlay").classList.add("show");
+  renderLedgerUI();
+}
+
+function executeCloseLedger(){
+  if(S.tracker.activeState !== 'idle') setTrackerState('idle'); 
+  document.getElementById("ledgerOverlay").classList.remove("show");
+  recalcStreak();
+  renderSidebar();
+}
+
+// Global Tickers (Auto-saving mechanism)
+setInterval(() => {
+  if(S.tracker.activeState !== 'idle') renderLedgerUI();
+}, 1000);
+setInterval(() => {
+  if(S.tracker.activeState !== 'idle'){
+    commitElapsed();
+  }
+}, 15000);
+
+// Ledger Events
+document.getElementById('panelWork').addEventListener('click', () => setTrackerState('work'));
+document.getElementById('panelDrift').addEventListener('click', () => setTrackerState('drift'));
+document.getElementById('capsule').addEventListener('click', () => {
+  if(S.tracker.activeState !== 'idle') setTrackerState('idle');
+});
+document.addEventListener('keydown', (e) => {
+  const overlay = document.getElementById("ledgerOverlay");
+  const modal = document.getElementById("st-overlay");
+  const summary = document.getElementById("summaryOverlay");
+  
+  if(summary.classList.contains("open") && e.key === "Escape"){
+    closeSummary(); return;
+  }
+  if(!overlay.classList.contains("show") || modal.classList.contains("show")) {
+    if(e.key==='s' || e.key==='S'){
+      const tag = document.activeElement ? document.activeElement.tagName : '';
+      if(tag!=='INPUT' && tag!=='TEXTAREA') openSummary();
+    }
+    return;
+  }
+  
+  const tag = document.activeElement ? document.activeElement.tagName : '';
+  if(tag==='INPUT' || tag==='TEXTAREA') return;
+  
+  if(e.key==='w' || e.key==='W') setTrackerState('work');
+  if(e.key==='d' || e.key==='D') setTrackerState('drift');
+  if(e.key===' ' || e.key==='Enter'){
+    e.preventDefault();
+    if(S.tracker.activeState !== 'idle') setTrackerState('idle');
+  }
+  if(e.key==='Escape') requestCloseLedger();
+});
+
+// Emergency Logging Implementation
+function logEmergency(){
+  const today = dateKey();
+  ensureDay(today);
+  let mins = prompt("How many minutes of focus did you do outside the app?", "60");
+  if(!mins) return;
+  mins = parseInt(mins, 10);
+  if(isNaN(mins) || mins <= 0) return;
+  
+  S.ledger[today].work += mins * 60;
+  save("ledger-v1", S.ledger);
+  recalcStreak();
+  renderSidebar();
+  
+  if (mins <= 15) {
+    showToast("🥀", "Tourist Mode", `Logged ${mins} min. That's barely a warmup.`);
+  } else {
+    showToast("⚡", "Emergency Logged", `Added ${mins} minutes of work.`);
+  }
+}
+
+// ================================================================
+// 4. ANALYTICS & HISTORICAL CALCULATIONS
+// ================================================================
+function dayTotals(key){
+  const rec = S.ledger[key] || {work:0, drift:0};
+  if(key === dateKey()) return todayTotals();
+  return {work: rec.work, drift: rec.drift};
+}
+
+function rangeTotals(startAgo, endAgoInclusive){
+  let work=0, drift=0;
+  for(let i=startAgo; i<=endAgoInclusive; i++){
+    const t = dayTotals(keyDaysAgo(i));
+    work += t.work; drift += t.drift;
+  }
+  return {work, drift};
+}
+
+function focusPct(t){
+  const total = t.work + t.drift;
+  return total > 0 ? Math.round(t.work/total*100) : null;
+}
+
+function weekdayShort(key){
+  const parts = key.split('-').map(Number);
+  const d = new Date(parts[0], parts[1]-1, parts[2]);
+  return d.toLocaleDateString('en-US', {weekday:'short'});
+}
+
+function bestDayThisWeek(){
+  let best = null;
+  for(let i=0; i<=6; i++){
+    const key = keyDaysAgo(i);
+    const t = dayTotals(key);
+    const f = focusPct(t);
+    if(f === null) continue;
+    if(!best || f > best.focus){
+      best = {key, focus:f, work:t.work};
+    }
+  }
+  return best;
+}
+
+function heroLine(){
+  const t = todayTotals();
+  const y = dayTotals(keyDaysAgo(1));
+  if(t.work + t.drift < 60){
+    return 'Nothing logged yet today.';
+  }
+  if(y.work + y.drift < 60){
+    return 'First real day on the ledger.';
+  }
+  const deltaMin = Math.round((t.work - y.work)/60);
+  if(Math.abs(deltaMin) < 2){
+    return "Matching yesterday's pace.";
+  }
+  if(deltaMin > 0){
+    return deltaMin + ' minutes more focused than yesterday.';
+  }
+  return Math.abs(deltaMin) + ' minutes behind yesterday.';
+}
+
+function renderSummary(){
+  const today = todayTotals();
+  const yest = dayTotals(keyDaysAgo(1));
+  const thisWeek = rangeTotals(0,6);
+  const lastWeek = rangeTotals(7,13);
+
+  document.getElementById('summaryDate').textContent = new Date().toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'}).toUpperCase();
+  document.getElementById('summaryHero').textContent = heroLine();
+
+  document.getElementById('cmpTodayWork').innerHTML = fmtShort(today.work) + '<span class="lbl">work</span>';
+  document.getElementById('cmpTodayDrift').innerHTML = fmtShort(today.drift) + '<span class="lbl">drift</span>';
+  const tf = focusPct(today);
+  document.getElementById('cmpTodayFocus').innerHTML = (tf===null?'—':tf+'%') + '<span class="lbl">focus</span>';
+
+  document.getElementById('cmpYestWork').innerHTML = fmtShort(yest.work) + '<span class="lbl">work</span>';
+  document.getElementById('cmpYestDrift').innerHTML = fmtShort(yest.drift) + '<span class="lbl">drift</span>';
+  const yf = focusPct(yest);
+  document.getElementById('cmpYestFocus').innerHTML = (yf===null?'—':yf+'%') + '<span class="lbl">focus</span>';
+
+  document.getElementById('cmpWeekWork').innerHTML = fmtShort(thisWeek.work) + '<span class="lbl">work</span>';
+  const wf = focusPct(thisWeek);
+  document.getElementById('cmpWeekFocus').innerHTML = (wf===null?'—':wf+'%') + '<span class="lbl">avg focus</span>';
+
+  document.getElementById('cmpLastWeekWork').innerHTML = fmtShort(lastWeek.work) + '<span class="lbl">work</span>';
+  const lwf = focusPct(lastWeek);
+  document.getElementById('cmpLastWeekFocus').innerHTML = (lwf===null?'—':lwf+'%') + '<span class="lbl">avg focus</span>';
+
+  const weekDelta = document.getElementById('weekDelta');
+  if(wf === null || lwf === null){
+    weekDelta.innerHTML = '';
+  } else {
+    const diff = wf - lwf;
+    const arrow = diff > 0 ? '▲' : (diff < 0 ? '▼' : '–');
+    const color = diff > 0 ? 'var(--g)' : (diff < 0 ? 'var(--red)' : 'var(--dim)');
+    weekDelta.innerHTML = `<span class="delta-arrow" style="color:${color}">${arrow}</span> <span style="color:${color}">${Math.abs(diff)} pt focus</span> vs last week`;
+  }
+
+  const chips = [];
+  if(S.streak.cur > 0){
+    chips.push('<span class="insight-chip"><b>' + S.streak.cur + '</b> day streak</span>');
+  }
+  const best = bestDayThisWeek();
+  if(best && best.key !== dateKey()){
+    chips.push('<span class="insight-chip">Best day: <b>' + weekdayShort(best.key) + '</b> (' + best.focus + '%)</span>');
+  }
+  if(thisWeek.work > 0){
+    chips.push('<span class="insight-chip"><b>' + fmtShort(thisWeek.work) + '</b> worked this week</span>');
+  }
+  document.getElementById('insightRow').innerHTML = chips.length ? chips.join('') : '<span class="insight-chip">Not enough data logged yet.</span>';
+}
+
+function openSummary(){
+  renderSummary();
+  document.getElementById('summaryOverlay').classList.add('open');
+}
+
+function closeSummary(){
+  document.getElementById('summaryOverlay').classList.remove('open');
+}
+
+
+// ================================================================
+// 5. WAR MAP RENDERING & STREAK
+// ================================================================
+function recalcStreak(){
+  let streak = 0;
+  let best = S.streak.best;
+  for(let i=0; i<365; i++){
+    const k = keyDaysAgo(i);
+    const day = S.ledger[k] || {work:0};
+    if(day.work >= 3600){ streak++; } // 1 HOUR = 1 day streak
+    else { if(i === 0) continue; break; }
+  }
+  best = Math.max(best, streak);
+  S.streak = {cur: streak, best: best, lastDate: todayStr()};
+  save("streak-v4", S.streak);
+}
+
+function renderSidebar(){
+  const xp=totalXP(),c=curLevel(),nxt=nextLevel();
+  const circ=+(2*Math.PI*22).toFixed(2);
+  const frac=nxt?Math.max(0,Math.min(1,(xp-c.min)/(nxt.min-c.min))):1;
+  
+  document.getElementById("av-ring").setAttribute("stroke-dasharray",circ);
+  document.getElementById("av-ring").setAttribute("stroke-dashoffset", (circ-(circ*frac)).toFixed(2));
+  document.getElementById("lv-label").textContent="LV"+c.num;
+  document.getElementById("rank-name").textContent=c.icon+" "+c.title;
+  document.getElementById("rank-badge").textContent="⬡ Level "+c.num;
+  document.getElementById("xp-fill").style.width=(nxt?Math.min(100,Math.round(frac*100)):100)+"%";
+  document.getElementById("xp-next").textContent=nxt?`${nxt.min-xp} XP to next`:"MAX RANK";
+
+  const t=todayStr(); const start=S.startDate||t;
+  const daysUsed=Math.max(0,daysBetween(start,t)); const left=Math.max(0,60-daysUsed);
+  document.getElementById("dl-num").textContent=left;
+  document.getElementById("dl-num").style.color=left<7?"var(--red)":left<20?"var(--fire)":"var(--txt)";
+  document.getElementById("dl-prog-fill").style.width=Math.min(100,Math.round(daysUsed/60*100))+"%";
+  document.getElementById("dl-start-date").textContent = start;
+
+  renderConsistency(); renderMoneyPath();
+}
+
+function renderConsistency(){
+  document.getElementById("streak-val").textContent = S.streak.cur + " Days";
+  document.getElementById("streak-best-val").textContent = "Best: " + S.streak.best;
+  const flame = document.getElementById("streak-flame");
+  flame.className = "streak-flame" + (S.streak.cur > 0 ? "" : " dead");
+
+  const grid = document.getElementById("heatmap-grid");
+  let html = "";
+  
+  const daysData = [];
+  for(let i=27; i>=0; i--){
+    const d = keyDaysAgo(i); const data = S.ledger[d] || {work:0, drift:0};
+    daysData.push({ key: d, isToday: i===0, work: data.work, drift: data.drift });
+  }
+
+  daysData.forEach(d => {
+    let lvl = '';
+    if (d.work > 0) {
+      if (d.work <= 900) lvl = 'sad';           // <= 15 mins gets the sad flower
+      else if (d.work < 3600) lvl = '1';        // 16 to 59 mins
+      else if (d.work < 10800) lvl = '2';       // 1 hour to 3 hours
+      else lvl = '3';                           // 3+ hours
+    }
+    
+    const cls = `hm-cell ${d.isToday ? 'today' : ''} ${lvl ? 'lvl-'+lvl : ''}`;
+    const tt = `${d.key}<br><span style="color:var(--work)">${fmtShort(d.work)} Work</span><br><span style="color:var(--drift)">${fmtShort(d.drift)} Drift</span>`;
+    
+    html += `<div class="${cls}"><div class="hm-tooltip">${tt}</div></div>`;
+  });
+  grid.innerHTML = html;
+}
+
+function renderMoneyPath(){
+  const box=document.getElementById("money-steps");
+  const curId=curPhaseId(); let html="";
+  MILESTONES.forEach((m,i)=>{
+    const ph=ROADMAP.find(p=>p.id===m.phase);
+    const pct=ph?phasePct(ph):0, reached=pct===100, isCur=ph&&ph.id===curId;
+    const cls=reached?"reached":isCur?"cur":"future";
+    html+=`<div class="mp-step ${cls}"><div class="mp-node"><div class="mp-dot"></div>${i<MILESTONES.length-1?`<div class="mp-vline"></div>`:""}</div><div class="mp-txt"><span class="mp-amt">${m.amt}</span><span class="mp-lbl">${m.lbl}</span></div></div>`;
+  });
+  box.innerHTML=html;
+}
+
+function renderSidebarExtra(){
+  document.getElementById("btn-rm").className="mode-btn"+(S.mode==="roadmap"?" act":"");
+  document.getElementById("btn-lib").className="mode-btn"+(S.mode==="library"?" act":"");
+  const box=document.getElementById("sidebar-extra");
+  if(S.mode==="library"){
+    const tabs=["concepts","facts","procedures"];
+    const lbl={concepts:"Concepts",facts:"Facts",procedures:"Procedures"};
+    box.innerHTML=`
+      <div class="sec-lbl">Category</div>
+      <div class="lib-tabs">${tabs.map(t=>`<button class="lib-tab${S.libTab===t?" act":""}" onclick="S.libTab='${t}';renderMain();renderSidebarExtra()">${lbl[t]}<span class="tc">${DATA[t].length}</span></button>`).join("")}</div>
+      <div class="sec-lbl">Priority</div>
+      <div class="pri-filters">${Object.keys(PRI).map(k=>{const on=S.activePri.has(k);return`<div class="pri-chip${on?" on":" off"}" onclick="S.activePri.${on?'delete':'add'}('${k}');renderMain();renderSidebarExtra()"><span class="dot" style="background:${PRI[k].color}"></span>${PRI[k].label}</div>`;}).join("")}</div>
+      <div class="search-box" style="margin-top:8px"><span class="s-ico">⌕</span><input type="search" placeholder="Filter…" value="${S.query}" oninput="S.query=this.value;renderMain()"></div>`;
+  }else{
+    box.innerHTML=`<div class="sec-lbl">Priority Legend</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">${Object.keys(PRI).map(k=>`<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);"><span style="width:8px;height:8px;border-radius:50%;background:${PRI[k].color}"></span>${PRI[k].label}</div>`).join("")}</div>`;
+  }
+}
+
+function renderMain(){
+  document.getElementById("main").innerHTML=S.mode==="roadmap"?renderRoadmap():renderLibrary();
+}
+
+function renderRoadmap(){
+  const curId=curPhaseId();
+  if(!S.phasesInited){if(curId)S.openPhases.add(curId);S.phasesInited=true;}
+  const q=QUOTES[Math.floor(Date.now()/86400000)%QUOTES.length];
+  let html=`<div class="rm-header"><div class="rm-title">War Map</div><div class="quote-box">${q}</div></div><div class="phase-list">`;
+  ROADMAP.forEach((ph,idx)=>{
+    const pct=phasePct(ph),isCur=ph.id===curId,isDone=pct===100,isOpen=S.openPhases.has(ph.id);
+    const circ=+(2*Math.PI*26).toFixed(2);
+    html+=`<div class="phase-card${isCur?" cur":""}${isDone?" done":""}${isOpen?" open":""}" data-ph="${ph.id}">
+      <div class="phase-head" onclick="S.openPhases.${isOpen?'delete':'add'}('${ph.id}');renderMain()">
+        <div class="pr-wrap">
+          <svg class="pr-svg" viewBox="0 0 60 60" fill="none"><circle class="pr-bg" cx="30" cy="30" r="26"/><circle class="pr-fill" cx="30" cy="30" r="26" stroke-dasharray="${circ}" stroke-dashoffset="${circ-(circ*pct/100)}"/></svg>
+          <div class="pr-pct">${pct}%</div>
+        </div>
+        <div class="ph-meta">
+          <div class="ph-top"><span class="ph-n">PHASE ${ph.num}</span><span class="ph-title">${ph.emoji} ${ph.title}</span>${isCur?`<span class="here-tag">▶ Start here</span>`:""}${isDone?`<span class="done-tag">✓ Done</span>`:""}<span class="money-tag">${ph.money}</span></div>
+          <div class="ph-desc">${ph.blurb}</div>
+        </div>
+        <div class="ph-chev">›</div>
+      </div>
+      <div class="phase-body"><div class="items-grid">${ph.items.map(id=>itemH(ALL[id])).join("")}</div></div>
+    </div>`;
+    if(idx<ROADMAP.length-1)html+=`<div class="phase-connector"></div>`;
+  });
+  return html+"</div>";
+}
+
+function renderLibrary(){
+  const items=DATA[S.libTab].filter(it=>S.activePri.has(it.priority)).filter(it=>!S.onlyUnlearned||!S.learned[it.id]).filter(it=>{if(!S.query)return true;const q=S.query.toLowerCase();return it.title.toLowerCase().includes(q)||it.desc.toLowerCase().includes(q);}).sort((a,b)=>PRI[a.priority].order-PRI[b.priority].order||b.signal-a.signal);
+  return`<div style="font-family:var(--fd);font-weight:800;font-size:24px;margin-bottom:20px;text-transform:capitalize;">${S.libTab}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">${items.map(it=>itemH(it)).join("")}</div>`;
+}
+
+function itemH(it){
+  if(!it)return"";
+  const p=PRI[it.priority], learned=!!S.learned[it.id], isOpen=S.openCards.has(it.id), isBoss=it.signal>=90;
+  return`<div class="item-card${isOpen?" open":""}${learned?" learned":""}${isBoss?" boss":""}" data-pri="${it.priority}">
+    <div class="item-head" onclick="if(!event.target.closest('.cbox')) { S.openCards.${isOpen?'delete':'add'}('${it.id}'); renderMain(); }">
+      <div class="cbox${learned?" on":""}" onclick="toggleItem('${it.id}')"></div>
+      <div class="ic-body">
+        <div class="ic-top"><span class="pri-tag" style="color:${p.color};border-color:${p.color}40;background:${p.color}15">${p.label}</span></div>
+        <div class="ic-title">${it.title}</div>
+        <div class="ic-desc">${it.desc.substring(0,90)}...</div>
+        <div class="sig-row"><div class="sig-bar"><div class="sig-fill" style="width:${it.signal}%"></div></div><span class="sig-val">${it.signal}% Sig</span></div>
+      </div>
+      <div class="ic-chev">›</div>
+    </div>
+    <div class="item-expand">
+      <div class="ie-desc">${it.desc}</div>
+      <div class="res-head">Where to learn it</div>
+      ${resH(it.resources)}
+    </div>
+  </div>`;
+}
+
+function resH(res){
+  if(!res || !res.length)return`<div class="res-note" style="font-style:italic">No external resource needed — this is built through doing.</div>`;
+  return res.map(r=>`<div class="res-item"><div class="res-row">${r.url?`<a class="res-name" href="${r.url}" target="_blank" rel="noopener">${r.name}</a>`:`<span class="res-name">${r.name}</span>`}<span class="res-kind">${r.kind}</span></div><div class="sig-row" style="margin-top:4px;margin-bottom:6px;"><div class="sig-bar" style="max-width:60px;"><div class="sig-fill" style="width:${r.signal}%"></div></div><span class="sig-val">${r.signal}%</span></div>${r.note?`<div class="res-note">${r.note}</div>`:""}</div>`).join("");
+}
+
+function toggleItem(id){
+  const prevLv = curLevel();
+  S.learned[id] = !S.learned[id];
+  save("prog-v4", S.learned);
+  renderSidebar(); renderMain();
+  
+  const curLv = curLevel();
+  if(curLv.num > prevLv.num) {
+    document.getElementById("lv-new-title").textContent=curLv.icon+" "+curLv.title;
+    document.getElementById("lv-overlay").classList.add("show");
+  }
+}
+
+function setMode(m){S.mode=m;renderSidebarExtra();renderMain();}
+function closeLV(){document.getElementById("lv-overlay").classList.remove("show");}
+function showToast(ico, title, desc){
+  const z=document.getElementById("toast-zone");
+  const t=document.createElement("div"); t.className="toast";
+  t.innerHTML=`<div class="toast-ico">${ico}</div><div><div class="toast-name">${title}</div><div class="toast-desc">${desc}</div></div>`;
+  z.appendChild(t); setTimeout(()=>{t.classList.add("out");setTimeout(()=>t.remove(),350);},4000);
+}
+
+// ================================================================
+// EXPORT, IMPORT, RESET & INIT
+// ================================================================
+function exportData(){
+  const blob=new Blob([JSON.stringify({version:3,learned:S.learned,streak:S.streak,ledger:S.ledger,startDate:S.startDate},null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`audit-os-${todayStr()}.json`; a.click();
+}
+function importData(e){
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(d.learned) S.learned=d.learned;
+      if(d.streak) S.streak=d.streak;
+      if(d.ledger) S.ledger=d.ledger;
+      if(d.startDate) S.startDate=d.startDate;
+      save("prog-v4",S.learned); save("streak-v4",S.streak); save("ledger-v1",S.ledger); save("start-v2",S.startDate);
+      renderSidebar(); renderMain(); showToast("⬇", "Imported", "Data restored successfully.");
+    }catch(err){}
+  }; reader.readAsText(file); e.target.value="";
+}
+
+document.getElementById("reset-btn").addEventListener("click", ()=>{
+  if(confirm("Erase all progress? This cannot be undone.")){
+    localStorage.clear(); 
+    if (window.currentUser && window.syncToCloud) {
+      window.syncToCloud("prog-v4", {});
+      window.syncToCloud("streak-v4", {cur:0, best:0, lastDate:null});
+      window.syncToCloud("ledger-v1", {});
+      window.syncToCloud("start-v2", null);
+      setTimeout(() => window.location.reload(), 500);
+    } else {
+      window.location.reload();
+    }
+  }
+});
+
+(async function init(){
+  const [prog, streak, ledger, start, active] = await Promise.all([
+    load("prog-v4",{}), load("streak-v4",{cur:0,best:0,lastDate:null}),
+    load("ledger-v1",{}), load("start-v2",null), load("active-tracker-v1", null)
+  ]);
+  
+  S.learned = prog; S.streak = streak; S.ledger = ledger; 
+  S.startDate = start || todayStr();
+  if(!start) save("start-v2", S.startDate);
+  
+  if(active && active.state !== 'idle') {
+    S.tracker.activeState = active.state;
+    S.tracker.sessionStart = active.sessionStart;
+    S.tracker.lastCommit = active.lastCommit;
+    openLedger();
+  }
+
+  recalcStreak();
+  renderSidebar(); renderSidebarExtra(); renderMain();
+})();
+
+</script>
+
+<!-- FIREBASE SYNC -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+  const firebaseConfig = { apiKey: "AIzaSyBNhpnU9EXqLKeiIVQvOqOew75skQxv8xU", authDomain: "ibro-83f84.firebaseapp.com", projectId: "ibro-83f84" };
+  try {
+    const fireApp = initializeApp(firebaseConfig);
+    const db = getFirestore(fireApp);
+    const auth = getAuth(fireApp);
+    const provider = new GoogleAuthProvider();
+    const appKeys = ["prog-v4", "streak-v4", "ledger-v1", "start-v2"];
+
+    window.syncToCloud = function(key, value) {
+      if (window.currentUser && appKeys.includes(key)) setDoc(doc(db, "auditOSData", window.currentUser.uid), { [key]: value }, { merge: true });
+    };
+
+    document.getElementById('login-btn').addEventListener('click', () => signInWithPopup(auth, provider));
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        window.currentUser = user;
+        document.getElementById('login-btn').style.display = 'none';
+        const ui = document.getElementById('user-info');
+        ui.style.display = 'block';
+        ui.innerHTML = `☁️ Synced as ${user.email} <br><button id="logout-btn" style="margin-top: 8px; background:var(--red-lo); border:1px solid rgba(239,68,68,0.3); color:var(--red); padding:4px 8px; border-radius:4px; cursor:pointer; font-family:var(--fm); font-size:9px; font-weight:600; width:100%;">Logout</button>`;
+        
+        document.getElementById('logout-btn').addEventListener('click', () => { signOut(auth).then(() => window.location.reload()); });
+
+        const docSnap = await getDoc(doc(db, "auditOSData", user.uid));
+        if (docSnap.exists()) {
+          const c = docSnap.data();
+          if (c["prog-v4"]) S.learned = c["prog-v4"];
+          if (c["streak-v4"]) S.streak = c["streak-v4"];
+          if (c["ledger-v1"]) S.ledger = c["ledger-v1"];
+          if (c["start-v2"]) S.startDate = c["start-v2"];
+          appKeys.forEach(k => { if(c[k]) localStorage.setItem("audit-os:"+k, JSON.stringify(c[k])); });
+          renderSidebar(); renderMain();
+        } else {
+          appKeys.forEach(k => { const l = localStorage.getItem("audit-os:"+k); if(l) window.syncToCloud(k, JSON.parse(l)); });
+        }
+      }
+    });
+  } catch(e) { console.log("Firebase not configured properly, using local storage only."); }
+</script>
+</body>
+</html>
